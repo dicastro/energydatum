@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+    <title>Energy Datum</title>
+
+    <link rel="stylesheet" type="text/css" href="/assets/jqueryui/1.13.1/css/jquery-ui.min.css">
+    <link rel="stylesheet" type="text/css" href="/assets/fomanticui/2.8.8/css/semantic.min.css">
+    <link rel="stylesheet" type="text/css" href="/assets/datatables/1.11.5/css/dataTables.semanticui.min.css">
+    <link rel="stylesheet" type="text/css" href="/assets/css/style.css">
+</head>
+<body>
+<script type="text/javascript" charset="utf8" src="/assets/plotly/2.12.1/js/plotly.min.js"></script>
+<script type="text/javascript">
+    window.PlotlyConfig = {MathJaxConfig: 'local'};
+</script>
+
+<div class="ui borderless main menu">
+    <div class="ui text container">
+        <div class="header item">
+            <img class="logo" src="/assets/img/logo_40x40.png">
+            Energy Datum
+        </div>
+        <div class="ui floating dropdown button item">
+            <div class="text">Consumo</div>
+            <i class="dropdown icon"></i>
+            <div class="menu">
+                <a id="consumption_y_menu_item" class=" item" href="/consumption/consumption_y.html">Anual</a>
+                <a id="consumption_moy_menu_item" class=" item" href="/consumption/consumption_moy.html">Mensual</a>
+                <a id="consumption_dow_menu_item" class=" item" href="/consumption/consumption_dow.html">Día semana</a>
+                <a id="consumption_hod_menu_item" class=" item" href="/consumption/consumption_hod.html">Horario</a>
+                <a id="period_m_menu_item" class=" item" href="/consumption/period_m.html">Periodo</a>
+                <a id="consumption_dom_menu_item" class=" item" href="/consumption/consumption_dom.html">Diario</a>
+            </div>
+        </div>
+        <a id="cost_menu_item" class=" item" href="/cost.html">Coste</a>
+        <div class="ui floating dropdown button item">
+            <div class="text">Datos</div>
+            <i class="dropdown icon"></i>
+            <div class="menu">
+                <a id="price_pvpc_menu_item" class=" item" href="/esios/esios_price_20td.html">Precios PVPC</a>
+                <div class="divider"></div>
+                <a id="bank_days_menu_item" class="active item" href="/bank_days.html">Festivos</a>
+                <div class="divider"></div>
+                <a id="esios_indicators_menu_item" class=" item" href="/esios/esios_indicators.html">Indicadores E-SIOS</a>
+                <div class="divider"></div>
+                <a id="weather_menu_item" class=" item" href="/weather.html">Clima</a>
+            </div>
+        </div>
+        <div class="ui floating dropdown button item">
+            <div class="text">Autoconsumo</div>
+            <i class="dropdown icon"></i>
+            <div class="menu">
+                <a class="disabled item" href="#">proximamente ...</a>
+            </div>
+        </div>
+        <a id="configuration_menu_item" class="item right " href="/configuration.html">
+            <i class="cogs icon"></i>
+        </a>
+    </div>
+</div>
+
+<div class="ui container">
+    
+<div class="content">
+    <h1 class="ui header">Festivos</h1>
+
+    <p>Estos son los festivos que se están utilizando en el cálculo de los periodos de facturación para las tarifas que discriminan por día festivo</p>
+
+    <table id="bank_days" class="dataframe ui celled table dt" dt-dataUrl="/data/bank_days_2020_2022.json">
+        <thead class="full-width">
+            <tr>
+                <th>Año</th>
+                <th>Mes</th>
+                <th>Día</th>
+                <th>Descripción</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+</div>
+
+<div class="ui inverted vertical footer segment">
+    <div class="ui center aligned container">
+        <div class="ui stackable inverted divided grid">
+            <div class="three wide column">
+                <h4 class="ui inverted header">Consumo</h4>
+                <div class="ui inverted link list">
+                    <a class="item" href="/consumption/consumption_y.html">Anual</a>
+                    <a class="item" href="/consumption/consumption_moy.html">Mensual</a>
+                    <a class="item" href="/consumption/consumption_dow.html">Día semana</a>
+                    <a class="item" href="/consumption/consumption_hod.html">Horario</a>
+                    <a class="item" href="/consumption/period_m.html">Periodo</a>
+                    <a class="item" href="/consumption/consumption_dom.html">Diario</a>
+                </div>
+            </div>
+            <div class="three wide column">
+                <h4 class="ui inverted header">Datos</h4>
+                <div class="ui inverted link list">
+                    <a class="item" href="/esios/esios_price_20td.html">Precios PVPC</a>
+                    <a class="item" href="/bank_days.html">Festivos</a>
+                    <a class="item" href="/esios/esios_indicators.html">Indicadores E-SIOS</a>
+                    <a class="item" href="/weather.html">Clima</a>
+                </div>
+            </div>
+            <div class="three wide column">
+                <h4 class="ui inverted header">Autoconsumo</h4>
+                <div class="ui inverted link list">
+                    <a href="#" class="disabled item">Próximamente ...</a>
+                </div>
+            </div>
+            <div class="seven wide column">
+                <h4 class="ui inverted header">¿Quieres un sitio como este?</h4>
+                <div class="ui left aligned container">
+                    <p>Es muy fácil, únicamente tienes que seguir estos sencillos pasos:</p>
+                    <ol>
+                        <li>Haz un fork de <a href="https://github.com/dicastro/energydatum" target="_blank">Energy Datum</a></li>
+                        <li>Clona tu repo</li>
+                        <li>Añade las lecturas de tu contador en formato <i>csv</i></li>
+                        <li>Ejecuta el script <code>main.py</code></li>
+                        <li>Haz push de los cambios</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        <div class="ui inverted section divider"></div>
+        <img src="/assets/img/logo_40x40.png" class="ui centered mini image">
+        <div class="ui horizontal inverted small divided link list">
+            <a class="item" href="https://diegocastroviadero.com/#contact" target="_blank">Contáctame</a>
+            <p class="item">v1.0.0-alpha</p>
+            <p class="item">Generado el 26/05/2022 con datos entre 02/06/2020 y 30/04/2022</p>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" charset="utf8" src="/assets/jquery/3.6.0/js/jquery.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/assets/jqueryui/1.13.1/js/jquery-ui.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/assets/datatables/1.11.5/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/assets/datatables/1.11.5/js/dataTables.semanticui.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/assets/fomanticui/2.8.8/js/semantic.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/assets/dataframejs/1.4.3/js/dataframe.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/assets/js/menu.js"></script>
+<script type="text/javascript" charset="utf8" src="/assets/js/main.js"></script>
+<script type="text/javascript" charset="utf8" src="/assets/js/table.js"></script>
+<script type="text/javascript" charset="utf8" src="/assets/js/offer-db.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+    <title>Energy Datum</title>
+
+    <link rel="stylesheet" type="text/css" href="/assets/fomanticui/2.8.8/css/semantic.min.css">
+    <link rel="stylesheet" type="text/css" href="/assets/datatables/1.11.5/css/dataTables.semanticui.min.css">
+    <link rel="stylesheet" type="text/css" href="/assets/css/style.css">
+</head>
+<body>
+<script type="text/javascript" charset="utf8" src="/assets/plotly/2.11.1/js/plotly.min.js"></script>
+<script type="text/javascript">
+    window.PlotlyConfig = {MathJaxConfig: 'local'};
+</script>
+
+<div class="ui main text container">
+    <div class="ui icon floating blue centered message">
+        <i class="bell icon"></i>
+        <div class="content">
+            <p>Actualizado el 05/05/2022 con datos desde 02/06/2020 hasta 31/03/2022</p>
+        </div>
+    </div>
+</div>
+
+<div w3-include-html="/assets/html/main_menu.html" menu-item="rate_menu_item"></div>
+
+<div class="ui container">
+
+    <h5>Leyenda</h5>
+
+    <table class="ui celled table">
+        <thead>
+            <th>DH</th>
+            <th>WK</th>
+        </thead>
+        <tbody>
+            <tr>
+                <td width="50%"><img width="100%" src="assets/img/dh_image.png"/></td>
+                <td width="50%"><img width="100%" src="assets/img/wk_image.png"/></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h1>Discriminación Horaria</h1>
+
+    <div class="ui centered cards">
+        <div class="card">
+            <div class="content">
+                <div class="header">Anual</div>
+                <div class="description">
+                    Tarifa por año
+                </div>
+            </div>
+            <div id="tarifa_anual_btn" class="ui bottom attached button">
+                <i class="eye icon"></i>
+                Ver
+            </div>
+        </div>
+        <div class="card">
+            <div class="content">
+                <div class="header">Mensual</div>
+                <div class="description">
+                    Tarifa por mes
+                </div>
+            </div>
+            <div id="tarifa_mensual_btn" class="ui bottom attached button">
+                <i class="eye icon"></i>
+                Ver
+            </div>
+        </div>
+        <div class="card">
+            <div class="content">
+                <div class="header">Diario</div>
+                <div class="description">
+                    Consumo por dia de la semana
+                </div>
+            </div>
+            <div id="tarifa_diaria_btn" class="ui bottom attached button">
+                <i class="eye icon"></i>
+                Ver
+            </div>
+        </div>
+    </div>
+
+    <div id="tarifa_anual_modal" class="ui overlay fullscreen modal scrolling front transition hidden">
+        <div class="header">
+            <span class="ui teal text">Tarifa por año</span>
+        </div>
+        <div class="content">
+            <div>                            <div id="rate_y" class="plotly-graph-div" style="height:calc(100vh - 9.1rem - 3rem); width:100%;"></div>            <script type="text/javascript">                                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("rate_y")) {                    Plotly.newPlot(                        "rate_y",                        [{"alignmentgroup":"True","customdata":[[7,0.3572421139940367],[12,0.3612831659297322],[3,0.3761351906547978]],"hovertemplate":"dh_section=P1<br>year=%{x}<br>dh_section_sum_kwh=%{y}<br>y_months_count=%{customdata[0]}<br>y_rate=%{customdata[1]}<extra></extra>","legendgroup":"P1","marker":{"color":"#636efa","pattern":{"shape":""}},"name":"P1","offsetgroup":"P1","orientation":"v","showlegend":true,"textposition":"auto","x":["2020","2021","2022"],"xaxis":"x","y":[545.274,1047.749,368.037],"yaxis":"y","type":"bar"},{"alignmentgroup":"True","customdata":[[7,0.3626583277808461],[12,0.37995129094848173],[3,0.3799247805246967]],"hovertemplate":"dh_section=P2<br>year=%{x}<br>dh_section_sum_kwh=%{y}<br>y_months_count=%{customdata[0]}<br>y_rate=%{customdata[1]}<extra></extra>","legendgroup":"P2","marker":{"color":"#EF553B","pattern":{"shape":""}},"name":"P2","offsetgroup":"P2","orientation":"v","showlegend":true,"textposition":"auto","x":["2020","2021","2022"],"xaxis":"x","y":[553.541,1101.888,371.745],"yaxis":"y","type":"bar"},{"alignmentgroup":"True","customdata":[[7,0.2800995582251172],[12,0.25876554312178607],[3,0.24394002882050547]],"hovertemplate":"dh_section=P3<br>year=%{x}<br>dh_section_sum_kwh=%{y}<br>y_months_count=%{customdata[0]}<br>y_rate=%{customdata[1]}<extra></extra>","legendgroup":"P3","marker":{"color":"#00cc96","pattern":{"shape":""}},"name":"P3","offsetgroup":"P3","orientation":"v","showlegend":true,"textposition":"auto","x":["2020","2021","2022"],"xaxis":"x","y":[427.528,750.44,238.688],"yaxis":"y","type":"bar"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmapgl":[{"type":"heatmapgl","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"year"}},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"dh_section_sum_kwh"}},"legend":{"title":{"text":"dh_section"},"tracegroupgap":0},"margin":{"t":60},"barmode":"relative"},                        {"responsive": true}                    )                };                            </script>        </div>
+        </div>
+        <div class="actions">
+            <div class="ui primary approve button">
+                <i class="times icon"></i>
+                Close
+            </div>
+        </div>
+    </div>
+
+    <div id="tarifa_mensual_modal" class="ui overlay fullscreen modal scrolling front transition hidden">
+        <div class="header">
+            <span class="ui teal text">Tarifa mensual</span>
+        </div>
+        <div class="content">
+            
+        </div>
+        <div class="actions">
+            <div class="ui primary approve button">
+                <i class="times icon"></i>
+                Close
+            </div>
+        </div>
+    </div>
+
+    <div id="tarifa_diaria_modal" class="ui overlay fullscreen modal scrolling front transition hidden">
+        <div class="header">
+            <span class="ui teal text">Tarifa diaria</span>
+        </div>
+        <div class="content">
+            
+        </div>
+        <div class="actions">
+            <div class="ui primary approve button">
+                <i class="times icon"></i>
+                Close
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="ui inverted vertical footer segment">
+    <div class="ui center aligned container">
+        <div class="ui stackable inverted divided grid">
+            <div class="three wide column">
+                <h4 class="ui inverted header">Group 1</h4>
+                <div class="ui inverted link list">
+                    <a href="#" class="item">Link One</a>
+                    <a href="#" class="item">Link Two</a>
+                    <a href="#" class="item">Link Three</a>
+                    <a href="#" class="item">Link Four</a>
+                </div>
+            </div>
+            <div class="three wide column">
+                <h4 class="ui inverted header">Group 2</h4>
+                <div class="ui inverted link list">
+                    <a href="#" class="item">Link One</a>
+                    <a href="#" class="item">Link Two</a>
+                    <a href="#" class="item">Link Three</a>
+                    <a href="#" class="item">Link Four</a>
+                </div>
+            </div>
+            <div class="three wide column">
+                <h4 class="ui inverted header">Group 3</h4>
+                <div class="ui inverted link list">
+                    <a href="#" class="item">Link One</a>
+                    <a href="#" class="item">Link Two</a>
+                    <a href="#" class="item">Link Three</a>
+                    <a href="#" class="item">Link Four</a>
+                </div>
+            </div>
+            <div class="seven wide column">
+                <h4 class="ui inverted header">Footer Header</h4>
+                <p>Extra space for a call to action inside the footer that could help re-engage users.</p>
+            </div>
+        </div>
+        <div class="ui inverted section divider"></div>
+        <img src="assets/images/logo.png" class="ui centered mini image">
+        <div class="ui horizontal inverted small divided link list">
+            <a class="item" href="#">Site Map</a>
+            <a class="item" href="#">Contact Us</a>
+            <a class="item" href="#">Terms and Conditions</a>
+            <a class="item" href="#">Privacy Policy</a>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" charset="utf8" src="/assets/jquery/3.6.0/js/jquery.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/assets/datatables/1.11.5/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/assets/datatables/1.11.5/js/dataTables.semanticui.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/assets/fomanticui/2.8.8/js/semantic.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/assets/js/menu.js"></script>
+<script type="text/javascript" charset="utf8" src="/assets/js/main.js"></script>
+<script>
+    $(document).ready(function() {
+        function triggerResizeEvent() {
+            // trigger window resize event in order to force plotly to update figures' size
+            window.dispatchEvent(new Event('resize'));
+        };
+
+        $('#tarifa_anual_btn').click(function() {
+            $('#tarifa_anual_modal').modal({
+                onShow: triggerResizeEvent
+            }).modal('show');
+        });
+
+        $('#tarifa_mensual_btn').click(function() {
+            $('#tarifa_mensual_modal').modal({
+                onShow: triggerResizeEvent
+            }).modal('show');
+        });
+
+        $('#tarifa_diaria_btn').click(function() {
+            $('#tarifa_diaria_modal').modal({
+                onShow: triggerResizeEvent
+            }).modal('show');
+        });
+    });
+</script>
+</body>
+</html>

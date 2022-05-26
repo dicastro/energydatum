@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="ui container">
+    <h1 class="ui header">Consumo mensual de energía</h1>
+
+    <h3 class="ui header">Evolución global</h3>
+
+    <div class="content">
+        {{consumption_moy_evol_full_fig | safe}}
+    </div>
+
+    <div class="ui styled fluid accordion">
+        <div class="title">
+            <i class="dropdown icon"></i>
+            Datos evolución global consumo mensual de energía
+        </div>
+        <div class="content">
+            <table id="consumption_moy_evol_full_table" class="dataframe ui celled table dt" dt-dataUrl="/data/consumption/consumption_moy_evol_full.json">
+                <thead class="full-width">
+                    <tr>
+                        <th dt-type="month_year">Mes/Año</th>
+                        <th dt-className="dt-body-right">Consumo (kWh)</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+
+    <h3 class="ui header">Evolución por año</h3>
+
+    <div class="content">
+        {{consumption_moy_evol_year_fig | safe}}
+    </div>
+
+    <div class="ui styled fluid accordion">
+        <div class="title">
+            <i class="dropdown icon"></i>
+            Datos consumo mensual de energía
+        </div>
+        <div class="content">
+            <table id="consumption_moy_evol_year_table" class="dataframe ui celled table dt" dt-dataUrl="/data/consumption/consumption_moy_evol_comp.json">
+                <thead class="full-width">
+                    <tr>
+                        <th>Año</th>
+                        <th dt-type="month">Mes</th>
+                        <th dt-className="dt-body-right">Consumo (kWh)</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+
+    <h3 class="ui header">Comparación por mes y año</h3>
+
+    <div class="content" style="min-height: 500px;">
+        {{consumption_moy_comp_fig | safe}}
+    </div>
+
+    <div class="ui styled fluid accordion">
+        <div class="title">
+            <i class="dropdown icon"></i>
+            Datos consumo mensual de energía
+        </div>
+        <div class="content">
+            <table id="consumption_moy_comp_table" class="dataframe ui celled table dt" dt-dataUrl="/data/consumption/consumption_moy_evol_comp.json">
+                <thead class="full-width">
+                    <tr>
+                        <th>Año</th>
+                        <th dt-type="month">Mes</th>
+                        <th dt-className="dt-body-right">Consumo (kWh)</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

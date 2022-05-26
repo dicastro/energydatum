@@ -1,0 +1,59 @@
+body {
+    background-color: #FFFFFF;
+}
+
+.main.container {
+    margin-top: 2em;
+}
+
+.ui.footer.segment {
+    margin: 5em 0em 0em;
+    padding: 5em 0em;
+}
+
+# Menu
+.main.menu {
+    margin-top: 4em;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+    transition:
+        box-shadow 0.5s ease,
+        padding 0.5s ease
+    ;
+}
+
+.main.menu .item img.logo {
+    margin-right: 1.5em;
+}
+
+.main.menu.fixed {
+    background-color: #FFFFFF;
+    border: 1px solid #DDD;
+    box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.2);
+}
+
+.ui.accordion {
+    margin-top: 0.5em;
+}
+
+# Rates info
+table.rate th {
+    text-align: center !important;
+}
+
+table.rate th.hour {
+    font-size: .7em;
+}
+
+table.rate td.P1 {
+    background-color: #ef553b;
+}
+
+table.rate td.P2 {
+    background-color: #636efa;
+}
+
+table.rate td.P3 {
+    background-color: #00cc96;
+}

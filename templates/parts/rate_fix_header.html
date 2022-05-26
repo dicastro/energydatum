@@ -1,0 +1,55 @@
+<h3 class="ui header">
+    <i id="rate_fix_info" class="link info circle icon" data-modal-id="rate_fix_info_modal"></i>
+    <div class="content">
+        Tarifa Precio fijo
+    </div>
+</h3>
+
+<div id="rate_fix_info_modal" class="ui modal" data-trigger-button="rate_fix_info">
+    <h2 class="ui header">Tarifa precio fijo</h2>
+    <div class="content">
+        <table class="ui celled table rate">
+            <thead>
+                <tr>
+                    <th>&nbsp;</th>
+                    {% for h in range(24) %}
+                    <th class="hour">{{h}}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for serie in rate_fix_info_series recursive %}
+                <tr>
+                    <td>{{serie.title}}</td>
+                    {% for p in serie.period_seq %}
+                    <td class="{{p}}">&nbsp;</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <table class="ui celled table rate">
+            <thead>
+                <tr>
+                    {% for p in rate_fix_info_periods %}
+                    <th>{{p}}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    {% for p in rate_fix_info_periods %}
+                    <td class="{{p}}">&nbsp;</td>
+                    {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="actions">
+        <div class="ui ok button">
+            <i class="remove icon"></i>
+            Cerrar
+        </div>
+    </div>
+</div>

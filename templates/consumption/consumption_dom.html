@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="ui header">Consumo diario</h1>
+
+<p>Selecciona un día del calendario para ver el detalle de su consumo por horas</p>
+
+<div class="content">
+    <div class="ui form">
+        <div class="fields">
+            <div class="ui calendar three wide field calendar-comp">
+                <label>Fecha</label>
+                <div class="ui input left icon">
+                    <i class="calendar icon"></i>
+                    <input name="date" type="text" placeholder="Fecha" maxlength="10">
+                </div>
+            </div>
+            <div class="two wide field">
+                <label>&nbsp;</label>
+                <div class="ui icon green button day-add" data-rate-type="20td">
+                    <i class="plus icon"></i>
+                </div>
+            </div>
+        </div>
+        <div id="selected-days" class="ui segment">
+            <p class="nocontent">No se ha seleccionado ningún día</p>
+        </div>
+    </div>
+
+    <div id="consumption-figure" class="plotly-graph-div" style="height:100%; width:100%;"></div>
+</div>
+{% endblock %}
+
+{% block custom_javascript %}
+<script type="text/javascript" charset="utf-8">
+    window.PLOTLYENV=window.PLOTLYENV || {};
+
+    const COLOR_SEQ = ['#636efa', '#EF553B', '#00cc96', '#ab63fa', '#FFA15A', '#19d3f3', '#FF6692', '#B6E880', '#FF97FF', '#FECB52'];
+
+    const plotlyFigureConfig = {"responsive": true};
+
+    const plotlyFigureLayout = {
+        "template": {
+            "data": {
+                "histogram2dcontour": [{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],
+                "choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],
+                "histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],
+                "heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],
+                "heatmapgl":[{"type":"heatmapgl","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],
+                "contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],
+                "contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],
+                "surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],
+                "mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],
+                "scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],
+                "parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],
+                "scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],
+                "bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],
+                "scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],
+                "scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],
+                "histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],
+                "scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],
+                "scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],
+                "scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],
+                "scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],
+                "scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],
+                "carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],
+                "table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],
+                "barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],
+                "pie":[{"automargin":true,"type":"pie"}]
+            },
+            "layout": {
+                "autotypenumbers":"strict",
+                "colorway": COLOR_SEQ,
+                "font":{"color":"#2a3f5f"},
+                "hovermode":"closest",
+                "hoverlabel":{"align":"left"},
+                "paper_bgcolor":"white",
+                "plot_bgcolor":"#E5ECF6",
+                "polar": {
+                    "bgcolor":"#E5ECF6",
+                    "angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},
+                    "radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}
+                },
+                "ternary": {
+                    "bgcolor":"#E5ECF6",
+                    "aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},
+                    "baxis":{"gridcolor":"white","linecolor":"white","ticks":""},
+                    "caxis":{"gridcolor":"white","linecolor":"white","ticks":""}
+                },
+                "coloraxis": {
+                    "colorbar":{"outlinewidth":0,"ticks":""}
+                },
+                "colorscale": {
+                    "sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],
+                    "sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],
+                    "diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]
+                },
+                "xaxis": {
+                    "gridcolor":"white",
+                    "linecolor":"white",
+                    "ticks":"",
+                    "title":{"standoff":15},
+                    "zerolinecolor":"white",
+                    "automargin":true,
+                    "zerolinewidth":2
+                },
+                "yaxis": {
+                    "gridcolor":"white",
+                    "linecolor":"white",
+                    "ticks":"",
+                    "title":{"standoff":15},
+                    "zerolinecolor":"white",
+                    "automargin":true,
+                    "zerolinewidth":2
+                },
+                "scene": {
+                    "xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},
+                    "yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},
+                    "zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}
+                },
+                "shapedefaults": {
+                    "line":{"color":"#2a3f5f"}
+                },
+                "annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},
+                "geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},
+                "title":{"x":0.05},
+                "mapbox":{"style":"light"}
+            }
+        },
+        "xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"Hora"}},
+        "yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"Consumo (kWh)"}},
+        "legend":{
+            "title": {
+                "text": "Día"
+            },
+            "tracegroupgap":0
+        },
+        "margin":{"t":60}
+    };
+
+    function getValuesFromMonthConsumptionDf(df, day) {
+        return df.filter(row => row.get('dom') === day).select('hour_consumption_kwh').toDict()['hour_consumption_kwh']
+    }
+
+    function addSelectedDay(dayData) {
+        $('#selected-days .nocontent').remove();
+        $('<div>', {
+            class: 'ui left icon label selected-day',
+            style: `color: #ffffff; background-color: ${dayData.line.color};`,
+            'data-date': `${dayData.name}`,
+            html: `<i class="close icon day-remove"></i>${dayData.name}`
+        }).appendTo('#selected-days');
+    }
+
+    db = {
+        COLOR_SEQ: ['#636efa', '#EF553B', '#00cc96', '#ab63fa', '#FFA15A', '#19d3f3', '#FF6692', '#B6E880', '#FF97FF', '#FECB52'],
+        _getColor(title) {
+            if (!('daily_consumption_color_seq' in sessionStorage)) {
+                sessionStorage.setItem('daily_consumption_color_seq', JSON.stringify(COLOR_SEQ));
+            }
+
+            let colorSeq = JSON.parse(sessionStorage.getItem('daily_consumption_color_seq'));
+
+            let colors = JSON.parse(sessionStorage.getItem('daily_consumption_colors')) || {};
+
+            if (!(title in colors)) {
+                selectedColor = colorSeq.shift();
+                colors[title] = selectedColor;
+
+                sessionStorage.setItem('daily_consumption_color_seq', JSON.stringify(colorSeq));
+                sessionStorage.setItem('daily_consumption_colors', JSON.stringify(colors));
+            } else {
+                selectedColor = colors[title];
+            }
+
+            return selectedColor;
+        },
+        _getConsumptionFigureData(title, values) {
+            return {
+                'hovertemplate': `Fecha=${title}<br>Hora=%{x}<br>Consumo (kWh)=%{y}<extra></extra>`,
+                'legendgroup': title,
+                'line': {
+                    'color': this._getColor(title),
+                    'dash': 'solid'
+                },
+                'marker': {
+                    'symbol': 'circle'
+                },
+                'mode': 'lines',
+                'name': title,
+                'orientation': 'v',
+                'showlegend': true,
+                'x': ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'],
+                'xaxis': 'x',
+                'y': values,
+                'yaxis': 'y',
+                'type': 'scatter'
+            }
+        },
+        _getDailyConsumptionDates: function () {
+            return Object.keys(sessionStorage).filter(key => key.match(/daily_consumption_\d{2}\/\d{2}\/\d{4}/));
+        },
+        containsDate: function(date) {
+            dailyConsumptionKey = `daily_consumption_${date}`;
+
+            return date in sessionStorage;
+        },
+        addDate: function(title, values) {
+            data = this._getConsumptionFigureData(title, values);
+
+            sessionStorage.setItem(`daily_consumption_${title}`, JSON.stringify(data));
+
+            return data;
+        },
+        getData: function() {
+            return this._getDailyConsumptionDates().map(key => JSON.parse(sessionStorage.getItem(key)));
+        },
+        hasData: function() {
+            return this._getDailyConsumptionDates().length > 0;
+        },
+        removeDate: function(date) {
+            sessionStorage.removeItem(`daily_consumption_${date}`);
+
+            let colorSeq = JSON.parse(sessionStorage.getItem('daily_consumption_color_seq'));
+
+            let colors = JSON.parse(sessionStorage.getItem('daily_consumption_colors'));
+
+            color = colors[date];
+
+            delete colors[date];
+            colorSeq.unshift(color);
+
+            sessionStorage.setItem('daily_consumption_color_seq', JSON.stringify(colorSeq));
+            sessionStorage.setItem('daily_consumption_colors', JSON.stringify(colors));
+        }
+    }
+
+    $(document).ready(function() {
+        var DataFrame = dfjs.DataFrame;
+
+        $('.calendar-comp').calendar({
+            type: 'date',
+            firstDayOfWeek: 1,
+            minDate: new Date({{min_date_year}}, {{min_date_month_js}}, {{min_date_day}}),
+            maxDate: new Date({{max_date_year}}, {{max_date_month_js}}, {{max_date_day}}),
+            text: {
+                days: ['D', 'L', 'M', 'X', 'J', 'V', 'S'],
+                months: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+                monthsShort: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+                today: 'Hoy',
+                now: 'Ahora',
+                am: 'AM',
+                pm: 'PM'
+            },
+            formatter: {
+                date: function (date, settings) {
+                    if (!date) return '';
+                    var day = date.getDate();
+                    var month = date.getMonth() + 1;
+                    var year = date.getFullYear();
+
+                    return day.toString().padStart(2, '0') + '/' + month.toString().padStart(2, '0') + '/' + year;
+                }
+            }
+        });
+
+        let monthConsumptionCache = {};
+
+        $('.day-add').click(handler => {
+            $dateElement = $('input[name="date"]');
+            let selectedDate = $dateElement.val();
+
+            if (!selectedDate) {
+                $dateElement.parents('.calendar-comp').effect('shake', { times: 4, distance: 8 }, 750);
+            } else {
+                let rawDay = selectedDate.substr(0, 2);
+                let day = parseInt(rawDay);
+                let rawMonth = selectedDate.substr(3, 2);
+                let rawYear = selectedDate.substr(6, 4);
+
+                if (!db.containsDate(selectedDate)) {
+                    let monthConsumptionKey = `${rawYear}${rawMonth}`;
+
+                    if (!(monthConsumptionKey in monthConsumptionCache)) {
+                        $.get(`/data/consumption/raw/moy/consumption_raw_${rawYear}${rawMonth}.json`).done(response => {
+                            let dfMonthConsumption = new DataFrame(response.data, response.columns);
+
+                            monthConsumptionCache[monthConsumptionKey] = dfMonthConsumption;
+
+                            values = getValuesFromMonthConsumptionDf(dfMonthConsumption, day);
+
+                            data = db.addDate(selectedDate, values);
+                            addSelectedDay(data);
+
+                            Plotly.newPlot('consumption-figure', db.getData(), plotlyFigureLayout, plotlyFigureConfig);
+                        });
+                    } else {
+                        values = getValuesFromMonthConsumptionDf(monthConsumptionCache[monthConsumptionKey], day);
+
+                        data = db.addDate(selectedDate, values);
+                        addSelectedDay(data);
+
+                        Plotly.newPlot('consumption-figure', db.getData(), plotlyFigureLayout, plotlyFigureConfig);
+                    }
+                }
+
+                $dateElement.val('');
+            }
+        });
+
+        if (db.hasData()) {
+            Plotly.newPlot('consumption-figure', db.getData(), plotlyFigureLayout, plotlyFigureConfig);
+            db.getData().forEach(data => addSelectedDay(data));
+        }
+
+        $(document).on('click', '.day-remove', handler => {
+            let $dayElement = $(handler.currentTarget).parents('.selected-day');
+            let date = $dayElement.data('date');
+
+            $dayElement.remove();
+
+            db.removeDate(date);
+
+            if (db.hasData()) {
+                Plotly.newPlot('consumption-figure', db.getData(), plotlyFigureLayout, plotlyFigureConfig);
+            } else {
+                $('#consumption-figure').empty();
+                $('#selected-days').append($('<p class="nocontent">').text('No se ha seleccionado ningún día'));
+            }
+        });
+    });
+</script>
+{% endblock %}

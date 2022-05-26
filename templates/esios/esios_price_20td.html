@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Precios PVPC</h1>
+
+    <p>Aquí se muestran los precios correspondientes a la tarifa PVPC publicados por REE (Red Eléctrica de España) y accesibles a través del <a href="https://api.esios.ree.es">API E-SIOS</a>.</p>
+
+    <p>Este es el indicador de E-SIOS que se utiliza para obtener los precios de PVPC y así hacer los cálculos de costes:</p>
+
+    {% include "parts/esios_indicator_card_10391.html" %}
+
+    <div class="ui grid">
+        <div class="row">
+            <table class="dataframe ui celled table">
+                <thead>
+                    <tr>
+                        <th>Año</th>
+                        <th>Datos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for year in esios_price_years %}
+                    <tr>
+                        <td>{{year}}</td>
+                        <td>
+                            <a class="download" href="/data/esios/price/esios_price_20td_{{year}}.json" data-filename="esios_price_20td_{{year}}.json">
+                                <i class="download icon"></i>
+                                Descargar
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="row">
+            <div class="column">
+                <h2>Evolución del precio</h2>
+            </div>
+        </div>
+        <div class="row">
+            <div class="column">
+                {% include "parts/rate_20td_header.html" %}
+
+                <div class="content">
+                    {{price_pvpc_20td_evol_fig | safe}}
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="column">
+                {% include "parts/rate_wk_header.html" %}
+
+                <div class="content">
+                    {{price_pvpc_wk_evol_fig | safe}}
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="column">
+                {% include "parts/rate_fix_header.html" %}
+
+                <div class="content">
+                    {{price_pvpc_fix_evol_fig | safe}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block custom_javascript %}
+<script type="text/javascript" charset="utf8">
+const price_rate_figure_ids = {{price_rate_figure_ids | safe}};
+
+let shapes = [];
+let annotations = [];
+
+function addHLine(company, value, row, period) {
+    let xref = `x${!row || row == 1 ? '' : row} domain`;
+    let yref = `y${!row || row == 1 ? '' : row}`;
+
+    shapes.push({
+        'line': {
+            'dash': 'dot'
+        },
+        'type': 'line',
+        'x0': 0,
+        'x1': 1,
+        'xref': xref,
+        'y0': value,
+        'y1': value,
+        'yref': yref
+    });
+
+    annotations.push({
+        'showarrow': false,
+        'text': `[${company}] ${period} Actual - ${value} €/kWh`,
+        'x': 1,
+        'xanchor': 'right',
+        'xref': xref,
+        'y': value,
+        'yanchor': 'top',
+        'yref': yref
+    });
+}
+
+$(document).ready(function() {
+    var isChromeBased = !!window.chrome;
+
+    if (isChromeBased) {
+        window.dispatchEvent(new Event('resize'));
+    }
+
+    let currentConsumptionOffer = offerdb.getCurrentConsumptionOffer();
+
+    if (currentConsumptionOffer) {
+        let figureId = price_rate_figure_ids[currentConsumptionOffer['rateType']];
+
+        if (figureId) {
+            currentConsumptionOffer['periods'].forEach((period, index) => {
+                let row = index + 1;
+                let value = period[1];
+                let periodName = period[0];
+
+                addHLine(currentConsumptionOffer['company'], value, row, periodName);
+            });
+
+            Plotly.relayout(figureId, {
+                'shapes': shapes,
+                'annotations': annotations
+            });
+        }
+    }
+
+    $('a.download').click(handler => {
+        handler.preventDefault();
+        $element = $(handler.currentTarget);
+        let fileUrl = $element.attr('href');
+        let fileName = $element.data('filename');
+
+        if ('Blob' in window) {
+            $.get(fileUrl).done(response => {
+                var blob = new Blob([JSON.stringify(response)], {type: 'application/json'});
+
+                if ('msSaveOrOpenBlob' in navigator) {
+                    navigator.msSaveOrOpenBlob(blob, fileName);
+                } else {
+                    var downloadLinkElement = document.createElement('a');
+                    downloadLinkElement.download = fileName;
+                    downloadLinkElement.innerHTML = 'Download File';
+
+                    if ('webkitURL' in window) {
+                        downloadLinkElement.href = window.webkitURL.createObjectURL(blob);
+                    } else {
+                        downloadLinkElement.href = window.URL.createObjectURL(blob);
+                    }
+
+                    downloadLinkElement.onclick = event => {
+                        document.body.removeChild(event.target);
+                    };
+
+                    downloadLinkElement.style.display = 'none';
+                    document.body.appendChild(downloadLinkElement);
+
+                    downloadLinkElement.click();
+                }
+            });
+        } else {
+            alert('Your browser does not support the HTML5 Blob.');
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="ui container">
+    <h1 class="ui header">Consumo de energía por periodos</h1>
+
+    <p>Se muestran datos de consumo de los últimos 12 meses para los cuales hay registro</p>
+
+    {% include "parts/rate_20td_header.html" %}
+
+    <div class="content">
+        {{rate_20td_m_periods_fig | safe}}
+
+        {{rate_20td_m_periods_pct_fig | safe}}
+    </div>
+
+    <div class="ui styled fluid accordion">
+        <div class="title">
+            <i class="dropdown icon"></i>
+            Datos consumo de energía por periodos para tarifa 2.0TD
+        </div>
+        <div class="content">
+            <table id="rate_20td_m_periods_table" class="dataframe ui celled table dt" dt-dataUrl="/data/consumption/rate_20td_m_periods.json">
+                <thead class="full-width">
+                    <tr>
+                        <th dt-type="month_year">Mes/Año</th>
+                        <th>Periodo</th>
+                        <th dt-className="dt-body-right">Consumo (kWh)</th>
+                        <th dt-className="dt-body-right">% Periodo</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+
+    {% include "parts/rate_wk_header.html" %}
+
+    <div class="content">
+        {{rate_wk_m_periods_fig | safe}}
+
+        {{rate_wk_m_periods_pct_fig | safe}}
+    </div>
+
+    <div class="ui styled fluid accordion">
+        <div class="title">
+            <i class="dropdown icon"></i>
+            Datos consumo de energía por periodos para tarifa fin de semana
+        </div>
+        <div class="content">
+            <table id="rate_wk_m_periods_table" class="dataframe ui celled table dt" dt-dataUrl="/data/consumption/rate_wk_m_periods.json">
+                <thead class="full-width">
+                    <tr>
+                        <th dt-type="month_year">Mes/Año</th>
+                        <th>Periodo</th>
+                        <th dt-className="dt-body-right">Consumo (kWh)</th>
+                        <th dt-className="dt-body-right">% Periodo</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+
+    {% include "parts/rate_fix_header.html" %}
+
+    <div class="content">
+        {{rate_fix_m_periods_fig | safe}}
+    </div>
+
+    <div class="ui styled fluid accordion">
+        <div class="title">
+            <i class="dropdown icon"></i>
+            Datos consumo de energía por periodos para tarifa precio fijo
+        </div>
+        <div class="content">
+            <table id="rate_fix_m_periods_table" class="dataframe ui celled table dt" dt-dataUrl="/data/consumption/rate_fix_m_periods.json">
+                <thead class="full-width">
+                    <tr>
+                        <th dt-type="month_year">Mes/Año</th>
+                        <th>Periodo</th>
+                        <th dt-className="dt-body-right">Consumo (kWh)</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

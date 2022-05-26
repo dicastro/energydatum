@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="ui container">
+    <h1 class="ui header">Consumo anual de energía</h1>
+
+    <div class="content">
+        {{consumption_y_fig | safe}}
+    </div>
+
+    <div class="ui styled fluid accordion">
+        <div class="title">
+            <i class="dropdown icon"></i>
+            Datos consumo anual de energía
+        </div>
+        <div class="content">
+            <table id="consumption_y" class="dataframe ui celled table dt" dt-dataUrl="/data/consumption/consumption_y.json">
+                <thead class="full-width">
+                    <tr>
+                        <th>Año</th>
+                        <th dt-className="dt-body-right">Consumo (kWh)</th>
+                        <th dt-className="dt-body-right">Nº Meses</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

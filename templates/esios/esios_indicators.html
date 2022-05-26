@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>E-SIOS Indicadores</h1>
+
+<div>
+    <table id="esios_indicators_table" class="dataframe ui celled table dt">
+        <thead>
+            <tr>
+                <th>ID Indicador</th>
+                <th>Nombre</th>
+                <th>Descripción</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for indicator in indicators %}
+            <tr>
+                <td>{{ indicator.id }}</td>
+                <td>{{ indicator.name }}</td>
+                <td>{{ indicator.description | safe }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

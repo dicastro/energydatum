@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="ui container">
+    <h1 class="ui header">Consumo diario de energía</h1>
+
+    <h3 class="ui header">Consumo diario medio</h3>
+
+    <div class="content">
+        {{consumption_dow_avg_fig | safe}}
+    </div>
+
+    <div class="ui styled fluid accordion">
+        <div class="title">
+            <i class="dropdown icon"></i>
+            Datos consumo de energía diario medio
+        </div>
+        <div class="content">
+            <table id="consumption_moy_evol_full_table" class="dataframe ui celled table dt" dt-dataUrl="/data/consumption/consumption_dow_avg.json">
+                <thead class="full-width">
+                    <tr>
+                        <th>Año</th>
+                        <th dt-type="month">Mes</th>
+                        <th dt-type="dow">Día de la semana</th>
+                        <th dt-className="dt-body-right">Consumo medio (kWh)</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+
+    <h3 class="ui header">Consumo diario acumulado</h3>
+
+    <div class="content">
+        {{consumption_dow_sum_fig | safe}}
+    </div>
+
+    <div class="ui styled fluid accordion">
+        <div class="title">
+            <i class="dropdown icon"></i>
+            Datos consumo de energía diario acumulado
+        </div>
+        <div class="content">
+            <table id="consumption_moy_evol_year_table" class="dataframe ui celled table dt" dt-dataUrl="/data/consumption/consumption_dow_sum.json">
+                <thead class="full-width">
+                    <tr>
+                        <th>Año</th>
+                        <th dt-type="month">Mes</th>
+                        <th dt-type="dow">Día de la semana</th>
+                        <th dt-className="dt-body-right">Consumo (kWh)</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

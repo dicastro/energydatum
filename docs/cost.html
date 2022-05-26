@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+    <title>Energy Datum</title>
+
+    <link rel="stylesheet" type="text/css" href="/assets/jqueryui/1.13.1/css/jquery-ui.min.css">
+    <link rel="stylesheet" type="text/css" href="/assets/fomanticui/2.8.8/css/semantic.min.css">
+    <link rel="stylesheet" type="text/css" href="/assets/datatables/1.11.5/css/dataTables.semanticui.min.css">
+    <link rel="stylesheet" type="text/css" href="/assets/css/style.css">
+</head>
+<body>
+<script type="text/javascript" charset="utf8" src="/assets/plotly/2.12.1/js/plotly.min.js"></script>
+<script type="text/javascript">
+    window.PlotlyConfig = {MathJaxConfig: 'local'};
+</script>
+
+<div class="ui borderless main menu">
+    <div class="ui text container">
+        <div class="header item">
+            <img class="logo" src="/assets/img/logo_40x40.png">
+            Energy Datum
+        </div>
+        <div class="ui floating dropdown button item">
+            <div class="text">Consumo</div>
+            <i class="dropdown icon"></i>
+            <div class="menu">
+                <a id="consumption_y_menu_item" class=" item" href="/consumption/consumption_y.html">Anual</a>
+                <a id="consumption_moy_menu_item" class=" item" href="/consumption/consumption_moy.html">Mensual</a>
+                <a id="consumption_dow_menu_item" class=" item" href="/consumption/consumption_dow.html">Día semana</a>
+                <a id="consumption_hod_menu_item" class=" item" href="/consumption/consumption_hod.html">Horario</a>
+                <a id="period_m_menu_item" class=" item" href="/consumption/period_m.html">Periodo</a>
+                <a id="consumption_dom_menu_item" class=" item" href="/consumption/consumption_dom.html">Diario</a>
+            </div>
+        </div>
+        <a id="cost_menu_item" class="active item" href="/cost.html">Coste</a>
+        <div class="ui floating dropdown button item">
+            <div class="text">Datos</div>
+            <i class="dropdown icon"></i>
+            <div class="menu">
+                <a id="price_pvpc_menu_item" class=" item" href="/esios/esios_price_20td.html">Precios PVPC</a>
+                <div class="divider"></div>
+                <a id="bank_days_menu_item" class=" item" href="/bank_days.html">Festivos</a>
+                <div class="divider"></div>
+                <a id="esios_indicators_menu_item" class=" item" href="/esios/esios_indicators.html">Indicadores E-SIOS</a>
+                <div class="divider"></div>
+                <a id="weather_menu_item" class=" item" href="/weather.html">Clima</a>
+            </div>
+        </div>
+        <div class="ui floating dropdown button item">
+            <div class="text">Autoconsumo</div>
+            <i class="dropdown icon"></i>
+            <div class="menu">
+                <a class="disabled item" href="#">proximamente ...</a>
+            </div>
+        </div>
+        <a id="configuration_menu_item" class="item right " href="/configuration.html">
+            <i class="cogs icon"></i>
+        </a>
+    </div>
+</div>
+
+<div class="ui container">
+    
+<div id="loading" class="ui active dimmer">
+    <div class="ui large text loader">Cargando ...</div>
+</div>
+
+<h1 class="ui header">Coste</h1>
+
+<p>Se muestran datos del coste de los últimos 11 meses para los cuales hay registro</p>
+
+<div class="content">
+    <div id="cost_figure" class="plotly-graph-div" style="height:100%; width:100%;"></div>
+</div>
+
+<div class="content">
+    <div id="cost_total_figure" class="plotly-graph-div" style="height:100%; width:100%;"></div>
+</div>
+
+</div>
+
+<div class="ui inverted vertical footer segment">
+    <div class="ui center aligned container">
+        <div class="ui stackable inverted divided grid">
+            <div class="three wide column">
+                <h4 class="ui inverted header">Consumo</h4>
+                <div class="ui inverted link list">
+                    <a class="item" href="/consumption/consumption_y.html">Anual</a>
+                    <a class="item" href="/consumption/consumption_moy.html">Mensual</a>
+                    <a class="item" href="/consumption/consumption_dow.html">Día semana</a>
+                    <a class="item" href="/consumption/consumption_hod.html">Horario</a>
+                    <a class="item" href="/consumption/period_m.html">Periodo</a>
+                    <a class="item" href="/consumption/consumption_dom.html">Diario</a>
+                </div>
+            </div>
+            <div class="three wide column">
+                <h4 class="ui inverted header">Datos</h4>
+                <div class="ui inverted link list">
+                    <a class="item" href="/esios/esios_price_20td.html">Precios PVPC</a>
+                    <a class="item" href="/bank_days.html">Festivos</a>
+                    <a class="item" href="/esios/esios_indicators.html">Indicadores E-SIOS</a>
+                    <a class="item" href="/weather.html">Clima</a>
+                </div>
+            </div>
+            <div class="three wide column">
+                <h4 class="ui inverted header">Autoconsumo</h4>
+                <div class="ui inverted link list">
+                    <a href="#" class="disabled item">Próximamente ...</a>
+                </div>
+            </div>
+            <div class="seven wide column">
+                <h4 class="ui inverted header">¿Quieres un sitio como este?</h4>
+                <div class="ui left aligned container">
+                    <p>Es muy fácil, únicamente tienes que seguir estos sencillos pasos:</p>
+                    <ol>
+                        <li>Haz un fork de <a href="https://github.com/dicastro/energydatum" target="_blank">Energy Datum</a></li>
+                        <li>Clona tu repo</li>
+                        <li>Añade las lecturas de tu contador en formato <i>csv</i></li>
+                        <li>Ejecuta el script <code>main.py</code></li>
+                        <li>Haz push de los cambios</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        <div class="ui inverted section divider"></div>
+        <img src="/assets/img/logo_40x40.png" class="ui centered mini image">
+        <div class="ui horizontal inverted small divided link list">
+            <a class="item" href="https://diegocastroviadero.com/#contact" target="_blank">Contáctame</a>
+            <p class="item">v1.0.0-alpha</p>
+            <p class="item">Generado el 26/05/2022 con datos entre 02/06/2020 y 30/04/2022</p>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" charset="utf8" src="/assets/jquery/3.6.0/js/jquery.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/assets/jqueryui/1.13.1/js/jquery-ui.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/assets/datatables/1.11.5/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/assets/datatables/1.11.5/js/dataTables.semanticui.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/assets/fomanticui/2.8.8/js/semantic.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/assets/dataframejs/1.4.3/js/dataframe.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/assets/js/menu.js"></script>
+<script type="text/javascript" charset="utf8" src="/assets/js/main.js"></script>
+<script type="text/javascript" charset="utf8" src="/assets/js/table.js"></script>
+<script type="text/javascript" charset="utf8" src="/assets/js/offer-db.js"></script>
+
+<script type="text/javascript" charset="utf-8">
+    window.PLOTLYENV=window.PLOTLYENV || {};
+
+    const COLOR_SEQ = ['#636efa', '#EF553B', '#00cc96', '#ab63fa', '#FFA15A', '#19d3f3', '#FF6692', '#B6E880', '#FF97FF', '#FECB52'];
+
+    let COLORS = {};
+
+    function getColor(title) {
+        let selectedColor = COLORS[title];
+
+        if (!selectedColor) {
+            selectedColor = COLOR_SEQ.shift();
+            COLORS[title] = selectedColor;
+        }
+
+        return selectedColor;
+    }
+
+    function get_cost_figure_data(title, values) {
+        return {
+            'hovertemplate': `Oferta=${title}<br>Mes/A\u00f1o=%{x}<br>Coste (\u20ac)=%{y}<extra></extra>`,
+            'legendgroup': title,
+            'line': {
+                'color': getColor(title),
+                'dash': 'solid'
+            },
+            'marker': {
+                'symbol': 'circle'
+            },
+            'mode': 'lines',
+            'name': title,
+            'orientation': 'v',
+            'showlegend': true,
+            'x': ['06-2021', '07-2021', '08-2021', '09-2021', '10-2021', '11-2021', '12-2021', '01-2022', '02-2022', '03-2022', '04-2022'],
+            'xaxis': 'x',
+            'y': values,
+            'yaxis': 'y',
+            'type': 'scatter'
+        }
+    }
+
+    function get_cost_total_figure_data(title, values) {
+        return {
+            'alignmentgroup': 'True',
+            'hovertemplate': 'Oferta=%{x}<br>Coste (\u20ac)=%{y}<extra></extra>',
+            'legendgroup': '',
+            'marker': {
+                'color': getColor(title),
+                'pattern': {'shape':''}
+            },
+            'name': '',
+            'offsetgroup': '',
+            'orientation': 'v',
+            'showlegend': false,
+            'textposition': 'auto',
+            'x': [title],
+            'xaxis': 'x',
+            'y': [values.reduce((a, b) => a + b, 0)],
+            'yaxis': 'y',
+            'type': 'bar'
+        };
+    }
+
+    const plotly_figure_config = {"responsive": true};
+
+    const plotly_figure_layout_template = {
+        "template": {
+            "data": {
+                "histogram2dcontour": [{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],
+                "choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],
+                "histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],
+                "heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],
+                "heatmapgl":[{"type":"heatmapgl","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],
+                "contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],
+                "contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],
+                "surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],
+                "mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],
+                "scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],
+                "parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],
+                "scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],
+                "bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],
+                "scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],
+                "scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],
+                "histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],
+                "scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],
+                "scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],
+                "scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],
+                "scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],
+                "scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],
+                "carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],
+                "table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],
+                "barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],
+                "pie":[{"automargin":true,"type":"pie"}]
+            },
+            "layout": {
+                "autotypenumbers":"strict",
+                "colorway": COLOR_SEQ,
+                "font":{"color":"#2a3f5f"},
+                "hovermode":"closest",
+                "hoverlabel":{"align":"left"},
+                "paper_bgcolor":"white",
+                "plot_bgcolor":"#E5ECF6",
+                "polar": {
+                    "bgcolor":"#E5ECF6",
+                    "angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},
+                    "radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}
+                },
+                "ternary": {
+                    "bgcolor":"#E5ECF6",
+                    "aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},
+                    "baxis":{"gridcolor":"white","linecolor":"white","ticks":""},
+                    "caxis":{"gridcolor":"white","linecolor":"white","ticks":""}
+                },
+                "coloraxis": {
+                    "colorbar":{"outlinewidth":0,"ticks":""}
+                },
+                "colorscale": {
+                    "sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],
+                    "sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],
+                    "diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]
+                },
+                "xaxis": {
+                    "gridcolor":"white",
+                    "linecolor":"white",
+                    "ticks":"",
+                    "title":{"standoff":15},
+                    "zerolinecolor":"white",
+                    "automargin":true,
+                    "zerolinewidth":2
+                },
+                "yaxis": {
+                    "gridcolor":"white",
+                    "linecolor":"white",
+                    "ticks":"",
+                    "title":{"standoff":15},
+                    "zerolinecolor":"white",
+                    "automargin":true,
+                    "zerolinewidth":2
+                },
+                "scene": {
+                    "xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},
+                    "yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},
+                    "zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}
+                },
+                "shapedefaults": {
+                    "line":{"color":"#2a3f5f"}
+                },
+                "annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},
+                "geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},
+                "title":{"x":0.05},
+                "mapbox":{"style":"light"}
+            }
+        },
+        "xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{},"tickangle":90},
+        "yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"Coste (\u20ac)"}},
+        "legend":{"tracegroupgap":0},
+        "margin":{"t":60}
+    };
+
+    $(document).ready(function() {
+        const offers = [{'title': 'PVPC', 'values': [27.97204, 30.46901, 28.80702, 46.497, 48.95052, 59.9488, 99.19179, 96.19366, 82.4108, 133.06875, 62.54526]}];
+
+        var DataFrame = dfjs.DataFrame;
+
+        var period_requests = [];
+
+        var periods = {};
+
+        offerdb.getConsumptionOfferRateTypes().forEach(rateType => {
+            request = $.get(`/data/consumption/rate_${rateType}_m_periods.json`).done(function(response) {
+                periods[rateType] = response;
+            });
+            period_requests.push(request);
+        });
+
+        $.when.apply(window, period_requests).done(function() {
+            offerdb.getAllConsumptionOffers().forEach(offer => {
+                const df_period_price = new DataFrame(offer.periods, ['period', 'period_price']);
+
+                const periods_data = periods[offer.rateType];
+
+                let df_period_consumption = new DataFrame(periods_data.data, periods_data.columns);
+                df_period_consumption = df_period_consumption.map(row => row.set('month', parseInt(row.get('month_year').split('-')[0])).set('year', parseInt(row.get('month_year').split('-')[1])));
+                df_period_consumption = df_period_consumption.join(df_period_price, ['period']);
+                df_period_consumption = df_period_consumption.map(row => row.set('period_cost', row.get('period_kwh') * row.get('period_price')));
+
+                values = df_period_consumption.groupBy('year', 'month').aggregate(group => group.stat.sum('period_cost')).rename('aggregation', 'month_cost').select('month_cost').toDict()['month_cost'];
+
+                offers.push({
+                    'title': `${offer.company} - ${offer.rateType} - ${offer.date}`,
+                    'values': values
+                });
+            });
+
+            var cost_figure_data = [];
+            var cost_total_figure_data = [];
+
+            offers.forEach(offer => {
+                cost_figure_data.push(get_cost_figure_data(offer.title, offer.values));
+                cost_total_figure_data.push(get_cost_total_figure_data(offer.title, offer.values));
+            });
+
+            // Cost figure
+            var cost_figure_layout = Object.assign({}, plotly_figure_layout_template);
+            cost_figure_layout.legend['title'] = { 'text': 'Oferta'}
+
+            Plotly.newPlot("cost_figure", cost_figure_data, cost_figure_layout, plotly_figure_config);
+
+            // Cost total figure
+            var cost_total_figure_layout = Object.assign({}, plotly_figure_layout_template);
+            cost_total_figure_layout['barmode'] = 'relative';
+
+            Plotly.newPlot("cost_total_figure", cost_total_figure_data.sort((a, b) => a.y[0] - b.y[0]), cost_total_figure_layout, plotly_figure_config);
+
+            $('#loading').remove();
+        });
+    });
+</script>
+
+</body>
+</html>
