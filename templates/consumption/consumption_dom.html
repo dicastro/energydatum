@@ -282,7 +282,7 @@
                     let monthConsumptionKey = `${rawYear}${rawMonth}`;
 
                     if (!(monthConsumptionKey in monthConsumptionCache)) {
-                        $.get(`/data/consumption/raw/moy/consumption_raw_${rawYear}${rawMonth}.json`).done(response => {
+                        $.get(`{{contextpath}}/data/consumption/raw/moy/consumption_raw_${rawYear}${rawMonth}.json`).done(response => {
                             let dfMonthConsumption = new DataFrame(response.data, response.columns);
 
                             monthConsumptionCache[monthConsumptionKey] = dfMonthConsumption;

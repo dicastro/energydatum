@@ -8,13 +8,13 @@
 
     <title>Energy Datum</title>
 
-    <link rel="stylesheet" type="text/css" href="/assets/jqueryui/1.13.1/css/jquery-ui.min.css">
-    <link rel="stylesheet" type="text/css" href="/assets/fomanticui/2.8.8/css/semantic.min.css">
-    <link rel="stylesheet" type="text/css" href="/assets/datatables/1.11.5/css/dataTables.semanticui.min.css">
-    <link rel="stylesheet" type="text/css" href="/assets/css/style.css">
+    <link rel="stylesheet" type="text/css" href="/energydatum/assets/jqueryui/1.13.1/css/jquery-ui.min.css">
+    <link rel="stylesheet" type="text/css" href="/energydatum/assets/fomanticui/2.8.8/css/semantic.min.css">
+    <link rel="stylesheet" type="text/css" href="/energydatum/assets/datatables/1.11.5/css/dataTables.semanticui.min.css">
+    <link rel="stylesheet" type="text/css" href="/energydatum/assets/css/style.css">
 </head>
 <body>
-<script type="text/javascript" charset="utf8" src="/assets/plotly/2.12.1/js/plotly.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/energydatum/assets/plotly/2.12.1/js/plotly.min.js"></script>
 <script type="text/javascript">
     window.PlotlyConfig = {MathJaxConfig: 'local'};
 </script>
@@ -22,33 +22,33 @@
 <div class="ui borderless main menu">
     <div class="ui text container">
         <div class="header item">
-            <img class="logo" src="/assets/img/logo_40x40.png">
+            <img class="logo" src="/energydatum/assets/img/logo_40x40.png">
             Energy Datum
         </div>
         <div class="ui floating dropdown button item">
             <div class="text">Consumo</div>
             <i class="dropdown icon"></i>
             <div class="menu">
-                <a id="consumption_y_menu_item" class="active item" href="/consumption/consumption_y.html">Anual</a>
-                <a id="consumption_moy_menu_item" class=" item" href="/consumption/consumption_moy.html">Mensual</a>
-                <a id="consumption_dow_menu_item" class=" item" href="/consumption/consumption_dow.html">Día semana</a>
-                <a id="consumption_hod_menu_item" class=" item" href="/consumption/consumption_hod.html">Horario</a>
-                <a id="period_m_menu_item" class=" item" href="/consumption/period_m.html">Periodo</a>
-                <a id="consumption_dom_menu_item" class=" item" href="/consumption/consumption_dom.html">Diario</a>
+                <a id="consumption_y_menu_item" class="active item" href="/energydatum/consumption/consumption_y.html">Anual</a>
+                <a id="consumption_moy_menu_item" class=" item" href="/energydatum/consumption/consumption_moy.html">Mensual</a>
+                <a id="consumption_dow_menu_item" class=" item" href="/energydatum/consumption/consumption_dow.html">Día semana</a>
+                <a id="consumption_hod_menu_item" class=" item" href="/energydatum/consumption/consumption_hod.html">Horario</a>
+                <a id="period_m_menu_item" class=" item" href="/energydatum/consumption/period_m.html">Periodo</a>
+                <a id="consumption_dom_menu_item" class=" item" href="/energydatum/consumption/consumption_dom.html">Diario</a>
             </div>
         </div>
-        <a id="cost_menu_item" class=" item" href="/cost.html">Coste</a>
+        <a id="cost_menu_item" class=" item" href="/energydatum/cost.html">Coste</a>
         <div class="ui floating dropdown button item">
             <div class="text">Datos</div>
             <i class="dropdown icon"></i>
             <div class="menu">
-                <a id="price_pvpc_menu_item" class=" item" href="/esios/esios_price_20td.html">Precios PVPC</a>
+                <a id="price_pvpc_menu_item" class=" item" href="/energydatum/esios/esios_price_20td.html">Precios PVPC</a>
                 <div class="divider"></div>
-                <a id="bank_days_menu_item" class=" item" href="/bank_days.html">Festivos</a>
+                <a id="bank_days_menu_item" class=" item" href="/energydatum/bank_days.html">Festivos</a>
                 <div class="divider"></div>
-                <a id="esios_indicators_menu_item" class=" item" href="/esios/esios_indicators.html">Indicadores E-SIOS</a>
+                <a id="esios_indicators_menu_item" class=" item" href="/energydatum/esios/esios_indicators.html">Indicadores E-SIOS</a>
                 <div class="divider"></div>
-                <a id="weather_menu_item" class=" item" href="/weather.html">Clima</a>
+                <a id="weather_menu_item" class=" item" href="/energydatum/weather.html">Clima</a>
             </div>
         </div>
         <div class="ui floating dropdown button item">
@@ -58,7 +58,7 @@
                 <a class="disabled item" href="#">proximamente ...</a>
             </div>
         </div>
-        <a id="configuration_menu_item" class="item right " href="/configuration.html">
+        <a id="configuration_menu_item" class="item right " href="/energydatum/configuration.html">
             <i class="cogs icon"></i>
         </a>
     </div>
@@ -79,7 +79,7 @@
             Datos consumo anual de energía
         </div>
         <div class="content">
-            <table id="consumption_y" class="dataframe ui celled table dt" dt-dataUrl="/data/consumption/consumption_y.json">
+            <table id="consumption_y" class="dataframe ui celled table dt" dt-dataUrl="/energydatum/data/consumption/consumption_y.json">
                 <thead class="full-width">
                     <tr>
                         <th>Año</th>
@@ -100,21 +100,21 @@
             <div class="three wide column">
                 <h4 class="ui inverted header">Consumo</h4>
                 <div class="ui inverted link list">
-                    <a class="item" href="/consumption/consumption_y.html">Anual</a>
-                    <a class="item" href="/consumption/consumption_moy.html">Mensual</a>
-                    <a class="item" href="/consumption/consumption_dow.html">Día semana</a>
-                    <a class="item" href="/consumption/consumption_hod.html">Horario</a>
-                    <a class="item" href="/consumption/period_m.html">Periodo</a>
-                    <a class="item" href="/consumption/consumption_dom.html">Diario</a>
+                    <a class="item" href="/energydatum/consumption/consumption_y.html">Anual</a>
+                    <a class="item" href="/energydatum/consumption/consumption_moy.html">Mensual</a>
+                    <a class="item" href="/energydatum/consumption/consumption_dow.html">Día semana</a>
+                    <a class="item" href="/energydatum/consumption/consumption_hod.html">Horario</a>
+                    <a class="item" href="/energydatum/consumption/period_m.html">Periodo</a>
+                    <a class="item" href="/energydatum/consumption/consumption_dom.html">Diario</a>
                 </div>
             </div>
             <div class="three wide column">
                 <h4 class="ui inverted header">Datos</h4>
                 <div class="ui inverted link list">
-                    <a class="item" href="/esios/esios_price_20td.html">Precios PVPC</a>
-                    <a class="item" href="/bank_days.html">Festivos</a>
-                    <a class="item" href="/esios/esios_indicators.html">Indicadores E-SIOS</a>
-                    <a class="item" href="/weather.html">Clima</a>
+                    <a class="item" href="/energydatum/esios/esios_price_20td.html">Precios PVPC</a>
+                    <a class="item" href="/energydatum/bank_days.html">Festivos</a>
+                    <a class="item" href="/energydatum/esios/esios_indicators.html">Indicadores E-SIOS</a>
+                    <a class="item" href="/energydatum/weather.html">Clima</a>
                 </div>
             </div>
             <div class="three wide column">
@@ -147,16 +147,16 @@
     </div>
 </div>
 
-<script type="text/javascript" charset="utf8" src="/assets/jquery/3.6.0/js/jquery.min.js"></script>
-<script type="text/javascript" charset="utf8" src="/assets/jqueryui/1.13.1/js/jquery-ui.min.js"></script>
-<script type="text/javascript" charset="utf8" src="/assets/datatables/1.11.5/js/jquery.dataTables.min.js"></script>
-<script type="text/javascript" charset="utf8" src="/assets/datatables/1.11.5/js/dataTables.semanticui.min.js"></script>
-<script type="text/javascript" charset="utf8" src="/assets/fomanticui/2.8.8/js/semantic.min.js"></script>
-<script type="text/javascript" charset="utf8" src="/assets/dataframejs/1.4.3/js/dataframe.min.js"></script>
-<script type="text/javascript" charset="utf8" src="/assets/js/menu.js"></script>
-<script type="text/javascript" charset="utf8" src="/assets/js/main.js"></script>
-<script type="text/javascript" charset="utf8" src="/assets/js/table.js"></script>
-<script type="text/javascript" charset="utf8" src="/assets/js/offer-db.js"></script>
+<script type="text/javascript" charset="utf8" src="/energydatum/assets/jquery/3.6.0/js/jquery.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/energydatum/assets/jqueryui/1.13.1/js/jquery-ui.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/energydatum/assets/datatables/1.11.5/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/energydatum/assets/datatables/1.11.5/js/dataTables.semanticui.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/energydatum/assets/fomanticui/2.8.8/js/semantic.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/energydatum/assets/dataframejs/1.4.3/js/dataframe.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/menu.js"></script>
+<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/main.js"></script>
+<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/table.js"></script>
+<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/offer-db.js"></script>
 
 </body>
 </html>

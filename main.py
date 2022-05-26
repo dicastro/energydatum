@@ -390,6 +390,7 @@ df_to_json(consumption_y, os.path.join('docs', 'data', 'consumption', 'consumpti
 
 jinja_env.get_template('consumption/consumption_y.html')\
     .stream(
+        contextpath=constants.CONTEXT_PATH,
         today=today.strftime('%d/%m/%Y'),
         date_min=consumption_date_min.strftime('%d/%m/%Y'),
         date_max=consumption_date_max.strftime('%d/%m/%Y'),
@@ -466,6 +467,7 @@ df_to_json(consumption_moy_evol_full, os.path.join('docs', 'data', 'consumption'
 
 jinja_env.get_template('consumption/consumption_moy.html')\
     .stream(
+        contextpath=constants.CONTEXT_PATH,
         today=today.strftime('%d/%m/%Y'),
         date_min=consumption_date_min.strftime('%d/%m/%Y'),
         date_max=consumption_date_max.strftime('%d/%m/%Y'),
@@ -563,6 +565,7 @@ df_to_json(consumption_dow_avg.select('year', 'month', 'dow', 'dow_avg_kwh'), os
 
 jinja_env.get_template('consumption/consumption_dow.html')\
     .stream(
+        contextpath=constants.CONTEXT_PATH,
         today=today.strftime('%d/%m/%Y'),
         date_min=consumption_date_min.strftime('%d/%m/%Y'),
         date_max=consumption_date_max.strftime('%d/%m/%Y'),
@@ -646,6 +649,7 @@ df_to_json(consumption_hod_sum.select('year', 'month', 'hour', 'hod_sum_kwh'), o
 
 jinja_env.get_template('consumption/consumption_hod.html')\
     .stream(
+        contextpath=constants.CONTEXT_PATH,
         today=today.strftime('%d/%m/%Y'),
         date_min=consumption_date_min.strftime('%d/%m/%Y'),
         date_max=consumption_date_max.strftime('%d/%m/%Y'),
@@ -819,6 +823,7 @@ df_to_json(rate_fix_m_periods, os.path.join('docs', 'data', 'consumption', 'rate
 
 jinja_env.get_template('consumption/period_m.html')\
     .stream(
+        contextpath=constants.CONTEXT_PATH,
         today=today.strftime('%d/%m/%Y'),
         date_min=consumption_date_min.strftime('%d/%m/%Y'),
         date_max=consumption_date_max.strftime('%d/%m/%Y'),
@@ -845,6 +850,7 @@ print('DEBUG: day of month consumption')
 
 jinja_env.get_template('consumption/consumption_dom.html')\
     .stream(
+        contextpath=constants.CONTEXT_PATH,
         today=today.strftime('%d/%m/%Y'),
         date_min=consumption_date_min.strftime('%d/%m/%Y'),
         date_max=consumption_date_max.strftime('%d/%m/%Y'),
@@ -882,6 +888,7 @@ month_year_list = [dt_i.strftime('%m-%Y') for dt_i in rrule.rrule(rrule.MONTHLY,
 
 jinja_env.get_template('cost.html')\
     .stream(
+        contextpath=constants.CONTEXT_PATH,
         today=today.strftime('%d/%m/%Y'),
         date_min=consumption_date_min.strftime('%d/%m/%Y'),
         date_max=consumption_date_max.strftime('%d/%m/%Y'),
@@ -1064,6 +1071,7 @@ esios_price_years = list(price_sdf.select(col('year')).distinct().orderBy('year'
 
 jinja_env.get_template('esios/esios_price_20td.html')\
     .stream(
+        contextpath=constants.CONTEXT_PATH,
         today=today.strftime('%d/%m/%Y'),
         date_min=consumption_date_min.strftime('%d/%m/%Y'),
         date_max=consumption_date_max.strftime('%d/%m/%Y'),
@@ -1080,6 +1088,7 @@ print('DEBUG: bank days')
 
 jinja_env.get_template('bank_days.html')\
     .stream(
+        contextpath=constants.CONTEXT_PATH,
         today=today.strftime('%d/%m/%Y'),
         date_min=consumption_date_min.strftime('%d/%m/%Y'),
         date_max=consumption_date_max.strftime('%d/%m/%Y'),
@@ -1094,6 +1103,7 @@ print('DEBUG: weather')
 
 jinja_env.get_template('weather.html')\
     .stream(
+        contextpath=constants.CONTEXT_PATH,
         today=today.strftime('%d/%m/%Y'),
         date_min=consumption_date_min.strftime('%d/%m/%Y'),
         date_max=consumption_date_max.strftime('%d/%m/%Y'),

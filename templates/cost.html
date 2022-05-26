@@ -187,7 +187,7 @@
         var periods = {};
 
         offerdb.getConsumptionOfferRateTypes().forEach(rateType => {
-            request = $.get(`/data/consumption/rate_${rateType}_m_periods.json`).done(function(response) {
+            request = $.get(`{{contextpath}}/data/consumption/rate_${rateType}_m_periods.json`).done(function(response) {
                 periods[rateType] = response;
             });
             period_requests.push(request);

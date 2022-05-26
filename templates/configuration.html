@@ -42,6 +42,21 @@
 <div class="ui blue button offer-add" data-rate-type="fix">
     <i class="plus icon"></i>Añadir
 </div>
+
+<div class="ui divider"></div>
+
+<form class="ui form">
+    <input type="file" id="import-file" accept="*.json" style="display:none">
+
+    <button id="import-button" class="ui right floated labeled icon yellow button" type="button">
+        <i class="upload icon"></i>
+        Importar
+    </button>
+    <button id="export-button" class="ui right floated labeled icon green button"  type="button" data-filename="configuration.json">
+        <i class="download icon"></i>
+        Exportar
+    </button>
+</form>
 {% endblock %}
 
 {% block custom_javascript %}
@@ -60,7 +75,7 @@
     }
 
     function insertNewRow(rateType) {
-        $.get(`/assets/html/rate_${rateType}_add_row_template.html?ts=${getTimestamp()}`).done(data => {
+        $.get(`{{contextpath}}/assets/html/rate_${rateType}_add_row_template.html?ts=${getTimestamp()}`).done(data => {
             $data = $(data)
 
             $data.find('.calendar-comp').calendar({
@@ -96,7 +111,7 @@
     }
 
     function addRow(offer) {
-        $.get(`/assets/html/rate_${offer.rateType}_view_row_template.html?ts=${getTimestamp()}`).done(data => {
+        $.get(`{{contextpath}}/assets/html/rate_${offer.rateType}_view_row_template.html?ts=${getTimestamp()}`).done(data => {
             $data = $(data)
             $data.attr('id', offer.id);
             $data.find('input[name="company"]').val(offer.company);
