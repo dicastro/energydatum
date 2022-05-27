@@ -906,6 +906,10 @@ print('DEBUG: configuration')
 
 jinja_env.get_template('configuration.html')\
     .stream(
+        contextpath=constants.CONTEXT_PATH,
+        today=today.strftime('%d/%m/%Y'),
+        date_min=consumption_date_min.strftime('%d/%m/%Y'),
+        date_max=consumption_date_max.strftime('%d/%m/%Y'),
         configuration_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
         table_classes=TABLE_CLASSES,
         rate_20td_info_series=rate_20td_info.get_series(),

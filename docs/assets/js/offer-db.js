@@ -11,8 +11,13 @@ offerdb = {
         return (4294967296 * (2097151 & h2) + (h1>>>0)).toString().padStart(16, '0');
     },
 
+    _isId: function (id) {
+        return id.match(/consumption_offer_\d+/);
+    },
+
     getConsumptionOfferIds: function () {
-        return Object.keys(localStorage).filter(key => key.match(/consumption_offer_\d+/));
+        that = this;
+        return Object.keys(localStorage).filter(key => that._isId(key));
     },
 
     saveConsumptionOffer: function (company, date, rateType, periods, dto) {
@@ -107,10 +112,11 @@ offerdb = {
     },
 
     load: function (data) {
+        that = this;
         this.deleteAllConsumptionOffers();
 
         Object.keys(data).forEach(key => {
-            if (key !== 'consumption_offer_current') {
+            if (that._isId(key)) {
                 this.saveConsumptionOffer(data[key].company, data[key].date, data[key].rateType, data[key].rawPeriods, data[key].dto);
             }
         });

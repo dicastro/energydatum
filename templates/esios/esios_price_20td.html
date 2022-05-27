@@ -1,70 +1,61 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Precios PVPC</h1>
+<h1>Precios PVPC</h1>
 
-    <p>Aquí se muestran los precios correspondientes a la tarifa PVPC publicados por REE (Red Eléctrica de España) y accesibles a través del <a href="https://api.esios.ree.es">API E-SIOS</a>.</p>
+<p>Aquí se muestran los precios correspondientes a la tarifa PVPC publicados por REE (Red Eléctrica de España) y accesibles a través del <a href="https://api.esios.ree.es">API E-SIOS</a>.</p>
 
-    <p>Este es el indicador de E-SIOS que se utiliza para obtener los precios de PVPC y así hacer los cálculos de costes:</p>
+<p>Este es el indicador de E-SIOS que se utiliza para obtener los precios de PVPC y así hacer los cálculos de costes:</p>
 
-    {% include "parts/esios_indicator_card_10391.html" %}
+{% include "parts/esios_indicator_card_10391.html" %}
 
-    <div class="ui grid">
-        <div class="row">
-            <table class="dataframe ui celled table">
-                <thead>
-                    <tr>
-                        <th>Año</th>
-                        <th>Datos</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for year in esios_price_years %}
-                    <tr>
-                        <td>{{year}}</td>
-                        <td>
-                            <a class="download" href="{{contextpath}}/data/esios/price/esios_price_20td_{{year}}.json" data-filename="esios_price_20td_{{year}}.json">
-                                <i class="download icon"></i>
-                                Descargar
-                            </a>
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <div class="row">
-            <div class="column">
-                <h2>Evolución del precio</h2>
-            </div>
-        </div>
-        <div class="row">
-            <div class="column">
-                {% include "parts/rate_20td_header.html" %}
+<div class="ui padded grid">
+    <div class="row">
+        <table class="dataframe ui celled table">
+            <thead>
+                <tr>
+                    <th>Año</th>
+                    <th>Datos</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for year in esios_price_years %}
+                <tr>
+                    <td>{{year}}</td>
+                    <td>
+                        <a class="download" href="{{contextpath}}/data/esios/price/esios_price_20td_{{year}}.json" data-filename="esios_price_20td_{{year}}.json">
+                            <i class="download icon"></i>
+                            Descargar
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 
-                <div class="content">
-                    {{price_pvpc_20td_evol_fig | safe}}
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="column">
-                {% include "parts/rate_wk_header.html" %}
+<div class="ui container">
+    <h2>Evolución del precio</h2>
 
-                <div class="content">
-                    {{price_pvpc_wk_evol_fig | safe}}
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="column">
-                {% include "parts/rate_fix_header.html" %}
+    {% include "parts/rate_20td_header.html" %}
 
-                <div class="content">
-                    {{price_pvpc_fix_evol_fig | safe}}
-                </div>
-            </div>
-        </div>
+    <div class="content">
+        {{price_pvpc_20td_evol_fig | safe}}
+    </div>
+</div>
+<div class="ui container">
+    {% include "parts/rate_wk_header.html" %}
+
+    <div class="content">
+        {{price_pvpc_wk_evol_fig | safe}}
+    </div>
+</div>
+<div class="ui container">
+    {% include "parts/rate_fix_header.html" %}
+
+    <div class="content">
+        {{price_pvpc_fix_evol_fig | safe}}
     </div>
 </div>
 {% endblock %}
@@ -106,12 +97,6 @@ function addHLine(company, value, row, period) {
 }
 
 $(document).ready(function() {
-    var isChromeBased = !!window.chrome;
-
-    if (isChromeBased) {
-        window.dispatchEvent(new Event('resize'));
-    }
-
     let currentConsumptionOffer = offerdb.getCurrentConsumptionOffer();
 
     if (currentConsumptionOffer) {

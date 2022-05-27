@@ -1,12 +1,5 @@
 # TODO
 
-core.autocrlf=input
-user.name=Diego Castro
-user.email=diegocastroviadero19@gmail.com
-
-
-- publicar en github
-
 - añadir filtro por columnas a las tablas
 - registrarse en Datadis y probar que funciona
   - es un servicio transversal a todas las distribuidoras eléctricas que permite recuperar el consumo eléctrico (de esta forma no habría que descargarlo manualmente)

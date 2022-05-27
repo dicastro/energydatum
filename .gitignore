@@ -278,4 +278,4 @@ cython_debug/
 # End of https://www.toptal.com/developers/gitignore/api/pycharm+all,visualstudiocode,python
 
 # Custom
-import/
+import/**/*.csv

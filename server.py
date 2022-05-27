@@ -5,6 +5,7 @@ import constants
 
 PORT = 8080
 
+
 class FakeRedirect(SimpleHTTPRequestHandler):
     def __init__(self, *args):
         super().__init__(*args, directory='./docs')
@@ -21,5 +22,8 @@ class FakeRedirect(SimpleHTTPRequestHandler):
             super().do_GET()
 
 
-print('Starting server on port 8080 ...')
-TCPServer(('', PORT), FakeRedirect).serve_forever()
+try:
+    print('Starting server on port 8080 ...')
+    TCPServer(('', PORT), FakeRedirect).serve_forever()
+except KeyboardInterrupt:
+    print('Stopping server ...')
