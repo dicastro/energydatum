@@ -9,7 +9,9 @@ El propósito inicial del proyecto era poder responder, desde un punto de vista 
 - ¿Me interesa poner paneles solares en mi casa?
 - ¿Cuánto tiempo voy a tardar en amortizar la inversión?
 
-En el camino me han ido surgiendo otro tipo de preguntas que también consideré interesante responder:
+Ya había utilizado algún simulador online, pero no me fiaba de los resultados.
+
+Además, en el camino me han ido surgiendo otro tipo de preguntas que también he considerado interesante responder:
 
 - ¿Tengo la tarifa que mejor se adapta a mis hábitos de consumo?
 - ¿Me interesa más una tarifa de 3 tramos, de fin de semana o de precio fijo?
@@ -21,19 +23,19 @@ En el camino me han ido surgiendo otro tipo de preguntas que también consideré
 
 Actualmente el proyecto se encuentra en versión *alpha* (`1.0.0-alpha1`). No se responde a la pregunta que dió origen al proyecto, pero sí al resto.
 
-Si te interesaría tener respuesta a alguna de estas preguntas, [¡Anímate!](#me-gusta-qué-hago-para-tenerlo)
+Si te interesa tener respuesta a alguna de estas preguntas, [¡Anímate!](#me-gusta-qué-hago-para-tenerlo)
 
 ### Contexto de desarrollo
 
-Para los curiosos que echen un ojo al código, he de hacer unas explicaciones sobre el contexto en el que he desarrollado del proyecto. Este proyecto ha sido desarrollado casi íntegramente durante mi permiso de paternidad, mientras estaba yo solo al cargo de mi hija, aprovechando sus siestas. Las siestas de hija conmigo siempre son en la mochila de porteo, y casi siempre con una mano sujetando su cabeza. Así que échale imaginación: de pie (¡Bendito *standing desk*!), cargando con más de 6kg, balanceándome contínuamente (normalmente tarareando algo) y sólo con una mano disponible para escribir.
+Para los curiosos que echen un ojo al código, he de hacer unas explicaciones sobre el contexto en el que he desarrollado del proyecto. Este proyecto ha sido desarrollado casi íntegramente durante mi permiso de paternidad, mientras estaba yo solo al cargo de mi hija, aprovechando sus siestas. Las siestas de hija conmigo, siempre son en la mochila de porteo, y casi siempre con una mano sujetando su cabeza. Así que échale imaginación: de pie (¡Bendito *standing desk*!), cargando con más de 6kg, balanceándome contínuamente (y normalmente tarareando algo) y sólo con una mano disponible para escribir.
 
-Soy consciente de que el código no es muy bonito de ver, no es nada consistente, hay duplicidades, etc. He primado que sea funcional lo antes posible (¿Recuerdas la pregunta que quiero responder? No quiero que pase de este verano para tomar una decisión). Más adelante, si hay tiempo y ganas se puede refactorizar. O mejor aún, [¡Hazme una PR con tus mejoras!](https://github.com/dicastro/energydatum/pulls) 
+Soy consciente de que el código no es muy bonito de ver, no es nada consistente, hay duplicidades, etc. He primado que sea funcional lo antes posible (¿Recuerdas la pregunta que quiero responder? No quiero que pase de este verano para tomar una decisión). Más adelante, si hay tiempo y ganas, se puede refactorizar. O mejor aún, [¡Hazme una PR con tus mejoras!](https://github.com/dicastro/energydatum/pulls) 
 
 Dicho esto, espero que seas algo más considerado antes de emitir un juicio :wink:.
 
 ### Funcionamiento
 
-Una vez descargado y configurado el proyecto ([ver instrucciones aquí](#me-gusta-qué-hago-para-tenerlo)), el funcionamiento es sencillo: te descargas  de tu distribuidora eléctrica las lecturas del contador, ejecutar un script python, y subir los cambios a GitHub. ¡Y ya está! Gracias a *GitHub Pages* tendrás tu sitio web accesible en `https://<TU_USUARIO_GITHUB>.github.io/energydatum/`. 
+Una vez descargado y configurado el proyecto ([ver instrucciones aquí](#me-gusta-qué-hago-para-tenerlo)), el funcionamiento es sencillo: te descargas  de tu distribuidora eléctrica las lecturas del contador, ejecutas un script, y subes los cambios a GitHub. ¡Y ya está! Gracias a *GitHub Pages* tendrás tu sitio web accesible en `https://<TU_USUARIO_GITHUB>.github.io/energydatum/`. 
 
 He intentado complicarme lo menos posible con la tecnología para que sea fácil de usar y desplegar.
 
@@ -47,11 +49,11 @@ Aún siendo una cantidad reducida de datos, he decidido utilizar [PySpark](https
 
 Para la representación de los datos utilizo [Plotly](https://plotly.com), que es una librería python de visualización de datos que permite generar gráficos interactivos de forma muy sencilla y exportarlos en html.
 
-Para la renderización del contenido he optado por html, usando [Fomantic UI](https://fomantic-ui.com) para darle una apariencia algo *"resultona"*. Desconocía fomantic ui, es un fork de *semantic ui*, y lo descubrí gracias a [DataTables](https://datatables.net/manual/index), una librería javascript para la visualización de tablas. He utilizado [Jinja](https://palletsprojects.com/p/jinja), otra librería python, como motor de templates html y así poder tener una plantilla base con la estructura común a todas las páginas del sitio.
+Para la renderización del contenido he optado por html, usando [Fomantic UI](https://fomantic-ui.com) para darle una apariencia algo *"resultona"*. Desconocía fomantic ui, es un fork de *semantic ui*, y lo descubrí gracias a [DataTables](https://datatables.net/manual/index), una librería javascript para la visualización de tablas. También he utilizado [Jinja](https://palletsprojects.com/p/jinja), otra librería python, como motor de templates html y así poder tener una plantilla base con la estructura común a todas las páginas del sitio.
 
 Para implementar cierto dinamismo en las páginas he optado por el clásico [JQuery](https://jquery.com), que me parece muy sencillo de usar (*fácil y sencillo, para toda la familia*).
 
-Por ultimo, mencionar el uso de [Dataframe JS](https://gmousse.gitbooks.io/dataframe-js/content/doc/api/dataframe.html), que es una librería javascript del estilo a *pandas*, permitiéndome hacer ciertos cálculos de forma dinámica.
+Por último, mencionar el uso de [Dataframe JS](https://gmousse.gitbooks.io/dataframe-js/content/doc/api/dataframe.html), que es una librería javascript del estilo a *pandas*, permitiéndome hacer ciertos cálculos de forma dinámica.
 
 ### Orígenes de datos
 
@@ -62,7 +64,7 @@ Por ultimo, mencionar el uso de [Dataframe JS](https://gmousse.gitbooks.io/dataf
 | [Iberdrola Distribución](https://www.i-de.es)                                                                                                               | Consumo eléctrico por horas                                        |
 | [PVGIS](https://joint-research-centre.ec.europa.eu/pvgis-photovoltaic-geographical-information-system/getting-started-pvgis/api-non-interactive-service_en) | Radiación solar en un sitio con estimación de producción eléctrica |
 
-# Me gusta, ¿Qúe hago para tenerlo?
+# Me gusta, ¿Qué hago para tenerlo?
 
 ### ¿Es tu primera vez?
 
@@ -73,7 +75,7 @@ Por ultimo, mencionar el uso de [Dataframe JS](https://gmousse.gitbooks.io/dataf
 1. Clona tu repo
 1. Añade los datos de las lecturas de tu contador en la capeta `import/consumptions`
     - Una vez procesados se mueven automáticamente a `import/consumptions/processed`
-1. Crea un fichero `.env` en la raiz del repo (ver ejemplo justo debajo)
+1. Crea un fichero `.env` en la raíz del repo (ver ejemplo justo debajo)
 1. Ejecuta el script `run.cmd`
     - ¡Ten paciencia! La primera vez tardará un rato
 1. Haz push de los cambios
@@ -91,7 +93,7 @@ ESIOS_TOKEN=<TOKEN_ESIOS>
 PATH=%PATH%;%HADOOP_HOME%\bin
 ```
 
-> Este fichero no debería subirse nunca a GitHub, porque contiene información sensible. Ya está añadido en el `.gitignore`, así que en principio no hay de qué preocuparse. 
+> Este fichero no debería publicarse nunca en GitHub, porque contiene información sensible. Ya está añadido en el `.gitignore`, así que en principio no hay de qué preocuparse. 
 
 #### ¿Qué es el token E-SIOS?
 
@@ -130,11 +132,11 @@ CUPS;Fecha;Hora;Consumo_kWh;Metodo_obtencion
 <NUMERO_CUPS>;02/06/2020;4;0,293;R
 ```
 
-Si tienes otra distribuidora y los datos los tienes en otro formato, por el momento tendrás que transformarlo manualmente en el formato anterior. Puedes abrirme un [issue](https://github.com/dicastro/energydatum/issues) y comentarme en qué otro formato tienes los datos para ver si se podría adaptar el código de forma sencilla y soportar ambos.
+Si tienes otra distribuidora y los datos los tienes en otro formato, por el momento tendrás que transformarlos manualmente en el formato anterior. Puedes abrirme un [issue](https://github.com/dicastro/energydatum/issues) y comentarme en qué otro formato tienes los datos para ver si se podría adaptar el código de forma sencilla y soportar ambos.
 
 > Tengo pendiente investigar [Datadis](https://datadis.es), que es una plataforma que centraliza los datos de todas las distribuidoras y además expone un API para poder descargar los datos de forma automática. Desconozco si funciona bien, si tiene todos los datos, la frecuencia de actualización, estabilidad del servicio, etc.
 
-Si la primera vez tienes muchos datos y tu distribuidora no te deja exportarlos de una vez en un único caso, como ocurre con iberdrola distribución (como máximo te deja exportar 12 meses), no hay problema. En la carpeta `import/consumptions` puedes depositar tantos ficheros como desees.
+Si la primera vez tienes muchos datos y tu distribuidora no te deja exportarlos de una vez en un único fichero, como ocurre con iberdrola distribución (como máximo te deja exportar 12 meses), no hay problema. En la carpeta `import/consumptions` puedes depositar tantos ficheros como desees.
 
 Se asume que en una ejecución, los datos de las lecturas no tienen duplicados entre sí. Lo que sí se tiene en cuenta, es que podría haber duplicados con los datos procesados en una ejecución anterior. En este caso, prevalecen los últimos en ser procesados.
 
@@ -165,7 +167,7 @@ Además tendrás que definir la variable de entorno `PYTHONHOME`, apuntando a la
 
 # Manual de usuario de *Energy Datum*
 
-Este el menú principal del sitio:
+Este es el menú principal del sitio:
 
 ![Menu Principal](./README_RESOURCES/energy_datum_menu.png)
 
@@ -175,7 +177,7 @@ En la opción de menú *Consumo* se disponen de distintas vistas sobre el consum
 
 ![Menu Consumo](./README_RESOURCES/energy_datum_menu_consumo.png)
 
-La opción *Día semana* muestra el consumo eléctrico (consumo medio diario y consumo acumulado diario) según el día de la semana, el mes del año y el año. Aqí se un ejemplo del consumo diario medio:
+La opción *Día semana* muestra el consumo eléctrico (consumo medio diario y consumo acumulado diario) según el día de la semana, el mes del año y el año. Aquí se un ejemplo del consumo diario medio:
 
 ![Consumo medio por dia de la semana](./README_RESOURCES/energy_datum_consumo_dia_semana_medio.png)
 
@@ -183,7 +185,7 @@ La opción *Periodo* muestra el consumo eléctrico según los periodos (tramos) 
 
 ![Consumo por periodo - Tarifa 2.0TD](./README_RESOURCES/energy_datum_consumo_periodo_20td.png)
 
-Pulsando en el icono de *información*, a la izquierda de cada tarifa, se puede ver detalle de las horas en las que aplica cada uno de los periodos. Ejemplo para la tarifa 2.0TD:
+Pulsando en el icono de *información*, a la izquierda de cada tarifa, se puede ver el detalle de las horas en las que aplica cada uno de los periodos. Ejemplo para la tarifa 2.0TD:
 
 ![Tarifa 2.0TD - Detalle de horas](./README_RESOURCES/energy_datum_tarifa_20td_info.png)
 
@@ -219,7 +221,7 @@ También se muede marcar la oferta que tenemos en uso actualmente. Esto permite 
 
 ![Menu Configuracion](./README_RESOURCES/energy_datum_menu_configuracion_en_uso.png)
 
-> En mi caso he incluido una copia de la configuración en el repositorio de GitHub porque en una proxima versión añadiré la opción de importar la configuración a partir de una URL. Así será aún más fácil cambiar de dispotitivo.
+> En mi caso he incluido una [copia de la configuración](https://github.com/dicastro/energydatum/blob/main/site_configuration_backup.json) en el repositorio de GitHub porque en una próxima versión añadiré la opción de importar la configuración a partir de una URL. Así será aún más fácil cambiar de dispotitivo.
 
 ¿Tienes otro tipo de tarifa? Te animo a [abrir un issue](https://github.com/dicastro/energydatum/issues). O mejor aún, [¡Impleméntalo y haz una PR!](https://github.com/dicastro/energydatum/pulls)
 
@@ -231,13 +233,13 @@ También se muede marcar la oferta que tenemos en uso actualmente. Esto permite 
 
 > fix: tarifa de precio fijo | wk: tarifa de fin de semana | 20td: tarifa de 3 tramos
 
-En esta sección se muestra una comparativa de los costes de la energía consumida. En la comparativa se incluye siempre el coste de PVPC, ademas de las ofertas confuradas en el apartado de configuración.
+En esta sección se muestra una comparativa de los costes de la energía consumida. En la comparativa se incluye siempre el coste de PVPC, además de las ofertas confuradas en el apartado de configuración.
 
 Para el caso de PVPC, este coste es **sin IVA**, por lo que, tal y como se ha mencionado anteriormente, es recomendable intruducir los precios de las ofertas sin IVA, para que la comparativa tenga  sentido.
 
-En este apartado únicamente se tienen en cuenta los últimos 12 meses con datos. En la imagen se muestran 11, porque la tarifa 2.0TD fue creada un junio del 2021, y en la fecha en la que se hizo la captura de patalla (mayo del 2022, con datos de abril 2021) no había 12 meses de datos.
+En este apartado únicamente se tienen en cuenta los últimos 12 meses con datos. En la imagen se muestran 11, porque la tarifa 2.0TD fue creada un junio del 2021, y en la fecha en la que se hizo la captura de patalla (mayo del 2022, con datos de abril 2021) aún no había 12 meses de datos.
 
-Hasta diciembre del 2021 tuve *HolaLuz*, y me anunciaron un cambio de precios a partir de enero del 2022, que son los que se ven en morado. A principios de enero del 2022 me cambié a TotalEnergies (tarifa fin de semana - wk), ¡Y menos mal!. En su momento no había desarrollado *Energy Datum* y me hice un excel guarro para decidir la tarifa. Con *Energy Datum* habría sido todo más sencillo. Tenía mis dudas entre la tarifa de 3 tramos, la de fin de senana o la de precio fijo, dados mis hábitos poco habrían variado las facturas. He de decir que siempre hemos tenido tarifas con alguna discrinación horaria y estamos habituados a hacer uso de algunos electrodomésticos cuando más nos interesa.
+Hasta diciembre del 2021 tuve *HolaLuz*, y me anunciaron un cambio de precios a partir de enero del 2022, que son los que se ven en morado. A principios de enero del 2022 me cambié a TotalEnergies (tarifa fin de semana - wk), ¡Y menos mal!. En su momento no había desarrollado *Energy Datum* y me hice un excel guarro para decidir la tarifa. Con *Energy Datum* habría sido todo más sencillo. Tenía mis dudas entre la tarifa de 3 tramos, la de fin de senana o la de precio fijo. Por lo que ve, dados mis hábitos, poco habrían variado las facturas. He de decir que siempre hemos tenido tarifas con alguna discrinación horaria y estamos habituados a hacer uso de algunos electrodomésticos cuando más nos interesa.
 
 No lo he mencionado hasta ahora, pero todos los gráficos son interactivos: al pasar el ratón por encima se puede ver más detalle, se puede hacr zoom, etc.
 
@@ -245,52 +247,76 @@ No lo he mencionado hasta ahora, pero todos los gráficos son interactivos: al p
 
 ### Datos
 
-En esta opción de menú se puede acceder a diversos datos utilizados en múltiples sitios:
+En esta opción de menú se puede acceder a diversos datos utilizados en múltiples partes del sitio:
 
 ![Menu Consumo](./README_RESOURCES/energy_datum_menu_datos.png)
 
 - Se puede consultar el listado de días festivos nacionales, utilizados para los cálculos de consumos por periodos
 - Se puede consultar la lista de indicadores de E-SIOS, el API de REE, utilizado para obtener los precios de PVPC
 
-Y también se puede ver la evolución del precio de PVPC categorizándolo según los tipos de tarifa. A continuación un ejemplo de la evolución de precios PVPC categorizados según los periodos de la tarifa de fin de semana (2 tramos). Como esta tarifa es la que tengo marcada en la configuración 'en uso', me aparece la linea de puntos de referencia.
+Y también se puede ver la evolución del precio de PVPC, categorizando los precios según los tramos de cada tipo de tarifa. A continuación se muestra un ejemplo de la evolución de precios PVPC categorizados según los periodos de la tarifa de fin de semana (2 tramos). Como esta tarifa es la que tengo marcada en la configuración como 'en uso', me aparece la linea de puntos de referencia.
 
 ![Evolucion precios PVPC - Tarifa fin de semana](./README_RESOURCES/energy_datum_datos_precios_pvpc_wk.png)
 
-> Se aprecia que el precio que tengo está claramente por debajo del PVPC.
+> Se aprecia que el precio que tengo está claramente por debajo del PVPC. Por el momento ¿Cuánto durará? No me importa mucho ya que no tengo ningún tipo de permanencia.
 
-En estas gráficas se muestra el precio medio (línea) junto con la desviación estándar (franja de color más claro que la línea). Si se hace zoom se aprecia mejor:
+En estas gráficas se muestra tanto el precio medio (línea) como la desviación estándar (franja de color más claro que la línea). Si se hace zoom se aprecia mejor:
 
 ![Evolucion precios PVPC - Tarifa fin de semana](./README_RESOURCES/energy_datum_datos_precios_pvpc_wk_zoom.png)
 
 
 # Roadmap
 
-Versión 1.0.0.alpha1 [ACTUAL]
+:checkered_flag: Versión 1.0.0.alpha1
+
+- [x] Visualización del consumo por año
+- [x] Visualización del consumo por mes
+- [x] Visualización del consumo por día de la semana
+- [x] Visualización del consumo por hora del día
+- [x] Visualización del consumo por periodo
+- [x] Visualización del consumo por día del año
+- [x] Visualización del coste de la energía consumida en los últimos 12 meses
+- [x] Pantalla de configuración para poder configurar las ofertas recibidas de las comercializadoras
+- [x] Visualización de la evolución del precio PVPC
+- [x] Visualización de los festivos nacionales
+- [x] Visualización de los indicadores de E-SIOS
+
+:rocket: Versión 1.0.0.alpha2
 
 - [ ] Posibilidad de importar la configuración de una URL (para cargarla directamente desde el GitHub)
+
+:rocket: Versión 1.0.0.alpha3
+
+- [ ] Visualización de estimación de energía generada por horas. Se hace uso de [PVGIS](https://joint-research-centre.ec.europa.eu/pvgis-photovoltaic-geographical-information-system/pvgis-tools/monthly-radiation_en). Se añade variable de entorno con las coordenadas geográficas. Se añade fichero de configuración en formato *TOML* para indicar la potencia instalada, orientación, y demás datos necesarios para la estimación.
+
+:rocket: Versión 1.0.0.alpha4
+
+- [ ] Añadir en la pantalla de configuración la posibilidad de añadir ofertas de compra de electricidad
+- [ ] La sección Precios PVPC, dividirla en 2 subsecciones: compra y venta
+- [ ] Visualización del consumo teniendo en cuenta la producción. Se podrá ver la energía sobrante y la que se acaba comprando a la comercializadora. Esto se hará para 12 meses.
+
+:rocket: versión 1.0.0.beta1
+
+- [ ] Visualización del coste con autoconsumo y comparación sin él.
+
+:rocket: versión 1.0.0 :rainbow:
+
+- [ ] Añadir sección de consejos sobre la instalación de paneles solares [video](https://www.youtube.com/watch?v=r7jrPXTYED4). Listado de marcas de *TIER 1*. Listado de marcas de inversores.
 - [ ] Validar los precios con facturas reales
 
-Lanzamiento versión 1.0.0.beta1
+# Backlog
 
+Algunas ideas que se me van ocurriendo y que todavía no he planificado (ni sé si algún día se planificarán)
 
-
-Lanzamiento versión 1.0.0
-
-
-Backlog
-
-- añadir filtro por columnas a las tablas
-- registrarse en Datadis y probar que funciona
-  - es un servicio transversal a todas las distribuidoras eléctricas que permite recuperar el consumo eléctrico (de esta forma no habría que descargarlo manualmente)
-- tener un fichero de configuración
+- Añadir filtro por columnas a las tablas
+- Registro en Datadis y probar que funciona
+  - Es un servicio transversal a todas las distribuidoras eléctricas que permite recuperar el consumo eléctrico (de esta forma no habría que descargar los consumos manualmente)
+- Añadir una sección al menú de *Datos* con el histórico del clima
+    - Probar: https://worldweatheronline.com/developer/api/docs/historical-weather-api.aspx
+- Tener un fichero de configuración
   - con propiedad para deshabilitar la recuperación de los precios
   - con propiedad para deshabilitar la recuperación de la generación eléctrica
-  - con propiedad para indicar las coordenadas para recuperar la generación eléctrica
   - con propiedad para deshabilitar la recuperación del histórico del clima
-- https://joint-research-centre.ec.europa.eu/pvgis-photovoltaic-geographical-information-system/pvgis-tools/monthly-radiation_en
-  - para recuperar la radiación solar en un sitio
-- https://worldweatheronline.com/developer/api/docs/historical-weather-api.aspx
-  - para recuperar el histórico del clima en un sitio (ver si funciona y están los datos que interesan)
 
 # Otros Links
 
