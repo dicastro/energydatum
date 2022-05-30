@@ -297,7 +297,11 @@ En estas gráficas se muestra tanto el precio medio (línea) como la desviación
 
 :rocket: versión 1.0.0.beta1
 
-- [ ] Visualización del coste con autoconsumo y comparación sin él.
+- [ ] Visualización del coste con autoconsumo y comparación sin él
+
+:rocket: versión 1.0.0.beta2
+
+- [ ] Visualización del plan de amortización
 
 :rocket: versión 1.0.0 :rainbow:
 
