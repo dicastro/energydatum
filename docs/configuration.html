@@ -721,18 +721,40 @@
 
 <div class="ui divider"></div>
 
-<form class="ui form">
+<form id="configuration-form" class="ui form">
     <input type="file" id="import-file" accept="*.json" style="display:none">
 
-    <button id="import-button" class="ui right floated labeled icon yellow button" type="button">
+    <div class="ui right floated floating labeled icon dropdown yellow button">
         <i class="upload icon"></i>
-        Importar
-    </button>
+        <span class="text">Importar</span>
+        <div class="menu">
+            <div id="import_url_modal_button" class="item" data-modal-id="import_url_modal"><i class="linkify icon"></i> URL</div>
+            <div id="import_file_button" class="item"><i class="file icon"></i> Fichero</div>
+        </div>
+    </div>
     <button id="export-button" class="ui right floated labeled icon green button"  type="button" data-filename="configuration.json">
         <i class="download icon"></i>
         Exportar
     </button>
 </form>
+
+<div id="import_url_modal" class="ui modal" data-trigger-button="import_url_modal_button">
+    <h2 class="ui header">Importar configuración remota</h2>
+    <div class="content">
+        <form class="ui form">
+            <div class="field">
+                <label>URL</label>
+                <input type="text" name="import_url" value="https://raw.githubusercontent.com/dicastro/energydatum/main/site_configuration_backup.json">
+            </div>
+        </form>
+    </div>
+    <div class="actions">
+        <div id="import_url_button" class="ui yellow ok button">
+            <i class="check icon"></i>
+            Importar
+        </div>
+    </div>
+</div>
 
 </div>
 
@@ -784,7 +806,7 @@
         <div class="ui horizontal inverted small divided link list">
             <a class="item" href="https://diegocastroviadero.com/#contact" target="_blank">Contáctame</a>
             <p class="item">v1.0.0-alpha1</p>
-            <p class="item">Generado el 30/05/2022 con datos entre 02/06/2020 y 30/04/2022</p>
+            <p class="item">Generado el 31/05/2022 con datos entre 02/06/2020 y 30/04/2022</p>
         </div>
     </div>
 </div>
@@ -910,6 +932,11 @@
     $(document).ready(function() {
         refreshOffers();
 
+        $('#configuration-form .ui.dropdown').dropdown({
+            on: 'hover',
+            action: 'hide'
+        });
+
         $('.offer-add').click(handler => {
             rateType = $(handler.currentTarget).data('rate-type');
 
@@ -958,7 +985,19 @@
             refreshNoContent(rateType);
         });
 
-        $('button#import-button').click(handler => {
+        $('#import_url_button').click(handler => {
+            handler.preventDefault();
+            $form = $(handler.currentTarget).parents('.ui.modal').find('.ui.form');
+            let url = $form.find('input[name="import_url"]').val().trim();
+
+            $.get(url).done(data => {
+                offerdb.load(JSON.parse(data));
+
+                refreshOffers();
+            });
+        });
+
+        $('#import_file_button').click(handler => {
             handler.preventDefault();
 
             if ('FileReader' in window) {

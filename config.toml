@@ -1,0 +1,5 @@
+[github]
+# used to build github urls
+username = "dicastro"
+# used to build github download url
+configuration_backup_filename = "site_configuration_backup.json"

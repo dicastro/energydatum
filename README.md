@@ -73,6 +73,7 @@ Por último, mencionar el uso de [Dataframe JS](https://gmousse.gitbooks.io/data
     - Y si le das 1 :star: ¡Genial!
 1. Configura *GitHub Pages* en tu repo, sobre la rama `main` y la carpeta `docs`
 1. Clona tu repo
+1. Revisa y adapta el fichero de configuración `config.toml`
 1. Añade los datos de las lecturas de tu contador en la capeta `import/consumptions`
     - Una vez procesados se mueven automáticamente a `import/consumptions/processed`
 1. Crea un fichero `.env` en la raíz del repo (ver ejemplo justo debajo)
@@ -209,7 +210,7 @@ Pudiendo añadir más de un día al mismo tiempo:
 
 En esta pantalla se pueden confirurar las ofertas recibidas de diferentes compañías comercializadoras. Estas ofertas son las que se utilizan en el apartado de *costes* (explicado más abajo) para hacer una comparativa del coste de la energía consumida.
 
-Esta configuración se guarda en el propio navegador, por lo que si se cambia de navegador o de disposito habrá que volver a introducir la configuración. Existe la opción de exportar la configuración, para evitar tener que volver a introducirla manualmente.
+Esta configuración **se guarda en el propio navegador**, por lo que si se cambia de navegador o de disposito habrá que volver a introducir la configuración. Existe la opción de exportar la configuración, para evitar tener que volver a introducirla manualmente. También existe la posibilidad de importar la configuración a partir de una URL. Es por esto que he incluido una [copia de la configuración](https://github.com/dicastro/energydatum/blob/main/site_configuration_backup.json) en el repositorio de GitHub, y así poder importarla fácilmente desde cualquier dispositivo. 
 
 Existe la posibilidad de introducir los precios finales (habiendo aplicado todos los descuentos) o bien introducir los precios en bruto e indicar el descuento que se tiene. Si se tuvieran varios descuentos (como por ejemplo en mi caso con *TotalEnergies*), se pueden indicar de la siguiente forma: `dto1 > dto2` (ejemplo: `5 > 35`, ya que no es lo mismo un 40% que primero un 5% y luego un 35%).
 
@@ -220,8 +221,6 @@ Es recomendable que se metan los precios **sin IVA**, ya que en el apartado de *
 También se muede marcar la oferta que tenemos en uso actualmente. Esto permite mostrarla en el apartado de *Precios PVPC* (explicado más abajo) y ver cómo evoluciona el precio regulado con respecto a los precios que tenemos actualmente.
 
 ![Menu Configuracion](./README_RESOURCES/energy_datum_menu_configuracion_en_uso.png)
-
-> En mi caso he incluido una [copia de la configuración](https://github.com/dicastro/energydatum/blob/main/site_configuration_backup.json) en el repositorio de GitHub porque en una próxima versión añadiré la opción de importar la configuración a partir de una URL. Así será aún más fácil cambiar de dispotitivo.
 
 ¿Tienes otro tipo de tarifa? Te animo a [abrir un issue](https://github.com/dicastro/energydatum/issues). O mejor aún, [¡Impleméntalo y haz una PR!](https://github.com/dicastro/energydatum/pulls)
 
@@ -281,13 +280,14 @@ En estas gráficas se muestra tanto el precio medio (línea) como la desviación
 - [x] Visualización de los festivos nacionales
 - [x] Visualización de los indicadores de E-SIOS
 
-:rocket: Versión 1.0.0.alpha2
+:checkered_flag: Versión 1.0.0.alpha2
 
-- [ ] Posibilidad de importar la configuración de una URL (para cargarla directamente desde el GitHub)
+- [x] Posibilidad de importar la configuración de una URL (para cargarla directamente desde el GitHub)
+- [x] Se añade fichero de configuración en formato *TOML* para indicar el usuario de github y el nombre del fichero que contiene el backup de la configuración, para así poder construir la URL de descarga
 
 :rocket: Versión 1.0.0.alpha3
 
-- [ ] Visualización de estimación de energía generada por horas. Se hace uso de [PVGIS](https://joint-research-centre.ec.europa.eu/pvgis-photovoltaic-geographical-information-system/pvgis-tools/monthly-radiation_en). Se añade variable de entorno con las coordenadas geográficas. Se añade fichero de configuración en formato *TOML* para indicar la potencia instalada, orientación, y demás datos necesarios para la estimación.
+- [ ] Visualización de estimación de energía generada por horas. Se hace uso de [PVGIS](https://joint-research-centre.ec.europa.eu/pvgis-photovoltaic-geographical-information-system/pvgis-tools/monthly-radiation_en). Se añade variable de entorno con las coordenadas geográficas. Añadir al fichero de configuración propiedades para indicar la potencia instalada, orientación, y demás datos necesarios para la estimación.
 
 :rocket: Versión 1.0.0.alpha4
 
@@ -317,10 +317,10 @@ Algunas ideas que se me van ocurriendo y que todavía no he planificado (ni sé 
   - Es un servicio transversal a todas las distribuidoras eléctricas que permite recuperar el consumo eléctrico (de esta forma no habría que descargar los consumos manualmente)
 - Añadir una sección al menú de *Datos* con el histórico del clima
     - Probar: https://worldweatheronline.com/developer/api/docs/historical-weather-api.aspx
-- Tener un fichero de configuración
-  - con propiedad para deshabilitar la recuperación de los precios
-  - con propiedad para deshabilitar la recuperación de la generación eléctrica
-  - con propiedad para deshabilitar la recuperación del histórico del clima
+- Añadir al fichero de configuración
+  - propiedad para deshabilitar la recuperación de los precios
+  - propiedad para deshabilitar la recuperación de la generación eléctrica
+  - propiedad para deshabilitar la recuperación del histórico del clima
 
 # Otros Links
 

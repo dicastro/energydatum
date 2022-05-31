@@ -12,6 +12,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import pytz
 import requests
+import toml as toml
 from dateutil import rrule
 from dateutil.relativedelta import relativedelta
 from dotenv import load_dotenv
@@ -31,6 +32,8 @@ from services.rates.rate_wk_info import RateWKInfo
 from utils import df_to_json
 
 load_dotenv()
+
+config = toml.load('config.toml')
 
 jinja_env = Environment(loader=FileSystemLoader('templates'), autoescape=select_autoescape(['html']))
 
@@ -918,6 +921,8 @@ jinja_env.get_template('configuration.html')\
         rate_wk_info_periods=rate_wk_info.get_periods(),
         rate_fix_info_series=rate_fix_info.get_series(),
         rate_fix_info_periods=rate_fix_info.get_periods(),
+        github_username=config['github']['username'],
+        configuration_backup_filename=config['github']['configuration_backup_filename'],
 ).dump(os.path.join('docs', 'configuration.html'))
 
 
