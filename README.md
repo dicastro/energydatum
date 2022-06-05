@@ -21,13 +21,13 @@ Además, en el camino me han ido surgiendo otro tipo de preguntas que también h
 - ¿Consumo más energía por la mañana o por la tarde-noche?
 - ¿Consumo más energía los fines de semana?
 
-Actualmente el proyecto se encuentra en versión *alpha* (`1.0.0-alpha1`). No se responde a la pregunta que dió origen al proyecto, pero sí al resto.
+Actualmente el proyecto se encuentra en una versión *alpha*. Todavía no se responde a la pregunta que dió origen al proyecto, pero sí al resto.
 
 Si te interesa tener respuesta a alguna de estas preguntas, [¡Anímate!](#me-gusta-qué-hago-para-tenerlo)
 
 ### Contexto de desarrollo
 
-Para los curiosos que echen un ojo al código, he de hacer unas explicaciones sobre el contexto en el que he desarrollado del proyecto. Este proyecto ha sido desarrollado casi íntegramente durante mi permiso de paternidad, mientras estaba yo solo al cargo de mi hija, aprovechando sus siestas. Las siestas de hija conmigo, siempre son en la mochila de porteo, y casi siempre con una mano sujetando su cabeza. Así que échale imaginación: de pie (¡Bendito *standing desk*!), cargando con más de 6kg, balanceándome contínuamente (y normalmente tarareando algo) y sólo con una mano disponible para escribir.
+Para los curiosos que echen un ojo al código, he de hacer unas explicaciones sobre el contexto en el que he desarrollado del proyecto. Este proyecto ha sido desarrollado casi íntegramente durante mi permiso de paternidad, mientras estaba yo solo al cargo de mi hija, aprovechando sus siestas. Las siestas de mi hija conmigo, siempre son en la mochila de porteo, y casi siempre con una mano sujetando su cabeza. Así que échale imaginación: de pie (¡Bendito *standing desk*!), cargando con más de 6kg, balanceándome contínuamente (y normalmente tarareando algo) y sólo con una mano disponible para escribir.
 
 Soy consciente de que el código no es muy bonito de ver, no es nada consistente, hay duplicidades, etc. He primado que sea funcional lo antes posible (¿Recuerdas la pregunta que quiero responder? No quiero que pase de este verano para tomar una decisión). Más adelante, si hay tiempo y ganas, se puede refactorizar. O mejor aún, [¡Hazme una PR con tus mejoras!](https://github.com/dicastro/energydatum/pulls) 
 
@@ -287,7 +287,7 @@ En estas gráficas se muestra tanto el precio medio (línea) como la desviación
 
 :checkered_flag: Versión 1.0.0.alpha2b
 
-- [x] Corregidas URls de recursos estáticos en sección *Indicadores E-SIOS*
+- [x] Corregidas URLs de recursos estáticos en sección *Indicadores E-SIOS*
 - [x] Se fuerza el modo *Desktop View* para dispositivos móviles
 
 :rocket: Versión 1.0.0.alpha3
