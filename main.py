@@ -364,6 +364,15 @@ price_date_max = price_sdf.select(ps_max('date').alias('date_max')).first()['dat
 # En el caso de los precios los días con atraso de hora no vienen con horas de 1 a 25, sino con horas de 1 a 24 y la hora 2 aparece dos veces
 # Para hacer el equivalente a lo que se hace con los consumos, habría que eliminar la segunda ocurrencia de la hora 2 en los días con atraso de hora
 
+jinja_common_context = {
+    'version': constants.VERSION,
+    'contextpath': constants.CONTEXT_PATH,
+    'today': today.strftime('%d/%m/%Y'),
+    'date_min': consumption_date_min.strftime('%d/%m/%Y'),
+    'date_max': consumption_date_max.strftime('%d/%m/%Y'),
+    'table_classes': TABLE_CLASSES,
+}
+
 # -------------------------------
 # Yearly consumption
 # -------------------------------
@@ -393,14 +402,9 @@ df_to_json(consumption_y, os.path.join('docs', 'data', 'consumption', 'consumpti
 
 jinja_env.get_template('consumption/consumption_y.html')\
     .stream(
-        version=constants.VERSION,
-        contextpath=constants.CONTEXT_PATH,
-        today=today.strftime('%d/%m/%Y'),
-        date_min=consumption_date_min.strftime('%d/%m/%Y'),
-        date_max=consumption_date_max.strftime('%d/%m/%Y'),
         consumption_y_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
-        table_classes=TABLE_CLASSES,
-        consumption_y_fig=consumption_y_fig_html
+        consumption_y_fig=consumption_y_fig_html,
+        **jinja_common_context
     ).dump(os.path.join('docs', 'consumption', 'consumption_y.html'))
 
 
@@ -471,16 +475,11 @@ df_to_json(consumption_moy_evol_full, os.path.join('docs', 'data', 'consumption'
 
 jinja_env.get_template('consumption/consumption_moy.html')\
     .stream(
-        version=constants.VERSION,
-        contextpath=constants.CONTEXT_PATH,
-        today=today.strftime('%d/%m/%Y'),
-        date_min=consumption_date_min.strftime('%d/%m/%Y'),
-        date_max=consumption_date_max.strftime('%d/%m/%Y'),
         consumption_moy_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
-        table_classes=TABLE_CLASSES,
         consumption_moy_comp_fig=consumption_moy_comp_fig_html,
         consumption_moy_evol_year_fig=consumption_moy_evol_year_fig_html,
-        consumption_moy_evol_full_fig=consumption_moy_evol_full_fig_html
+        consumption_moy_evol_full_fig=consumption_moy_evol_full_fig_html,
+        **jinja_common_context
     ).dump(os.path.join('docs', 'consumption', 'consumption_moy.html'))
 
 # -------------------------------
@@ -570,15 +569,10 @@ df_to_json(consumption_dow_avg.select('year', 'month', 'dow', 'dow_avg_kwh'), os
 
 jinja_env.get_template('consumption/consumption_dow.html')\
     .stream(
-        version=constants.VERSION,
-        contextpath=constants.CONTEXT_PATH,
-        today=today.strftime('%d/%m/%Y'),
-        date_min=consumption_date_min.strftime('%d/%m/%Y'),
-        date_max=consumption_date_max.strftime('%d/%m/%Y'),
         consumption_dow_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
-        table_classes=TABLE_CLASSES,
         consumption_dow_sum_fig=consumption_dow_sum_fig_html,
-        consumption_dow_avg_fig=consumption_dow_avg_fig_html
+        consumption_dow_avg_fig=consumption_dow_avg_fig_html,
+        **jinja_common_context
     ).dump(os.path.join('docs', 'consumption', 'consumption_dow.html'))
 
 
@@ -655,15 +649,10 @@ df_to_json(consumption_hod_sum.select('year', 'month', 'hour', 'hod_sum_kwh'), o
 
 jinja_env.get_template('consumption/consumption_hod.html')\
     .stream(
-        version=constants.VERSION,
-        contextpath=constants.CONTEXT_PATH,
-        today=today.strftime('%d/%m/%Y'),
-        date_min=consumption_date_min.strftime('%d/%m/%Y'),
-        date_max=consumption_date_max.strftime('%d/%m/%Y'),
         consumption_hod_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
-        table_classes=TABLE_CLASSES,
         consumption_hod_sum_fig=consumption_hod_sum_fig_html,
-        consumption_hod_avg_fig=consumption_hod_avg_fig_html
+        consumption_hod_avg_fig=consumption_hod_avg_fig_html,
+        **jinja_common_context
     ).dump(os.path.join('docs', 'consumption', 'consumption_hod.html'))
 
 # -------------------------------
@@ -830,13 +819,7 @@ df_to_json(rate_fix_m_periods, os.path.join('docs', 'data', 'consumption', 'rate
 
 jinja_env.get_template('consumption/period_m.html')\
     .stream(
-        version=constants.VERSION,
-        contextpath=constants.CONTEXT_PATH,
-        today=today.strftime('%d/%m/%Y'),
-        date_min=consumption_date_min.strftime('%d/%m/%Y'),
-        date_max=consumption_date_max.strftime('%d/%m/%Y'),
         period_m_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
-        table_classes=TABLE_CLASSES,
         rate_20td_m_periods_fig=rate_20td_m_periods_fig_html,
         rate_20td_m_periods_pct_fig=rate_20td_m_periods_pct_fig_html,
         rate_20td_info_series=rate_20td_info.get_series(),
@@ -848,6 +831,7 @@ jinja_env.get_template('consumption/period_m.html')\
         rate_fix_m_periods_fig=rate_fix_m_periods_fig_html,
         rate_fix_info_series=rate_fix_info.get_series(),
         rate_fix_info_periods=rate_fix_info.get_periods(),
+        **jinja_common_context
 ).dump(os.path.join('docs', 'consumption', 'period_m.html'))
 
 
@@ -858,19 +842,14 @@ print('DEBUG: day of month consumption')
 
 jinja_env.get_template('consumption/consumption_dom.html')\
     .stream(
-        version=constants.VERSION,
-        contextpath=constants.CONTEXT_PATH,
-        today=today.strftime('%d/%m/%Y'),
-        date_min=consumption_date_min.strftime('%d/%m/%Y'),
-        date_max=consumption_date_max.strftime('%d/%m/%Y'),
         consumption_dom_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
-        table_classes=TABLE_CLASSES,
         max_date_year=consumption_date_max.year,
         max_date_month_js=(consumption_date_max.month - 1),
         max_date_day=consumption_date_max.day,
         min_date_year=consumption_date_min.year,
         min_date_month_js=(consumption_date_min.month - 1),
         min_date_day=consumption_date_min.day,
+        **jinja_common_context
 ).dump(os.path.join('docs', 'consumption', 'consumption_dom.html'))
 
 
@@ -897,16 +876,11 @@ month_year_list = [dt_i.strftime('%m-%Y') for dt_i in rrule.rrule(rrule.MONTHLY,
 
 jinja_env.get_template('cost.html')\
     .stream(
-        version=constants.VERSION,
-        contextpath=constants.CONTEXT_PATH,
-        today=today.strftime('%d/%m/%Y'),
-        date_min=consumption_date_min.strftime('%d/%m/%Y'),
-        date_max=consumption_date_max.strftime('%d/%m/%Y'),
         cost_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
-        table_classes=TABLE_CLASSES,
         month_year_list=month_year_list,
         months_count=len(month_year_list),
-        pvpc_data=rate_20td_pvpc_cost_data
+        pvpc_data=rate_20td_pvpc_cost_data,
+        **jinja_common_context
 ).dump(os.path.join('docs', 'cost.html'))
 
 # -------------------------------
@@ -916,13 +890,7 @@ print('DEBUG: configuration')
 
 jinja_env.get_template('configuration.html')\
     .stream(
-        version=constants.VERSION,
-        contextpath=constants.CONTEXT_PATH,
-        today=today.strftime('%d/%m/%Y'),
-        date_min=consumption_date_min.strftime('%d/%m/%Y'),
-        date_max=consumption_date_max.strftime('%d/%m/%Y'),
         configuration_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
-        table_classes=TABLE_CLASSES,
         rate_20td_info_series=rate_20td_info.get_series(),
         rate_20td_info_periods=rate_20td_info.get_periods(),
         rate_wk_info_series=rate_wk_info.get_series(),
@@ -931,6 +899,7 @@ jinja_env.get_template('configuration.html')\
         rate_fix_info_periods=rate_fix_info.get_periods(),
         github_username=config['github']['username'],
         configuration_backup_filename=config['github']['configuration_backup_filename'],
+        **jinja_common_context
 ).dump(os.path.join('docs', 'configuration.html'))
 
 
@@ -941,7 +910,7 @@ jinja_env.get_template('configuration.html')\
 # Esios Indicators
 print('DEBUG: esios indicators')
 
-EsiosIndicator(jinja_env).refresh_esios_indicators()
+EsiosIndicator(jinja_env, jinja_common_context).refresh_esios_indicators()
 
 # Esios Price
 print('DEBUG: esios price')
@@ -1088,16 +1057,10 @@ esios_price_years = list(price_sdf.select(col('year')).distinct().orderBy('year'
 
 jinja_env.get_template('esios/esios_price_20td.html')\
     .stream(
-        version=constants.VERSION,
-        contextpath=constants.CONTEXT_PATH,
-        today=today.strftime('%d/%m/%Y'),
-        date_min=consumption_date_min.strftime('%d/%m/%Y'),
-        date_max=consumption_date_max.strftime('%d/%m/%Y'),
         price_pvpc_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
-        table_classes=TABLE_CLASSES,
         esios_price_years=esios_price_years,
         price_rate_figure_ids=price_rate_figure_ids,
-        **html_template_data
+        **(jinja_common_context | html_template_data)
 ).dump(os.path.join('docs', 'esios', 'esios_price_20td.html'))
 
 
@@ -1106,14 +1069,9 @@ print('DEBUG: bank days')
 
 jinja_env.get_template('bank_days.html')\
     .stream(
-        version=constants.VERSION,
-        contextpath=constants.CONTEXT_PATH,
-        today=today.strftime('%d/%m/%Y'),
-        date_min=consumption_date_min.strftime('%d/%m/%Y'),
-        date_max=consumption_date_max.strftime('%d/%m/%Y'),
         bank_days_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
-        table_classes=TABLE_CLASSES,
         bank_days_file_name=bank_days.get_bank_days_file_name(),
+        **jinja_common_context
 ).dump(os.path.join('docs', 'bank_days.html'))
 
 
@@ -1122,11 +1080,6 @@ print('DEBUG: weather')
 
 jinja_env.get_template('weather.html')\
     .stream(
-        version=constants.VERSION,
-        contextpath=constants.CONTEXT_PATH,
-        today=today.strftime('%d/%m/%Y'),
-        date_min=consumption_date_min.strftime('%d/%m/%Y'),
-        date_max=consumption_date_max.strftime('%d/%m/%Y'),
         weather_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
-        table_classes=TABLE_CLASSES,
+        **jinja_common_context
 ).dump(os.path.join('docs', 'weather.html'))

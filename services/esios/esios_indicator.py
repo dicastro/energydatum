@@ -2,7 +2,7 @@ import datetime as dt
 import glob
 import json
 import os
-from typing import Optional
+from typing import Optional, Dict
 
 import requests
 from jinja2 import Environment
@@ -12,8 +12,8 @@ from services.esios.esios_base import EsiosBase
 
 
 class EsiosIndicator(EsiosBase):
-    def __init__(self, jinja_env: Environment):
-        super().__init__(jinja_env)
+    def __init__(self, jinja_env: Environment, jinja_common_context: Dict[str, any]):
+        super().__init__(jinja_env, jinja_common_context)
 
     def _get_new_esios_indicators_file_name(self, refresh_date: dt.date) -> str:
         return f"docs/data/esios/indicators_{refresh_date.strftime('%Y%m%d')}.json"
@@ -71,9 +71,9 @@ class EsiosIndicator(EsiosBase):
 
             self.jinja_env.get_template('esios/esios_indicators.html')\
                 .stream(
-                    update_date=indicators_date.strftime('%d/%m/%Y'),
                     esios_indicators_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
                     indicators=sorted(json_data['indicators'], key=lambda i: i['id']),
+                    **self.jinja_common_context
                 ).dump(os.path.join('docs', 'esios', 'esios_indicators.html'))
 
             indicators_to_export = [10391]

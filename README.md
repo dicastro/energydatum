@@ -285,6 +285,11 @@ En estas gráficas se muestra tanto el precio medio (línea) como la desviación
 - [x] Posibilidad de importar la configuración de una URL (para cargarla directamente desde el GitHub)
 - [x] Se añade fichero de configuración en formato *TOML* para indicar el usuario de github y el nombre del fichero que contiene el backup de la configuración, para así poder construir la URL de descarga
 
+:checkered_flag: Versión 1.0.0.alpha2b
+
+- [x] Corregidas URls de recursos estáticos en sección *Indicadores E-SIOS*
+- [x] Se fuerza el modo *Desktop View* para dispositivos móviles
+
 :rocket: Versión 1.0.0.alpha3
 
 - [ ] Visualización de estimación de energía generada por horas. Se hace uso de [PVGIS](https://joint-research-centre.ec.europa.eu/pvgis-photovoltaic-geographical-information-system/pvgis-tools/monthly-radiation_en). Se añade variable de entorno con las coordenadas geográficas. Añadir al fichero de configuración propiedades para indicar la potencia instalada, orientación, y demás datos necesarios para la estimación.
