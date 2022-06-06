@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="ui container">
+    <h1 class="ui header">Calibrado de azimuth</h1>
+
+    <div class="content">
+        {{calibration_fig | safe}}
+    </div>
+</div>
+
+<div class="ui container">
+    <h1 class="ui header">Producción de energía</h1>
+
+    <div class="content">
+        {{production_fig | safe}}
+    </div>
+</div>
+{% endblock %}

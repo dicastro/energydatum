@@ -41,7 +41,7 @@ class BankDays:
 
         if len(bank_days_files) == 1:
             self.file_name = os.path.basename(bank_days_files[0])
-            self.sdf = utils.json_to_df(bank_days_files[0], self.spark, self.schema)
+            self.sdf = utils.json_file_to_df(bank_days_files[0], self.spark, self.schema)
 
     def _calculate_year_range(self) -> None:
         if self.sdf is not None:
@@ -90,7 +90,7 @@ class BankDays:
             year_max = sdf.select(ps_max('year').alias('year_max')).first()['year_max']
 
             self.file_name = f'docs/data/bank_days_{year_min}_{year_max}.json'
-            utils.df_to_json(sdf, self.file_name)
+            utils.df_to_json_file(sdf, self.file_name)
 
             self.sdf = sdf
             self.year_min = year_min

@@ -20,22 +20,28 @@ from jinja2 import Environment, select_autoescape, FileSystemLoader
 from plotly.subplots import make_subplots
 from pyspark.sql import SparkSession, Window, DataFrame
 from pyspark.sql.functions import col, sum, avg, min as ps_min, max as ps_max, to_date, regexp_replace, month, year, \
-    dayofmonth, dayofweek, countDistinct, when, round as ps_round, lpad, concat, lit, stddev as std
+    dayofmonth, dayofweek, countDistinct, when, round as ps_round, lpad, concat, lit, stddev as std, abs as ps_abs, expr
 from pyspark.sql.types import DecimalType, StringType, StructType, DateType, IntegerType, StructField
 
 import constants
 from services.bank_days import BankDays
 from services.esios.esios_indicator import EsiosIndicator
+from services.esios.esios_price import EsiosPrice
+from services.pvgis.pvgis import Pvgis
 from services.rates.rate_20td_info import RateInfo20TDInfo
 from services.rates.rate_fix_info import RateFixInfo
 from services.rates.rate_wk_info import RateWKInfo
-from utils import df_to_json
+from utils import df_to_json_file
 
 load_dotenv()
 
 config = toml.load('config.toml')
 
 jinja_env = Environment(loader=FileSystemLoader('templates'), autoescape=select_autoescape(['html']))
+
+today = dt.date.today()
+
+TABLE_CLASSES = ('ui', 'celled', 'table', 'dt')
 
 spark = SparkSession.builder.master('local[*]')\
     .appName('energy-calc')\
@@ -180,22 +186,22 @@ if new_consumption_rows > 0:
 
     for consumption_year in consumption_years:
         print('DEBUG: persisting consumptions of year {year}'.format(year=consumption_year))
-        df_to_json(consumption_sdf
-                   .filter(year('date') == consumption_year)
-                   .orderBy(col('date'), col('hour')),
-                   os.path.join('docs', 'data', 'consumption', 'raw', 'y', f'consumption_raw_{consumption_year}.json'), (0,))
+        df_to_json_file(consumption_sdf
+                        .filter(year('date') == consumption_year)
+                        .orderBy(col('date'), col('hour')),
+                        os.path.join('docs', 'data', 'consumption', 'raw', 'y', f'consumption_raw_{consumption_year}.json'), (0,))
 
     consumption_sdf = read_consumptions()
     consumption_yearmonths = list(consumption_sdf.select(concat(col('year'), lpad(col('month'), 2, '0')).alias('yearmonth')).distinct().orderBy('yearmonth').toPandas()['yearmonth'])
 
     for consumption_yearmonth in consumption_yearmonths:
         print('DEBUG: persisting consumptions of yearmonth {yearmonth}'.format(yearmonth=consumption_yearmonth))
-        df_to_json(consumption_sdf
-                   .withColumn('yearmonth', concat(col('year'), lpad(col('month'), 2, '0')))
-                   .filter(year('yearmonth') == consumption_yearmonth)
-                   .orderBy(col('date'), col('hour'))
-                   .drop('yearmonth'),
-                   os.path.join('docs', 'data', 'consumption', 'raw', 'moy', f'consumption_raw_{consumption_yearmonth}.json'), (0,))
+        df_to_json_file(consumption_sdf
+                        .withColumn('yearmonth', concat(col('year'), lpad(col('month'), 2, '0')))
+                        .filter(year('yearmonth') == consumption_yearmonth)
+                        .orderBy(col('date'), col('hour'))
+                        .drop('yearmonth'),
+                        os.path.join('docs', 'data', 'consumption', 'raw', 'moy', f'consumption_raw_{consumption_yearmonth}.json'), (0,))
 
     for new_consumption_file in new_consumption_files:
         os.replace(new_consumption_file, new_consumption_file.replace(os.path.join('import', 'consumptions', 'consumption_'), os.path.join('import', 'consumptions', 'processed', 'consumption_')))
@@ -205,25 +211,13 @@ consumption_sdf.limit(5).show()
 # TODO: this line is duplicated
 consumption_years = list(consumption_sdf.select(col('year')).distinct().orderBy('year').toPandas()['year'])
 
-today = dt.date.today()
 consumption_date_min = consumption_sdf.select(ps_min('date').alias('date_min')).first()['date_min']
 consumption_date_max = consumption_sdf.select(ps_max('date').alias('date_max')).first()['date_max']
-
-TABLE_CLASSES = ('ui', 'celled', 'table', 'dt')
 
 # Read E-SIOS prices
 ESIOS_TOKEN = os.getenv('ESIOS_TOKEN')
 
 PRICE_20TD_DATE_MIN = dt.date(2021, 6, 1)
-
-MONTHS_ES_ORDER = [
-    'Enero', 'Febrero', 'Marzo',
-    'Abril', 'Mayo', 'Junio',
-    'Julio', 'Agosto', 'Septiembre',
-    'Octubre', 'Noviembre', 'Diciembre'
-]
-
-DOW_TEXT_ES_ORDER = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 
 # 10229 PEAJE 2.0.A
 # 10230 PEAJE 2.0 DHA
@@ -306,10 +300,10 @@ if esios_url:
         esios_price_years = list(price_sdf.select(year('date').alias('year')).distinct().orderBy('year').toPandas()['year'])
 
         for price_year in esios_price_years:
-            df_to_json(price_sdf
-                       .filter(year('date') == price_year)
-                       .orderBy(col('date'), col('hour')),
-                       os.path.join('docs', 'data', 'esios', 'price', f'esios_price_20td_{price_year}.json'), (0,))
+            df_to_json_file(price_sdf
+                            .filter(year('date') == price_year)
+                            .orderBy(col('date'), col('hour')),
+                            os.path.join('docs', 'data', 'esios', 'price', f'esios_price_20td_{price_year}.json'), (0,))
 
 bank_days = BankDays(spark)
 bank_days_sdf = bank_days.get_bank_days(consumption_years)
@@ -355,6 +349,8 @@ price_sdf = price_sdf\
                 .when(col('dow') == 7, 6))\
     .cache()
 
+# EsiosPrice(jinja_env, {}).get_prices()
+
 price_sdf.limit(5).show()
 
 price_date_min = price_sdf.select(ps_min('date').alias('date_min')).first()['date_min']
@@ -398,7 +394,7 @@ consumption_y_fig.update_layout(xaxis={'title': None})
 
 consumption_y_fig_html = consumption_y_fig.to_html(include_plotlyjs=False, full_html=False, div_id='consumption_y_fig')
 
-df_to_json(consumption_y, os.path.join('docs', 'data', 'consumption', 'consumption_y.json'))
+df_to_json_file(consumption_y, os.path.join('docs', 'data', 'consumption', 'consumption_y.json'))
 
 jinja_env.get_template('consumption/consumption_y.html')\
     .stream(
@@ -449,7 +445,7 @@ consumption_moy_comp_fig = px.bar(consumption_moy_evol_comp.toPandas(),
                                   facet_col_spacing=0.02,
                                   facet_row_spacing=0.10,
                                   color='year',
-                                  category_orders={'month': MONTHS_ES_ORDER},
+                                  category_orders={'month': constants.MONTHS_ES_ORDER},
                                   labels=dict(year='Año', moy_sum_kwh='Consumo (kWh)', month='Mes'))
 consumption_moy_comp_fig.for_each_annotation(lambda a: a.update(text=a.text.replace("Mes=", "")))
 
@@ -461,7 +457,7 @@ consumption_moy_evol_year_fig = px.line(consumption_moy_evol_comp.toPandas(),
                                         x='month',
                                         y='moy_sum_kwh',
                                         color='year',
-                                        category_orders={'month': MONTHS_ES_ORDER},
+                                        category_orders={'month': constants.MONTHS_ES_ORDER},
                                         labels=dict(month='Mes', moy_sum_kwh='Consumo (kWh)', year='Año'))
 consumption_moy_evol_year_fig.update_layout(xaxis={'title': None})
 consumption_moy_evol_year_fig.update_xaxes(tickangle=90)
@@ -470,8 +466,8 @@ consumption_moy_evol_full_fig_html = consumption_moy_evol_full_fig.to_html(inclu
 consumption_moy_evol_year_fig_html = consumption_moy_evol_year_fig.to_html(include_plotlyjs=False, full_html=False, div_id='consumption_moy_evolution_per_year_figure')
 consumption_moy_comp_fig_html = consumption_moy_comp_fig.to_html(include_plotlyjs=False, full_html=False, div_id='consumption_moy_comparison_per_month_year_figure', default_height='800px')
 
-df_to_json(consumption_moy_evol_comp, os.path.join('docs', 'data', 'consumption', 'consumption_moy_evol_comp.json'))
-df_to_json(consumption_moy_evol_full, os.path.join('docs', 'data', 'consumption', 'consumption_moy_evol_full.json'))
+df_to_json_file(consumption_moy_evol_comp, os.path.join('docs', 'data', 'consumption', 'consumption_moy_evol_comp.json'))
+df_to_json_file(consumption_moy_evol_full, os.path.join('docs', 'data', 'consumption', 'consumption_moy_evol_full.json'))
 
 jinja_env.get_template('consumption/consumption_moy.html')\
     .stream(
@@ -519,7 +515,7 @@ consumption_dow_sum_fig = px.line(consumption_dow_sum.toPandas(),
                                   facet_col_wrap=3,
                                   facet_col_spacing=0.02,
                                   facet_row_spacing=0.10,
-                                  category_orders={'month': MONTHS_ES_ORDER, 'dow': DOW_TEXT_ES_ORDER},
+                                  category_orders={'month': constants.MONTHS_ES_ORDER, 'dow': constants.DOW_TEXT_ES_ORDER},
                                   labels=dict(dow='Día', dow_sum_kwh='Consumo (kWh)', year='Año', month='Mes'))
 consumption_dow_sum_fig.for_each_annotation(lambda a: a.update(text=a.text.replace("Mes=", "")))
 consumption_dow_sum_fig.update_xaxes(tickangle=90)
@@ -553,7 +549,7 @@ consumption_dow_avg_fig = px.line(consumption_dow_avg.toPandas(),
                                   facet_col_wrap=3,
                                   facet_col_spacing=0.02,
                                   facet_row_spacing=0.10,
-                                  category_orders={'month': MONTHS_ES_ORDER, 'dow': DOW_TEXT_ES_ORDER},
+                                  category_orders={'month': constants.MONTHS_ES_ORDER, 'dow': constants.DOW_TEXT_ES_ORDER},
                                   labels=dict(dow='Día', dow_avg_kwh='Consumo medio (kWh)', year='Año', month='Mes'))
 consumption_dow_avg_fig.for_each_annotation(lambda a: a.update(text=a.text.replace("Mes=", "")))
 consumption_dow_avg_fig.update_xaxes(tickangle=90)
@@ -564,8 +560,8 @@ for axis in consumption_dow_avg_fig.layout:
 
 consumption_dow_avg_fig_html = consumption_dow_avg_fig.to_html(include_plotlyjs=False, full_html=False, div_id='consumption_dow_avg_figure', default_height='900px')
 
-df_to_json(consumption_dow_sum.select('year', 'month', 'dow', 'dow_sum_kwh'), os.path.join('docs', 'data', 'consumption', 'consumption_dow_sum.json'))
-df_to_json(consumption_dow_avg.select('year', 'month', 'dow', 'dow_avg_kwh'), os.path.join('docs', 'data', 'consumption', 'consumption_dow_avg.json'))
+df_to_json_file(consumption_dow_sum.select('year', 'month', 'dow', 'dow_sum_kwh'), os.path.join('docs', 'data', 'consumption', 'consumption_dow_sum.json'))
+df_to_json_file(consumption_dow_avg.select('year', 'month', 'dow', 'dow_avg_kwh'), os.path.join('docs', 'data', 'consumption', 'consumption_dow_avg.json'))
 
 jinja_env.get_template('consumption/consumption_dow.html')\
     .stream(
@@ -601,7 +597,7 @@ consumption_hod_avg_fig = px.line(consumption_hod_avg.toPandas(),
                                   facet_col_spacing=0.02,
                                   facet_row_spacing=0.05,
                                   color='year',
-                                  category_orders={'month': MONTHS_ES_ORDER},
+                                  category_orders={'month': constants.MONTHS_ES_ORDER},
                                   labels=dict(hour='Hora', hod_avg_kwh='Consumo medio (kWh)', year='Año', month='Mes'))
 consumption_hod_avg_fig.for_each_annotation(lambda a: a.update(text=a.text.replace("Mes=", "")))
 consumption_hod_avg_fig.update_xaxes(tickangle=90)
@@ -633,7 +629,7 @@ consumption_hod_sum_fig = px.line(consumption_hod_sum.toPandas(),
                                   facet_col_spacing=0.02,
                                   facet_row_spacing=0.05,
                                   color='year',
-                                  category_orders={'month': MONTHS_ES_ORDER},
+                                  category_orders={'month': constants.MONTHS_ES_ORDER},
                                   labels=dict(hour='Hora', hod_sum_kwh='Consumo (kWh)', year='Año', month='Mes'))
 consumption_hod_sum_fig.for_each_annotation(lambda a: a.update(text=a.text.replace("Mes=", "")))
 consumption_hod_sum_fig.update_xaxes(tickangle=90)
@@ -644,8 +640,8 @@ for axis in consumption_hod_sum_fig.layout:
 
 consumption_hod_sum_fig_html = consumption_hod_sum_fig.to_html(include_plotlyjs=False, full_html=False, div_id='consumption_dow_sum_figure', default_height='900px')
 
-df_to_json(consumption_hod_avg.select('year', 'month', 'hour', 'hod_avg_kwh'), os.path.join('docs', 'data', 'consumption', 'consumption_hod_avg.json'))
-df_to_json(consumption_hod_sum.select('year', 'month', 'hour', 'hod_sum_kwh'), os.path.join('docs', 'data', 'consumption', 'consumption_hod_sum.json'))
+df_to_json_file(consumption_hod_avg.select('year', 'month', 'hour', 'hod_avg_kwh'), os.path.join('docs', 'data', 'consumption', 'consumption_hod_avg.json'))
+df_to_json_file(consumption_hod_sum.select('year', 'month', 'hour', 'hod_sum_kwh'), os.path.join('docs', 'data', 'consumption', 'consumption_hod_sum.json'))
 
 jinja_env.get_template('consumption/consumption_hod.html')\
     .stream(
@@ -813,9 +809,9 @@ rate_fix_m_periods_fig.update_xaxes(tickangle=90)
 rate_fix_m_periods_fig_html = rate_fix_m_periods_fig.to_html(include_plotlyjs=False, full_html=False, div_id='rate_fix_m_periods_figure')
 
 
-df_to_json(rate_20td_m_periods, os.path.join('docs', 'data', 'consumption', 'rate_20td_m_periods.json'))
-df_to_json(rate_wk_m_periods, os.path.join('docs', 'data', 'consumption', 'rate_wk_m_periods.json'))
-df_to_json(rate_fix_m_periods, os.path.join('docs', 'data', 'consumption', 'rate_fix_m_periods.json'))
+df_to_json_file(rate_20td_m_periods, os.path.join('docs', 'data', 'consumption', 'rate_20td_m_periods.json'))
+df_to_json_file(rate_wk_m_periods, os.path.join('docs', 'data', 'consumption', 'rate_wk_m_periods.json'))
+df_to_json_file(rate_fix_m_periods, os.path.join('docs', 'data', 'consumption', 'rate_fix_m_periods.json'))
 
 jinja_env.get_template('consumption/period_m.html')\
     .stream(
@@ -882,6 +878,64 @@ jinja_env.get_template('cost.html')\
         pvpc_data=rate_20td_pvpc_cost_data,
         **jinja_common_context
 ).dump(os.path.join('docs', 'cost.html'))
+
+# ----------------------------------------------------------------------------------------------------------------------
+# pvgis
+print('DEBUG: pvgis')
+
+pvgis = Pvgis(config['pvgis'], spark)
+
+filtered_consumption_sdf = consumption_sdf\
+    .filter(col('date') > rate_period_from)\
+    .cache()
+
+pvgis.calibrate(filtered_consumption_sdf, consumption_date_min, consumption_date_max)
+
+calibrations_sdf = pvgis.get_calibrations().withColumn('peakpower', col('peakpower').cast(StringType()))
+
+calibration_fig = px.line(calibrations_sdf.toPandas(),
+                          x='angle',
+                          y=['selfsupply', 'exceeding'])
+calibration_fig.update_layout(xaxis={'title': None})
+calibration_fig.update_xaxes(tickangle=90)
+
+calibration_fig_html = calibration_fig.to_html(include_plotlyjs=False, full_html=False, div_id='calibration_figure')
+
+# production_data = pvgis.get_data(0)
+#
+# print(f'INFO: configuration: peakpower - {production_data["params"]["peakpower"]} | angle - {production_data["params"]["angle"]} | aspect - {production_data["params"]["aspect"]}')
+#
+# production_month_sdf = pvgis.unpivot(production_data['consumption_sdf'])
+# production_month_sdf.show(36)
+#
+# production_fig = px.bar(production_month_sdf.toPandas(),
+#                         x='month_year',
+#                         y='energy_qty_kwh',
+#                         hover_data=['energy_pct', 'month_consumption_kwh_total'],
+#                         color='energy_type',
+#                         labels=dict(month_year='Mes/Año',
+#                                     energy_type='Tipo Consumo',
+#                                     energy_qty_kwh='Energía (kWh)',
+#                                     energy_pct='% Consumo Total',
+#                                     month_consumption_kwh_total='Consumo Total (kWh)'))
+# production_fig.update_layout(xaxis={'title': None})
+# production_fig.update_xaxes(tickangle=90)
+#
+# production_fig_html = production_fig.to_html(include_plotlyjs=False, full_html=False, div_id='production_figure')
+
+jinja_env.get_template('selfsupply/pvgis.html')\
+    .stream(
+        version=constants.VERSION,
+        contextpath=constants.CONTEXT_PATH,
+        today=today.strftime('%d/%m/%Y'),
+        pvgis_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
+        table_classes=TABLE_CLASSES,
+        # production_fig=production_fig_html,
+        calibration_fig=calibration_fig_html,
+).dump(os.path.join('docs', 'selfsupply', 'pvgis.html'))
+
+exit(0)
+# ----------------------------------------------------------------------------------------------------------------------
 
 # -------------------------------
 # Configuration

@@ -317,6 +317,9 @@ En estas gráficas se muestra tanto el precio medio (línea) como la desviación
 
 Algunas ideas que se me van ocurriendo y que todavía no he planificado (ni sé si algún día se planificarán)
 
+- Mejorar logs
+  - Cambiar `print` por el sistema de logging de python
+  - Añadir más logs
 - Añadir filtro por columnas a las tablas
 - Registro en Datadis y probar que funciona
   - Es un servicio transversal a todas las distribuidoras eléctricas que permite recuperar el consumo eléctrico (de esta forma no habría que descargar los consumos manualmente)
@@ -330,3 +333,39 @@ Algunas ideas que se me van ocurriendo y que todavía no he planificado (ni sé 
 # Otros Links
 
 - [Manejo de Plotly con JS](https://plotly.com/javascript/plotlyjs-function-reference/#plotlynewplot)
+- [Herramienta web PVGIS](https://re.jrc.ec.europa.eu/pvg_tools/en/tools.html)
+- [Manual usuario PVGIS](https://joint-research-centre.ec.europa.eu/pvgis-photovoltaic-geographical-information-system/getting-started-pvgis/pvgis-user-manual_en)
+
+# TODELETE (temporal notes)
+
+```json
+{
+  "calibrations": {
+    "20210601_20220430": {
+      "angle": {
+        "12342144321": {
+          "id": "12342144321",
+          "params": {
+            "peakpower": 2.0,
+            "angle": 36,
+            "aspect": -2
+          },
+          "dataframe": {
+            "columns": [
+              "month_year", "peakpower", "angle", "aspect", "total_consumption_kwh", "selfsupply_kwh", "exceeding_kwh", "exceeding_pct_vs_total"
+            ],
+            "data": [
+              ["06-2021", 2.0, 36, -2, 0.0, 0.0, 0.0, 9]
+            ]
+          },
+          "summary": {
+            "total_consumption_kwh": 0.0,
+            "selfsupply_kwh": 0.0,
+            "exceeding_kwt": 0.0
+          }
+        }
+      }
+    }
+  }
+}
+```
