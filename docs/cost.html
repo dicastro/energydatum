@@ -74,7 +74,7 @@
 
 <h1 class="ui header">Coste</h1>
 
-<p>Se muestran datos del coste de los últimos 11 meses para los cuales hay registro</p>
+<p>Se muestran datos del coste de los últimos 12 meses para los cuales hay registro</p>
 
 <div class="content">
     <div id="cost_figure" class="plotly-graph-div" style="height:100%; width:100%;"></div>
@@ -133,8 +133,8 @@
         <img src="/energydatum/assets/img/logo_40x40.png" class="ui centered mini image">
         <div class="ui horizontal inverted small divided link list">
             <a class="item" href="https://diegocastroviadero.com/#contact" target="_blank">Contáctame</a>
-            <p class="item">1.0.0-alpha2b</p>
-            <p class="item">Generado el 05/06/2022 con datos entre 02/06/2020 y 30/04/2022</p>
+            <p class="item">1.0.0-alpha2c</p>
+            <p class="item">Generado el 07/06/2022 con datos entre 01/06/2020 y 31/05/2022</p>
         </div>
     </div>
 </div>
@@ -183,7 +183,7 @@
             'name': title,
             'orientation': 'v',
             'showlegend': true,
-            'x': ['06-2021', '07-2021', '08-2021', '09-2021', '10-2021', '11-2021', '12-2021', '01-2022', '02-2022', '03-2022', '04-2022'],
+            'x': ['06-2021', '07-2021', '08-2021', '09-2021', '10-2021', '11-2021', '12-2021', '01-2022', '02-2022', '03-2022', '04-2022', '05-2022'],
             'xaxis': 'x',
             'y': values,
             'yaxis': 'y',
@@ -310,7 +310,7 @@
     };
 
     $(document).ready(function() {
-        const offers = [{'title': 'PVPC', 'values': [27.97204, 30.46901, 28.80702, 46.497, 48.95052, 59.9488, 99.19179, 96.19366, 82.4108, 133.06875, 62.54526]}];
+        const offers = [{'title': 'PVPC', 'values': [27.97204, 30.46901, 28.80702, 43.6586, 48.95052, 59.9488, 96.34676, 96.19366, 82.4108, 129.08332, 62.54526, 65.10909]}];
 
         var DataFrame = dfjs.DataFrame;
 

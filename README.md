@@ -290,14 +290,21 @@ En estas gráficas se muestra tanto el precio medio (línea) como la desviación
 - [x] Corregidas URLs de recursos estáticos en sección *Indicadores E-SIOS*
 - [x] Se fuerza el modo *Desktop View* para dispositivos móviles
 
+:checkered_flag: Versión 1.0.0.alpha2c
+
+- [x] Corregido cálculo de los periodos de las tarifas con discrminación horaria
+
 :rocket: Versión 1.0.0.alpha3
 
-- [ ] Visualización de estimación de energía generada por horas. Se hace uso de [PVGIS](https://joint-research-centre.ec.europa.eu/pvgis-photovoltaic-geographical-information-system/pvgis-tools/monthly-radiation_en). Se añade variable de entorno con las coordenadas geográficas. Añadir al fichero de configuración propiedades para indicar la potencia instalada, orientación, y demás datos necesarios para la estimación.
+- [ ] La sección Precios PVPC, dividirla en 2 subsecciones: compra y venta
 
 :rocket: Versión 1.0.0.alpha4
 
+- [ ] Visualización de estimación de energía generada por horas. Se hace uso de [PVGIS](https://joint-research-centre.ec.europa.eu/pvgis-photovoltaic-geographical-information-system/pvgis-tools/monthly-radiation_en). Se añade variable de entorno con las coordenadas geográficas. Añadir al fichero de configuración propiedades para indicar la potencia instalada, orientación, y demás datos necesarios para la estimación.
+
+:rocket: Versión 1.0.0.alpha5
+
 - [ ] Añadir en la pantalla de configuración la posibilidad de añadir ofertas de compra de electricidad
-- [ ] La sección Precios PVPC, dividirla en 2 subsecciones: compra y venta
 - [ ] Visualización del consumo teniendo en cuenta la producción. Se podrá ver la energía sobrante y la que se acaba comprando a la comercializadora. Esto se hará para 12 meses.
 
 :rocket: versión 1.0.0.beta1
@@ -317,6 +324,8 @@ En estas gráficas se muestra tanto el precio medio (línea) como la desviación
 
 Algunas ideas que se me van ocurriendo y que todavía no he planificado (ni sé si algún día se planificarán)
 
+- Añadir *simulador* de facturación
+  - Se puede seleccionar un rango de fechas para simular la facturación
 - Añadir filtro por columnas a las tablas
 - Registro en Datadis y probar que funciona
   - Es un servicio transversal a todas las distribuidoras eléctricas que permite recuperar el consumo eléctrico (de esta forma no habría que descargar los consumos manualmente)

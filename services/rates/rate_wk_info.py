@@ -52,7 +52,7 @@ class RateWKInfo(RateInfoBase):
     def get_period(hour, dow, is_bank_day):
         if is_bank_day or dow in constants.DOW_WEEKEND_DAYS:
             return 'P3'
-        elif 8 <= hour < 24:
+        elif 8 < hour <= 24:
             return 'P1'
         else:
             return 'P3'

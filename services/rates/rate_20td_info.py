@@ -53,9 +53,9 @@ class RateInfo20TDInfo(RateInfoBase):
     def get_period(hour, dow, is_bank_day):
         if is_bank_day or dow in constants.DOW_WEEKEND_DAYS:
             return 'P3'
-        elif (10 <= hour < 14) or (18 <= hour < 22):
+        elif (10 < hour <= 14) or (18 < hour <= 22):
             return 'P1'
-        elif (8 <= hour < 10) or (14 <= hour < 18) or (22 <= hour < 24):
+        elif (8 < hour <= 10) or (14 < hour <= 18) or (22 < hour <= 24):
             return 'P2'
         else:
             return 'P3'
