@@ -330,11 +330,11 @@ En estas gráficas se muestra tanto el precio medio (línea) como la desviación
 
 - [x] Corregido cálculo de los periodos de las tarifas con discrminación horaria
 
-:rocket: Versión 1.0.0.alpha3
+:checkered_flag: Versión 1.0.0.alpha3
 
-- [ ] La sección Precios PVPC, dividirla en 2 subsecciones: compra y venta
-- [ ] Implementada lógica para tener en cuenta los cambios de hora en los precios de la electricidad
-- [ ] Implementada lógica para tener en cuenta los adelantos de hora en los consumos
+- [x] La sección Precios PVPC, dividirla en 2 subsecciones: compra y venta
+- [x] Implementada lógica para tener en cuenta los cambios de hora en los precios de la electricidad
+- [x] Implementada lógica para tener en cuenta los adelantos de hora en los consumos
 
 :rocket: Versión 1.0.0.alpha4
 
