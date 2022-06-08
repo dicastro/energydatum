@@ -76,7 +76,7 @@ class EsiosIndicator(EsiosBase):
                     **self.jinja_common_context
                 ).dump(os.path.join('docs', 'esios', 'esios_indicators.html'))
 
-            indicators_to_export = [10391]
+            indicators_to_export = [1739, 10391]
 
             for indicator_id in indicators_to_export:
                 indicator = next(filter(lambda i: i['id'] == indicator_id, json_data['indicators']))

@@ -41,7 +41,7 @@ class BankDays:
 
         if len(bank_days_files) == 1:
             self.file_name = os.path.basename(bank_days_files[0])
-            self.sdf = utils.json_to_df(bank_days_files[0], self.spark, self.schema)
+            self.sdf = utils.json_file_to_df(bank_days_files[0], self.spark, self.schema)
 
     def _calculate_year_range(self) -> None:
         if self.sdf is not None:
@@ -102,7 +102,7 @@ class BankDays:
         if self._update_required(years):
             self._update_bank_days(years=years)
 
-        return self.sdf
+        return self.sdf.cache()
 
     def get_bank_days_file_name(self) -> str:
         return self.file_name

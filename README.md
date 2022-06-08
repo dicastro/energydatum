@@ -141,6 +141,42 @@ Si la primera vez tienes muchos datos y tu distribuidora no te deja exportarlos 
 
 Se asume que en una ejecución, los datos de las lecturas no tienen duplicados entre sí. Lo que sí se tiene en cuenta, es que podría haber duplicados con los datos procesados en una ejecución anterior. En este caso, prevalecen los últimos en ser procesados.
 
+## Cambios horarios
+
+Normalmente los valores de la columna `hora` están comprendidos entre 1 y 24. Sin embargo esto no se cumple los días que se cambia la hora.
+
+> Si tienes otra distribuidora, presta atención a cómo registra las lecturas los días que cambia la hora, y si lo hace de otra forma, por el momento tendrás que corregirlo a mano.
+
+#### Adelanto
+
+Cuando se adelanta la hora (a las 02:00 se pasa a las 03:00, ejemplo: 27/03/2022), estos valores van de 1 a 23. En este caso se incrementa en 1 el valor de la columna `hora` a partir de la hora 3.
+
+```
+Horas:          0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+Lecturas
+(sin corregir)  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+                      \  \  \  \  \  \  \  \  \  \  \  \  \  \  \  \  \  \  \  \  \
+                       \---                       (+1)                          ---\ 
+                        \  \  \  \  \  \  \  \  \  \  \  \  \  \  \  \  \  \  \  \  \
+(corregido):    1  2     4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24
+```
+
+#### Retraso
+
+Cuando se retrasa la hora (a las 03:00 se pasa a las 02:00, ejemplo: 31/10/2021), estos valores van de 1 a 25. En este caso se elimina la 4ª lectura y se decrementa en 1 el valor de la columna `hora` a partir de la hora 4.
+
+> Este cambio supone pérdida de datos, pero se asume ya que solo ocurre una vez año.
+
+```
+Horas:          0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+Lecturas
+(sin corregir)  1  2  3 <4> 5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25
+                            /  /  /  /  /  /  /  /  /  /  /  /  /  /  /  /  /  /  /  /  /
+                           /---                       (-1)                          ---/ 
+                          /  /  /  /  /  /  /  /  /  /  /  /  /  /  /  /  /  /  /  /  /
+(corregido):    1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24
+```
+
 # Requisitos
 
 ### Hardware
@@ -297,6 +333,8 @@ En estas gráficas se muestra tanto el precio medio (línea) como la desviación
 :rocket: Versión 1.0.0.alpha3
 
 - [ ] La sección Precios PVPC, dividirla en 2 subsecciones: compra y venta
+- [ ] Implementada lógica para tener en cuenta los cambios de hora en los precios de la electricidad
+- [ ] Implementada lógica para tener en cuenta los adelantos de hora en los consumos
 
 :rocket: Versión 1.0.0.alpha4
 
@@ -305,6 +343,7 @@ En estas gráficas se muestra tanto el precio medio (línea) como la desviación
 :rocket: Versión 1.0.0.alpha5
 
 - [ ] Añadir en la pantalla de configuración la posibilidad de añadir ofertas de compra de electricidad
+- [ ] En la pantalla *Precio PVPC > Compra* mostrar la oferta de compra en uso
 - [ ] Visualización del consumo teniendo en cuenta la producción. Se podrá ver la energía sobrante y la que se acaba comprando a la comercializadora. Esto se hará para 12 meses.
 
 :rocket: versión 1.0.0.beta1
@@ -324,6 +363,8 @@ En estas gráficas se muestra tanto el precio medio (línea) como la desviación
 
 Algunas ideas que se me van ocurriendo y que todavía no he planificado (ni sé si algún día se planificarán)
 
+- Añadir la opción de incluir posibles consumos
+  - Ejemplo: añadir al consumo real, el hipotético consumo de un A/C encendido por las noches entre junio y agosto
 - Añadir *simulador* de facturación
   - Se puede seleccionar un rango de fechas para simular la facturación
 - Añadir filtro por columnas a las tablas
