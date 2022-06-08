@@ -21,13 +21,13 @@ Además, en el camino me han ido surgiendo otro tipo de preguntas que también h
 - ¿Consumo más energía por la mañana o por la tarde-noche?
 - ¿Consumo más energía los fines de semana?
 
-Actualmente el proyecto se encuentra en versión *alpha* (`1.0.0-alpha1`). No se responde a la pregunta que dió origen al proyecto, pero sí al resto.
+Actualmente el proyecto se encuentra en una versión *alpha*. Todavía no se responde a la pregunta que dió origen al proyecto, pero sí al resto.
 
 Si te interesa tener respuesta a alguna de estas preguntas, [¡Anímate!](#me-gusta-qué-hago-para-tenerlo)
 
 ### Contexto de desarrollo
 
-Para los curiosos que echen un ojo al código, he de hacer unas explicaciones sobre el contexto en el que he desarrollado del proyecto. Este proyecto ha sido desarrollado casi íntegramente durante mi permiso de paternidad, mientras estaba yo solo al cargo de mi hija, aprovechando sus siestas. Las siestas de hija conmigo, siempre son en la mochila de porteo, y casi siempre con una mano sujetando su cabeza. Así que échale imaginación: de pie (¡Bendito *standing desk*!), cargando con más de 6kg, balanceándome contínuamente (y normalmente tarareando algo) y sólo con una mano disponible para escribir.
+Para los curiosos que echen un ojo al código, he de hacer unas explicaciones sobre el contexto en el que he desarrollado del proyecto. Este proyecto ha sido desarrollado casi íntegramente durante mi permiso de paternidad, mientras estaba yo solo al cargo de mi hija, aprovechando sus siestas. Las siestas de mi hija conmigo, siempre son en la mochila de porteo, y casi siempre con una mano sujetando su cabeza. Así que échale imaginación: de pie (¡Bendito *standing desk*!), cargando con más de 6kg, balanceándome contínuamente (y normalmente tarareando algo) y sólo con una mano disponible para escribir.
 
 Soy consciente de que el código no es muy bonito de ver, no es nada consistente, hay duplicidades, etc. He primado que sea funcional lo antes posible (¿Recuerdas la pregunta que quiero responder? No quiero que pase de este verano para tomar una decisión). Más adelante, si hay tiempo y ganas, se puede refactorizar. O mejor aún, [¡Hazme una PR con tus mejoras!](https://github.com/dicastro/energydatum/pulls) 
 
@@ -140,6 +140,42 @@ Si tienes otra distribuidora y los datos los tienes en otro formato, por el mome
 Si la primera vez tienes muchos datos y tu distribuidora no te deja exportarlos de una vez en un único fichero, como ocurre con iberdrola distribución (como máximo te deja exportar 12 meses), no hay problema. En la carpeta `import/consumptions` puedes depositar tantos ficheros como desees.
 
 Se asume que en una ejecución, los datos de las lecturas no tienen duplicados entre sí. Lo que sí se tiene en cuenta, es que podría haber duplicados con los datos procesados en una ejecución anterior. En este caso, prevalecen los últimos en ser procesados.
+
+## Cambios horarios
+
+Normalmente los valores de la columna `hora` están comprendidos entre 1 y 24. Sin embargo esto no se cumple los días que se cambia la hora.
+
+> Si tienes otra distribuidora, presta atención a cómo registra las lecturas los días que cambia la hora, y si lo hace de otra forma, por el momento tendrás que corregirlo a mano.
+
+#### Adelanto
+
+Cuando se adelanta la hora (a las 02:00 se pasa a las 03:00, ejemplo: 27/03/2022), estos valores van de 1 a 23. En este caso se incrementa en 1 el valor de la columna `hora` a partir de la hora 3.
+
+```
+Horas:          0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+Lecturas
+(sin corregir)  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+                      \  \  \  \  \  \  \  \  \  \  \  \  \  \  \  \  \  \  \  \  \
+                       \---                       (+1)                          ---\ 
+                        \  \  \  \  \  \  \  \  \  \  \  \  \  \  \  \  \  \  \  \  \
+(corregido):    1  2     4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24
+```
+
+#### Retraso
+
+Cuando se retrasa la hora (a las 03:00 se pasa a las 02:00, ejemplo: 31/10/2021), estos valores van de 1 a 25. En este caso se elimina la 4ª lectura y se decrementa en 1 el valor de la columna `hora` a partir de la hora 4.
+
+> Este cambio supone pérdida de datos, pero se asume ya que solo ocurre una vez año.
+
+```
+Horas:          0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+Lecturas
+(sin corregir)  1  2  3 <4> 5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25
+                            /  /  /  /  /  /  /  /  /  /  /  /  /  /  /  /  /  /  /  /  /
+                           /---                       (-1)                          ---/ 
+                          /  /  /  /  /  /  /  /  /  /  /  /  /  /  /  /  /  /  /  /  /
+(corregido):    1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24
+```
 
 # Requisitos
 
@@ -287,17 +323,27 @@ En estas gráficas se muestra tanto el precio medio (línea) como la desviación
 
 :checkered_flag: Versión 1.0.0.alpha2b
 
-- [x] Corregidas URls de recursos estáticos en sección *Indicadores E-SIOS*
+- [x] Corregidas URLs de recursos estáticos en sección *Indicadores E-SIOS*
 - [x] Se fuerza el modo *Desktop View* para dispositivos móviles
 
-:rocket: Versión 1.0.0.alpha3
+:checkered_flag: Versión 1.0.0.alpha2c
 
-- [ ] Visualización de estimación de energía generada por horas. Se hace uso de [PVGIS](https://joint-research-centre.ec.europa.eu/pvgis-photovoltaic-geographical-information-system/pvgis-tools/monthly-radiation_en). Se añade variable de entorno con las coordenadas geográficas. Añadir al fichero de configuración propiedades para indicar la potencia instalada, orientación, y demás datos necesarios para la estimación.
+- [x] Corregido cálculo de los periodos de las tarifas con discrminación horaria
+
+:checkered_flag: Versión 1.0.0.alpha3
+
+- [x] La sección Precios PVPC, dividirla en 2 subsecciones: compra y venta
+- [x] Implementada lógica para tener en cuenta los cambios de hora en los precios de la electricidad
+- [x] Implementada lógica para tener en cuenta los adelantos de hora en los consumos
 
 :rocket: Versión 1.0.0.alpha4
 
+- [ ] Visualización de estimación de energía generada por horas. Se hace uso de [PVGIS](https://joint-research-centre.ec.europa.eu/pvgis-photovoltaic-geographical-information-system/pvgis-tools/monthly-radiation_en). Se añade variable de entorno con las coordenadas geográficas. Añadir al fichero de configuración propiedades para indicar la potencia instalada, orientación, y demás datos necesarios para la estimación.
+
+:rocket: Versión 1.0.0.alpha5
+
 - [ ] Añadir en la pantalla de configuración la posibilidad de añadir ofertas de compra de electricidad
-- [ ] La sección Precios PVPC, dividirla en 2 subsecciones: compra y venta
+- [ ] En la pantalla *Precio PVPC > Compra* mostrar la oferta de compra en uso
 - [ ] Visualización del consumo teniendo en cuenta la producción. Se podrá ver la energía sobrante y la que se acaba comprando a la comercializadora. Esto se hará para 12 meses.
 
 :rocket: versión 1.0.0.beta1
@@ -317,6 +363,10 @@ En estas gráficas se muestra tanto el precio medio (línea) como la desviación
 
 Algunas ideas que se me van ocurriendo y que todavía no he planificado (ni sé si algún día se planificarán)
 
+- Añadir la opción de incluir posibles consumos
+  - Ejemplo: añadir al consumo real, el hipotético consumo de un A/C encendido por las noches entre junio y agosto
+- Añadir *simulador* de facturación
+  - Se puede seleccionar un rango de fechas para simular la facturación
 - Mejorar logs
   - Cambiar `print` por el sistema de logging de python
   - Añadir más logs

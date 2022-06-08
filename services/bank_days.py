@@ -102,7 +102,7 @@ class BankDays:
         if self._update_required(years):
             self._update_bank_days(years=years)
 
-        return self.sdf
+        return self.sdf.cache()
 
     def get_bank_days_file_name(self) -> str:
         return self.file_name

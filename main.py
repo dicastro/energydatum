@@ -1,7 +1,5 @@
 import datetime as dt
-import decimal
 import glob
-import json
 import math
 import os
 from decimal import Decimal
@@ -10,8 +8,6 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import pytz
-import requests
 import toml as toml
 from dateutil import rrule
 from dateutil.relativedelta import relativedelta
@@ -147,14 +143,23 @@ else:
                     .when(col('dow') == 6, 5)
                     .when(col('dow') == 7, 6))
 
-    # remove days with 25 hours (when there was an hour change from 03:00 to 02:00)
-    # in this case, the extra hour (#4) is discarded from dataset
+    # in days with 25 hours (when there was an hour change from 03:00 to 02:00)
+    # the extra hour (#4) is discarded from dataset
+    # in days with 23 hours (when there was an hour change from 02:00 to 03:00)
+    # hours from #3 (included) are incremented by 1
     window_date = Window.partitionBy(col('date'))
 
     new_consumption_sdf = new_consumption_sdf\
-        .withColumn('hour_changed', when(ps_max('hour').over(window_date) == 25, 1).otherwise(0))\
-        .withColumn('keep_row', when(col('hour_changed') == 0, 1).when(col('hour') != 4, 1).otherwise(0))\
-        .withColumn('hour', when((col('hour_changed') == 1) & (col('hour') > 4), col('hour') - 1).otherwise(col('hour')))
+        .withColumn('hour_changed', when(ps_max('hour').over(window_date) == 25, -1)
+                    .when(ps_max('hour').over(window_date) == 23, 1)
+                    .otherwise(0))\
+        .withColumn('keep_row', when(col('hour_changed') == 0, 1)
+                    .when((col('hour_changed') == 1), 1)
+                    .when((col('hour_changed') == -1) & (col('hour') != 4), 1)
+                    .otherwise(0))\
+        .withColumn('hour', when((col('hour_changed') == -1) & (col('hour') > 4), col('hour') - 1)
+                    .when((col('hour_changed') == 1) & (col('hour') > 2), col('hour') + 1)
+                    .otherwise(col('hour')))
 
     new_consumption_sdf = new_consumption_sdf\
         .filter(col('keep_row') == 1)\
@@ -206,7 +211,7 @@ if new_consumption_rows > 0:
     for new_consumption_file in new_consumption_files:
         os.replace(new_consumption_file, new_consumption_file.replace(os.path.join('import', 'consumptions', 'consumption_'), os.path.join('import', 'consumptions', 'processed', 'consumption_')))
 
-consumption_sdf.limit(5).show()
+consumption_sdf.show(24)
 
 # TODO: this line is duplicated
 consumption_years = list(consumption_sdf.select(col('year')).distinct().orderBy('year').toPandas()['year'])
@@ -214,151 +219,16 @@ consumption_years = list(consumption_sdf.select(col('year')).distinct().orderBy(
 consumption_date_min = consumption_sdf.select(ps_min('date').alias('date_min')).first()['date_min']
 consumption_date_max = consumption_sdf.select(ps_max('date').alias('date_max')).first()['date_max']
 
-# Read E-SIOS prices
-ESIOS_TOKEN = os.getenv('ESIOS_TOKEN')
+TABLE_CLASSES = ('ui', 'celled', 'table', 'dt')
 
-PRICE_20TD_DATE_MIN = dt.date(2021, 6, 1)
+MONTHS_ES_ORDER = [
+    'Enero', 'Febrero', 'Marzo',
+    'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre',
+    'Octubre', 'Noviembre', 'Diciembre'
+]
 
-# 10229 PEAJE 2.0.A
-# 10230 PEAJE 2.0 DHA
-# 10231 PEAJE 2.0.DHS
-# 10391 PEAJE 2.0TD
-
-# geos 8741 - Peninsula | 8742 - Canarias | 8743 - Baleares | 8744 - Ceuta | 8745 - Melilla
-
-
-def get_esios_price_url(range_s, range_e):
-    range_s_str = pytz.timezone('europe/madrid').localize(dt.datetime.combine(range_s, dt.datetime.min.time())).strftime('%Y-%m-%dT%H:%M:%S.%f%z')
-    range_e_str = pytz.timezone('europe/madrid').localize(dt.datetime.combine(range_e, dt.datetime.max.time())).strftime('%Y-%m-%dT%H:%M:%S.%f%z')
-
-    return f'https://api.esios.ree.es/indicators/10391?start_date={range_s_str}&end_date={range_e_str}&geo_ids[]=8741'
-
-
-esios_headers = {
-    'Accept': 'application/json; application/vnd.esios-api-v1+json',
-    'Content-Type': 'application/json',
-    'Host': 'api.esios.ree.es',
-    'Authorization': 'Token token=' + ESIOS_TOKEN
-}
-
-
-price_files = glob.glob(os.path.join('docs', 'data', 'esios', 'price', 'esios_price_20td_*.json'))
-
-price_schema = StructType([
-    StructField('date', DateType(), False),
-    StructField('hour', IntegerType(), False),
-    StructField('price_mwh', DecimalType(scale=2), False)
-])
-
-if len(price_files) == 0:
-    price_sdf = spark.createDataFrame(spark.sparkContext.emptyRDD(), schema=price_schema)
-else:
-    price_sdf = spark.createDataFrame(spark.sparkContext.emptyRDD(), schema=price_schema)
-
-    for price_file in price_files:
-        price_file_df = pd.read_json(price_file, orient='split', convert_dates=False)
-        price_file_df['date'] = price_file_df['date'].apply(lambda d: d[0:10])
-
-        price_file_sdf = spark.createDataFrame(price_file_df)\
-            .withColumn('date', to_date(col('date'), 'yyyy-MM-dd'))\
-            .withColumn('hour', col('hour').cast(IntegerType()))\
-            .withColumn('price_mwh', col('price_mwh').cast(DecimalType(scale=2)))
-
-        # new spark DataFrame is created in order to ensure that it has the same schema as the previous ones
-        price_sdf = price_sdf.union(spark.createDataFrame(price_file_sdf.toPandas(), schema=price_schema))
-
-
-esios_url = None
-
-if price_sdf.count() == 0:
-    esios_url = get_esios_price_url(PRICE_20TD_DATE_MIN, consumption_date_max)
-else:
-    price_date_max = price_sdf.select(ps_max('date').alias('date_max')).first()['date_max']
-
-    if price_date_max < consumption_date_max:
-        print('WARNING: not all prices corresponding to consumptions are present')
-
-        esios_url = get_esios_price_url(price_date_max + relativedelta(days=1), consumption_date_max)
-    else:
-        print(f'INFO: all prices corresponding to consumptions are present from {PRICE_20TD_DATE_MIN.strftime("%d/%m/%Y")} (start of 2.0TD) to {consumption_date_max.strftime("%d/%m/%Y")}')
-
-
-if esios_url:
-    response = requests.get(esios_url, headers=esios_headers)
-
-    if response.status_code == 200:
-        json_data = json.loads(response.text)
-
-        parsed_values = [[
-            dt.datetime.strptime(value['datetime'][0:10], '%Y-%m-%d').date(),
-            int(value['datetime'][11:13]),
-            decimal.Decimal(str(value['value']))] for value in json_data['indicator']['values']]
-        price_subset_sdf = spark.createDataFrame(parsed_values, schema=price_schema)
-
-        price_sdf = price_sdf.union(price_subset_sdf)
-
-        esios_price_years = list(price_sdf.select(year('date').alias('year')).distinct().orderBy('year').toPandas()['year'])
-
-        for price_year in esios_price_years:
-            df_to_json_file(price_sdf
-                            .filter(year('date') == price_year)
-                            .orderBy(col('date'), col('hour')),
-                            os.path.join('docs', 'data', 'esios', 'price', f'esios_price_20td_{price_year}.json'), (0,))
-
-bank_days = BankDays(spark)
-bank_days_sdf = bank_days.get_bank_days(consumption_years)
-
-bank_days_sdf.show(5)
-
-price_kwh_scale = len(str(price_sdf.select(ps_max('price_mwh').alias('price_mwh_max')).first()['price_mwh_max'])) - 1
-
-price_sdf = price_sdf\
-    .withColumn('price_kwh', (col('price_mwh') / 1000).cast(DecimalType(scale=price_kwh_scale)))\
-    .withColumn('year', year('date'))\
-    .withColumn('month', month('date'))\
-    .withColumn('month_text',
-                when(col('month') == 1, 'Enero')
-                .when(col('month') == 2, 'Febrero')
-                .when(col('month') == 3, 'Marzo')
-                .when(col('month') == 4, 'Abril')
-                .when(col('month') == 5, 'Mayo')
-                .when(col('month') == 6, 'Junio')
-                .when(col('month') == 7, 'Julio')
-                .when(col('month') == 8, 'Agosto')
-                .when(col('month') == 9, 'Septiembre')
-                .when(col('month') == 10, 'Octubre')
-                .when(col('month') == 11, 'Noviembre')
-                .when(col('month') == 12, 'Diciembre'))\
-    .withColumn('dom', dayofmonth('date'))\
-    .withColumn('dow', dayofweek('date'))\
-    .withColumn('dow_text',
-                when(col('dow') == 1, 'Domingo')
-                .when(col('dow') == 2, 'Lunes')
-                .when(col('dow') == 3, 'Martes')
-                .when(col('dow') == 4, 'Miércoles')
-                .when(col('dow') == 5, 'Jueves')
-                .when(col('dow') == 6, 'Viernes')
-                .when(col('dow') == 7, 'Sábado'))\
-    .withColumn('dow_order',
-                when(col('dow') == 1, 7)
-                .when(col('dow') == 2, 1)
-                .when(col('dow') == 3, 2)
-                .when(col('dow') == 4, 3)
-                .when(col('dow') == 5, 4)
-                .when(col('dow') == 6, 5)
-                .when(col('dow') == 7, 6))\
-    .cache()
-
-# EsiosPrice(jinja_env, {}).get_prices()
-
-price_sdf.limit(5).show()
-
-price_date_min = price_sdf.select(ps_min('date').alias('date_min')).first()['date_min']
-price_date_max = price_sdf.select(ps_max('date').alias('date_max')).first()['date_max']
-
-# TODO: hacer algo parecido a lo que se hace con los consumos en lo referente a los artasos de hora
-# En el caso de los precios los días con atraso de hora no vienen con horas de 1 a 25, sino con horas de 1 a 24 y la hora 2 aparece dos veces
-# Para hacer el equivalente a lo que se hace con los consumos, habría que eliminar la segunda ocurrencia de la hora 2 en los días con atraso de hora
+DOW_TEXT_ES_ORDER = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 
 jinja_common_context = {
     'version': constants.VERSION,
@@ -368,6 +238,16 @@ jinja_common_context = {
     'date_max': consumption_date_max.strftime('%d/%m/%Y'),
     'table_classes': TABLE_CLASSES,
 }
+
+bank_days = BankDays(spark)
+bank_days_sdf = bank_days.get_bank_days(consumption_years)
+bank_days_sdf.show(5)
+
+esios_price = EsiosPrice(jinja_env, jinja_common_context, spark)
+price_sdf = esios_price.get_prices(consumption_date_max)
+price_sdf.show(24)
+
+price_date_min, price_date_max = esios_price.get_price_date_range()
 
 # -------------------------------
 # Yearly consumption
@@ -854,10 +734,18 @@ jinja_env.get_template('consumption/consumption_dom.html')\
 # -------------------------------
 print('DEBUG: costs')
 
+print(f"DEBUG:   consumption rows: {consumption_sdf.filter(col('date') > rate_period_from).count()}")
+
+consumption_with_price_sdf = consumption_sdf\
+    .filter(col('date') > rate_period_from)\
+    .join(price_sdf.select(col('year'), col('month'), col('dom'), col('hour'), col('price_buy_kwh')), on=['year', 'month', 'dom', 'hour'], how='left')
+
+print(f'DEBUG:   consumption rows (including price): {consumption_with_price_sdf.count()}')
+
 rate_20td_pvpc_cost = consumption_sdf\
     .filter(col('date') > rate_period_from)\
-    .join(price_sdf.select(col('year'), col('month'), col('dom'), col('hour'), col('price_kwh')), on=['year', 'month', 'dom', 'hour'], how='inner')\
-    .withColumn('hour_cost', ps_round(col('hour_consumption_kwh') * col('price_kwh'), 5))\
+    .join(price_sdf.select(col('year'), col('month'), col('dom'), col('hour'), col('price_buy_kwh')), on=['year', 'month', 'dom', 'hour'], how='left')\
+    .withColumn('hour_cost', ps_round(col('hour_consumption_kwh') * col('price_buy_kwh'), 5))\
     .groupBy(col('year'), col('month'))\
     .agg(sum(col('hour_cost')).alias('month_cost'))\
     .orderBy(col('year'), col('month'))\
@@ -966,20 +854,49 @@ print('DEBUG: esios indicators')
 
 EsiosIndicator(jinja_env, jinja_common_context).refresh_esios_indicators()
 
-# Esios Price
+# Esios price
 print('DEBUG: esios price')
-
-price_rate_figure_ids = {}
 
 price_period_from = price_date_max - relativedelta(years=1)
 
 price_period_from = max(price_date_min, price_period_from)
+
+esios_price_years = list(price_sdf.select(col('year')).distinct().orderBy('year').toPandas()['year'])
+
+price_pvpc_evol = price_sdf\
+    .filter(col('date') >= price_period_from)\
+    .cache()
+
+# Esios Buy Price
+print('DEBUG: esios buy price')
+
+price_rate_figure_ids = {}
 
 price_dates_sdf = price_sdf\
     .filter(col('date') >= price_period_from)\
     .select(col('date'))\
     .distinct()\
     .orderBy(col('date'))
+
+price_buy_pvpc_evol_fig = px.line(price_pvpc_evol.toPandas(),
+                                  x='datetime',
+                                  y='price_buy_kwh',
+                                  labels=dict(date='Fecha',
+                                          price_buy_kwh='Precio (€/kWh)'))
+price_buy_pvpc_evol_fig.update_layout(xaxis={'title': None})
+price_buy_pvpc_evol_fig.update_xaxes(
+    tickangle=90,
+    rangeselector=dict(
+        buttons=list([
+            dict(count=1, label="1m", step="month", stepmode="backward"),
+            dict(count=3, label="3m", step="month", stepmode="backward"),
+            dict(count=6, label="6m", step="month", stepmode="backward"),
+            dict(count=9, label="9m", step="month", stepmode="backward"),
+            dict(label="12m", step="all")
+        ])
+    ))
+
+price_buy_pvpc_evol_fig_html = price_buy_pvpc_evol_fig.to_html(include_plotlyjs=False, full_html=False, div_id='price_pvpc_evol_figure')
 
 
 def missing_value(x):
@@ -993,8 +910,7 @@ html_template_data = {}
 for rate_info in rate_info_list:
     print('DEBUG:     {rate_type}'.format(rate_type=rate_info.get_rate_type()))
 
-    price_pvpc_rate_evol = price_sdf\
-        .filter(col('date') >= price_period_from)\
+    price_pvpc_rate_evol = price_pvpc_evol\
         .join(bank_days_sdf
               .select(col('year'), col('month'), col('dom'), lit(True).alias('is_bank_day')),
               on=['year', 'month', 'dom'], how='left')\
@@ -1002,8 +918,8 @@ for rate_info in rate_info_list:
         .withColumn('period', rate_info.get_period('hour', 'dow', 'is_bank_day'))\
         .groupBy(col('date'), col('period'))\
         .agg(
-            ps_round(avg(col('price_kwh')), 3).alias('avg_period_kwh'),
-            ps_round(std(col('price_kwh')), 3).alias('std_period_kwh')
+            ps_round(avg(col('price_buy_kwh')), 3).alias('avg_period_kwh'),
+            ps_round(std(col('price_buy_kwh')), 3).alias('std_period_kwh')
         )\
         .withColumn('avg_period_kwh', col('avg_period_kwh').cast(DecimalType(10, 3)))\
         .withColumn('std_period_kwh', col('std_period_kwh').cast(DecimalType(10, 3)))\
@@ -1090,7 +1006,7 @@ for rate_info in rate_info_list:
                 dict(count=3, label="3m", step="month", stepmode="backward"),
                 dict(count=6, label="6m", step="month", stepmode="backward"),
                 dict(count=9, label="9m", step="month", stepmode="backward"),
-                dict(step="all")
+                dict(label="12m", step="all")
             ])
         )
     )
@@ -1107,15 +1023,97 @@ for rate_info in rate_info_list:
     html_template_data[f'rate_{rate_info.get_rate_type()}_info_series'] = rate_wk_info.get_series()
     html_template_data[f'rate_{rate_info.get_rate_type()}_info_periods'] = rate_wk_info.get_periods()
 
-esios_price_years = list(price_sdf.select(col('year')).distinct().orderBy('year').toPandas()['year'])
-
-jinja_env.get_template('esios/esios_price_20td.html')\
+jinja_env.get_template('esios/esios_price_buy_20td.html')\
     .stream(
-        price_pvpc_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
+        price_buy_pvpc_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
         esios_price_years=esios_price_years,
+        price_pvpc_evol_fig=price_buy_pvpc_evol_fig_html,
         price_rate_figure_ids=price_rate_figure_ids,
         **(jinja_common_context | html_template_data)
-).dump(os.path.join('docs', 'esios', 'esios_price_20td.html'))
+).dump(os.path.join('docs', 'esios', 'esios_price_buy_20td.html'))
+
+
+# Esios sell price
+print('DEBUG: esios sell price')
+
+price_sell_pvpc_evol_fig = px.line(price_pvpc_evol.toPandas(),
+                                   x='datetime',
+                                   y='price_sell_kwh',
+                                   labels=dict(date='Fecha',
+                                               price_sell_kwh='Precio (€/kWh)'))
+price_sell_pvpc_evol_fig.update_layout(xaxis={'title': None})
+price_sell_pvpc_evol_fig.update_xaxes(
+    tickangle=90,
+    rangeselector=dict(
+        buttons=list([
+            dict(count=1, label="1m", step="month", stepmode="backward"),
+            dict(count=3, label="3m", step="month", stepmode="backward"),
+            dict(count=6, label="6m", step="month", stepmode="backward"),
+            dict(count=9, label="9m", step="month", stepmode="backward"),
+            dict(label="12m", step="all")
+        ])
+    ))
+
+price_sell_pvpc_evol_fig_html = price_sell_pvpc_evol_fig.to_html(include_plotlyjs=False, full_html=False, div_id='price_pvpc_evol_figure')
+
+
+price_pvpc_evol_m_sdf = price_pvpc_evol\
+    .groupBy(col('year'), col('month'))\
+    .agg(
+        ps_round(avg(col('price_sell_kwh')).alias('avg_price_sell_kwh'), 3).alias('avg_price_sell_kwh'),
+        ps_round(std(col('price_sell_kwh')).alias('std_price_sell_kwh'), 3).alias('std_price_sell_kwh'),
+    )\
+    .withColumn('avg_price_sell_kwh', col('avg_price_sell_kwh').cast(DecimalType(10, 3)))\
+    .withColumn('std_price_sell_kwh', col('std_price_sell_kwh').cast(DecimalType(10, 3)))\
+    .withColumn('upp_price_sell_kwh', col('avg_price_sell_kwh') + col('std_price_sell_kwh'))\
+    .withColumn('low_price_sell_kwh', col('avg_price_sell_kwh') - col('std_price_sell_kwh'))\
+    .orderBy(col('year'), col('month'))\
+    .withColumn('month_year', concat(lpad(col('month'), 2, '0'), lit('-'), col('year')))\
+    .drop('month', 'year')\
+
+price_pvpc_evol_m_df = price_pvpc_evol_m_sdf.toPandas()
+
+price_sell_pvpc_evol_m_x = list(price_pvpc_evol_m_df['month_year'])
+price_sell_pvpc_evol_m_y = list(price_pvpc_evol_m_df['avg_price_sell_kwh'])
+price_sell_pvpc_evol_m_y_upper = list(price_pvpc_evol_m_df['upp_price_sell_kwh'])
+price_sell_pvpc_evol_m_y_lower = list(price_pvpc_evol_m_df['low_price_sell_kwh'])
+
+price_sell_pvpc_evol_m_fig = px.line(price_pvpc_evol_m_df,
+                                     x='month_year',
+                                     y='avg_price_sell_kwh',
+                                     custom_data=['low_price_sell_kwh', 'upp_price_sell_kwh'],
+                                     labels=dict(month_year='Mes/Año',
+                                                 avg_price_sell_kwh='Precio (€/kWh)'))
+price_sell_pvpc_evol_m_fig.update_traces(hovertemplate='Fecha=%{x}<br>Precio (\u20ac/kWh)=[%{customdata[0]} > %{y} < %{customdata[1]}]')
+price_sell_pvpc_evol_m_fig.update_layout(xaxis={'title': None})
+price_sell_pvpc_evol_m_fig.update_xaxes(tickangle=90)
+
+price_sell_pvpc_evol_m_filling_x = price_sell_pvpc_evol_m_x + price_sell_pvpc_evol_m_x[::-1]
+price_sell_pvpc_evol_m_filling_y = price_sell_pvpc_evol_m_y_upper + price_sell_pvpc_evol_m_y_lower[::-1]
+
+price_sell_pvpc_evol_m_fig.add_trace(go.Scatter(
+            name=f'Precio (±SD)',
+            x=price_sell_pvpc_evol_m_filling_x,
+            y=price_sell_pvpc_evol_m_filling_y,
+            fill='toself',
+            fillcolor='rgba(99,110,250,0.2)',
+            line=dict(width=0),
+            showlegend=False,
+            hoverinfo='skip',
+            connectgaps=True
+        ))
+
+price_sell_pvpc_evol_m_fig_html = price_sell_pvpc_evol_m_fig.to_html(include_plotlyjs=False, full_html=False, div_id='price_pvpc_evol_m_figure')
+
+
+jinja_env.get_template('esios/esios_price_sell_20td.html')\
+    .stream(
+        price_sell_pvpc_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
+        esios_price_years=esios_price_years,
+        price_pvpc_evol_fig=price_sell_pvpc_evol_fig_html,
+        price_pvpc_evol_m_fig=price_sell_pvpc_evol_m_fig_html,
+        **jinja_common_context
+).dump(os.path.join('docs', 'esios', 'esios_price_sell_20td.html'))
 
 
 # bank days

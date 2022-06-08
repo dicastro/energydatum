@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Precios de venta PVPC</h1>
+
+<p>Aquí se muestran los precios de venta correspondientes a la tarifa PVPC publicados por REE (Red Eléctrica de España) y accesibles a través del <a href="https://api.esios.ree.es">API E-SIOS</a>.</p>
+
+<p>Este es el indicador de E-SIOS que se utiliza para obtener estos precios y así hacer los cálculos de costes:</p>
+
+{% include "parts/esios_indicator_card_1739.html" %}
+
+<div class="ui padded grid">
+    <div class="row">
+        <table class="dataframe ui celled table">
+            <thead>
+                <tr>
+                    <th>Año</th>
+                    <th>Datos</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for year in esios_price_years %}
+                <tr>
+                    <td>{{year}}</td>
+                    <td>
+                        <a class="download-comp" href="{{contextpath}}/data/esios/price/esios_price_20td_{{year}}.json" data-filename="esios_price_20td_{{year}}.json">
+                            <i class="download icon"></i>
+                            Descargar
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="ui container">
+    <h2>Evolución del precio</h2>
+
+    <h3>Histórico</h3>
+
+    <div class="content">
+        {{price_pvpc_evol_fig | safe}}
+    </div>
+</div>
+<div class="ui container">
+    <h3>Precio medio / mes</h3>
+
+    <div class="content">
+        {{price_pvpc_evol_m_fig | safe}}
+    </div>
+</div>
+{% endblock %}
+
+{% block custom_javascript %}
+<script type="text/javascript" charset="utf8">
+$(document).ready(function() {
+
+});
+</script>
+{% endblock %}

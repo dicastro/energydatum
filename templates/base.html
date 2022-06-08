@@ -44,7 +44,14 @@
             <div class="text">Datos</div>
             <i class="dropdown icon"></i>
             <div class="menu">
-                <a id="price_pvpc_menu_item" class="{{price_pvpc_menu_item_active}} item" href="{{contextpath}}/esios/esios_price_20td.html">Precios PVPC</a>
+                <div class="item">
+                    <i class="dropdown icon"></i>
+                    Precios PVPC
+                    <div class="right menu">
+                        <a id="price_buy_pvpc_menu_item" class="{{price_buy_pvpc_menu_item_active}} item" href="{{contextpath}}/esios/esios_price_buy_20td.html">Compra</a>
+                        <a id="price_sell_pvpc_menu_item" class="{{price_sell_pvpc_menu_item_active}} item" href="{{contextpath}}/esios/esios_price_sell_20td.html">Venta</a>
+                    </div>
+                </div>
                 <div class="divider"></div>
                 <a id="bank_days_menu_item" class="{{bank_days_menu_item_active}} item" href="{{contextpath}}/bank_days.html">Festivos</a>
                 <div class="divider"></div>
@@ -87,7 +94,8 @@
             <div class="three wide column">
                 <h4 class="ui inverted header">Datos</h4>
                 <div class="ui inverted link list">
-                    <a class="item" href="{{contextpath}}/esios/esios_price_20td.html">Precios PVPC</a>
+                    <a class="item" href="{{contextpath}}/esios/esios_price_buy_20td.html">Precios PVPC - Compra</a>
+                    <a class="item" href="{{contextpath}}/esios/esios_price_sell_20td.html">Precios PVPC - Venta</a>
                     <a class="item" href="{{contextpath}}/bank_days.html">Festivos</a>
                     <a class="item" href="{{contextpath}}/esios/esios_indicators.html">Indicadores E-SIOS</a>
                     <a class="item" href="{{contextpath}}/weather.html">Clima</a>
