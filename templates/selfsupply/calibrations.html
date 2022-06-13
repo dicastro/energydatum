@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="ui container">
+    <h1 class="ui header">Calibrado de atributos</h1>
+
+    <p>En esta sección se puede ver la calibración de los diferentes atributos de la instalación solar. Los atributos que se pueden calibrar son <b>la inclinación</b> de los paneles y <b>la orientación</b> (Azimuth) de los mismos. De esta forma se pueden calcular los valores que permiten maximizar la producción de energía.</p>
+
+    <p>Un valor negativo para la orientación, significa orientación este, y un valor positivo, orientación oeste. Siempre con respecto a la orientación sur. Ej: -4, significa 4º orientado al este, con respecto a una orientación sur.</p>
+
+    <p>Para el cálculo de la estimación de la producción de energía se ha utilizado <a href="https://joint-research-centre.ec.europa.eu/pvgis-photovoltaic-geographical-information-system/getting-started-pvgis/api-non-interactive-service_en" target="_blank">PVGIS</a>. Se ha utilizao la versión <a href="https://joint-research-centre.ec.europa.eu/pvgis-photovoltaic-geographical-information-system/pvgis-releases/pvgis-52_en" target="_blank">5.2</a>, que incluye la base de datos de radiación solar <i>PVGIS-SARAH2</i>, con datos del 2005 al 2020.</p>
+
+    <p>Para el cálculo del <i>scoring</i> de cada prueba se utiliza la fórmula: <code>energía autoconsumida + min(exceso de energía, energía consumida final * RPCPV) * RPVPC</code>.</p>
+
+    <p> Donde:</p>
+
+    <ul>
+        <li><code>energía autoconsumida</code> es la parte de la energía producida que se consume</li>
+        <li><code>exceso de energía</code> es la parte de la energía producida que no se consume y se puede vender al verterla a la red</li>
+        <li><code>energía consumida final = energía consumida total<sup>1</sup> - energía autoconsumida</code></li>
+        <li><code>RPVPC<sup>2</sup> = precio venta energía / precio compra energía</code></li>
+        <li><code>RPCPV<sup>2</sup> = precio compra energía / precio venta energía</code></li>
+    </ul>
+
+    <ul style="list-style-type: none">
+        <li><small><sup>1</sup> Para la <code>energía consumida total</code> se ha utilizado el consumo real de los últimos 12 meses</small></li>
+        <li><small><sup>2</sup> Para <code>RPVPC</code> y <code>RPCPV</code> se utilizan los precios PVPC publicados por REE</small></li>
+    </ul>
+
+    <p>Con esta formula se busca maximizar la cantidad de energía autoconsumida, así como el exceso de energía. Se tiene en cuenta que el sistema existente, es un sistema <i>no lucrativo</i>, que impite obtener un beneficio con la venta de los excesos de energía.</p>
+
+    <h2 class="ui header">Calibrado de la inclinación</h2>
+
+    <p>Para calcular el mejor ángulo de inclinación se hacen una serie de simulaciones de la energía producida por una instalación solar con diferentes ángulos de inclinación. Cada una de estas simulaciones se puntúa atendiendo a la fórmula indicada anteriormente.</p>
+
+    <p>Los ángulos de inclinación que se evalúan son los compredidos entre 25º y 50º. En todos los casos se asume una orientación sur (azimuth = 0) y una potencia de 1kWhp.</p>
+
+    <h3 class="ui header">(por mes)</h3>
+
+    <p>Variación mes a mes de la energía autoconsumida y el exceso de energía para los diferentes ángulos de inclinación.</p>
+
+    <div class="content">
+        {{angle_calibration_m_fig | safe}}
+    </div>
+
+    <h3 class="ui header">(en últimos 12 meses)</h3>
+
+    <p>Variación, para los últimos 12 meses, de la energía autoconsumida y el exceso de energía, para los diferentes ángulos de inclinación.</p>
+
+    <div class="content">
+        {{angle_calibration_y_fig | safe}}
+
+        <table id="angle_calibrations_y_data" class="dataframe ui celled table dt" dt-dataUrl="{{contextpath}}/data/selfsupply/angle_calibrations_y_data.json" dt-page-sizes="5,10,-1">
+                <thead class="full-width">
+                <tr>
+                    <th>Inclinación</th>
+                    <th dt-className="dt-body-right">Consumo (kWh)</th>
+                    <th dt-className="dt-body-right">Producción (kWh)</th>
+                    <th dt-className="dt-body-right">Autoconsumo (kWh)</th>
+                    <th dt-className="dt-body-right">Exceso (kWh)</th>
+                    <th dt-className="dt-body-right">Consumo final (kWh)</th>
+                    <th dt-className="dt-body-right" dt-sorted="desc">Score</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+    <h2 class="ui header">Calibrado de la orientación</h2>
+
+    <p>Para calcular la mejor orientación se hacen una serie de simulaciones de la energía producida por una instalación solar con diferentes orientaciones. Cada una de estas simulaciones se puntúa atendiendo a la fórmula indicada anteriormente.</p>
+
+    <p>Las orientaciones que se evalúan son las compredidos entre -15º y 15º. En todos los casos se asume una inclinación de 30º y una potencia de 1kWhp.</p>
+
+    <h3 class="ui header">(por mes)</h3>
+
+    <p>Variación, mes a mes, de la energía autoconsumida y el exceso de energía, para las diferentes orientaciones.</p>
+
+    <div class="content">
+        {{aspect_calibration_m_fig | safe}}
+    </div>
+
+    <h3 class="ui header">(en últimos 12 meses)</h3>
+
+    <p>Variación, para los últimos 12 meses, de la energía autoconsumida y el exceso de energía, para las diferentes orientaciones.</p>
+
+    <div class="content">
+        {{aspect_calibration_y_fig | safe}}
+
+        <table id="aspect_calibrations_y_data" class="dataframe ui celled table dt" dt-dataUrl="{{contextpath}}/data/selfsupply/aspect_calibrations_y_data.json" dt-page-sizes="5,10,-1">
+                <thead class="full-width">
+                <tr>
+                    <th>Azimuth</th>
+                    <th dt-className="dt-body-right">Consumo (kWh)</th>
+                    <th dt-className="dt-body-right">Producción (kWh)</th>
+                    <th dt-className="dt-body-right">Autoconsumo (kWh)</th>
+                    <th dt-className="dt-body-right">Exceso (kWh)</th>
+                    <th dt-className="dt-body-right">Consumo final (kWh)</th>
+                    <th dt-className="dt-body-right" dt-sorted="desc">Score</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+    <h2 class="ui header">Calibrado de la inclinación y orientación</h2>
+
+    <p>A partir de los 5 mejores ángulos de inclinación y de las 5 mejores orientaciones, se vuelven a hacer simulaciones con todas las combinaciones posibles. Cada una de estas simulaciones se puntúa atendiendo a la fórmula indicada anteriormente.</p>
+
+    <p>En todos los casos se asume una potencia de 1kWhp.</p>
+
+    <h3 class="ui header">(en últimos 12 meses)</h3>
+
+    <div class="content">
+        {{angle_aspect_calibration_y_fig | safe}}
+
+        <table id="angle_aspect_calibrations_y_data" class="dataframe ui celled table dt" dt-dataUrl="{{contextpath}}/data/selfsupply/angle+aspect_calibrations_y_data.json" dt-page-sizes="10,-1">
+                <thead class="full-width">
+                <tr>
+                    <th>Inclinación</th>
+                    <th>Azimuth</th>
+                    <th dt-className="dt-body-right">Consumo (kWh)</th>
+                    <th dt-className="dt-body-right">Producción (kWh)</th>
+                    <th dt-className="dt-body-right">Autoconsumo (kWh)</th>
+                    <th dt-className="dt-body-right">Exceso (kWh)</th>
+                    <th dt-className="dt-body-right">Consumo final (kWh)</th>
+                    <th dt-className="dt-body-right" dt-sorted="desc">Score</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+{% endblock %}

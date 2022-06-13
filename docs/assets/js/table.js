@@ -43,10 +43,13 @@ $(document).ready(function() {
 
         var column_defs = [];
 
+        var order = [];
+
         $this.find('thead th').each(function(i) {
             var $th = $(this);
             var className = $th.attr('dt-className') || 'dt-left';
             var type = $th.attr('dt-type');
+            var sorted = $th.attr('dt-sorted');
 
             column_def = {
                 targets: i,
@@ -57,12 +60,38 @@ $(document).ready(function() {
                 column_def['type'] = type;
             }
 
+            if (sorted) {
+                order.push([i, sorted]);
+            }
+
             column_defs.push(column_def);
         });
 
         dataTableConfig = {
             'autoWidth': false,
-            'columnDefs': column_defs
+            'columnDefs': column_defs,
+            'order': order
+        }
+
+        pageSizes = $this.attr('dt-page-sizes')
+
+        if (pageSizes) {
+            lengthMenuValues = [];
+            lengthMenuLiterals = [];
+
+            pageSizes.split(',').forEach(function(pageSize) {
+                val = parseInt(pageSize);
+
+                if (val === -1) {
+                    lengthMenuValues.push(val);
+                    lengthMenuLiterals.push('Todos');
+                } else {
+                    lengthMenuValues.push(val);
+                    lengthMenuLiterals.push(val);
+                }
+            });
+
+            dataTableConfig['lengthMenu'] = [lengthMenuValues, lengthMenuLiterals];
         }
 
         dataUrl = $this.attr('dt-dataUrl')

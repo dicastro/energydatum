@@ -2,18 +2,18 @@ import glob
 import json
 import os
 from decimal import Decimal
-from typing import Callable, Optional
+from typing import Callable
 
 import pandas as pd
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql.types import StructType
 
 
-def df_to_json_file(df, destination_path, date_cols_indexes=()) -> None:
+def df_to_json_file(sdf, destination_path, date_cols_indexes=()) -> None:
     if len(date_cols_indexes) > 0:
         destination_temp = f'{destination_path}.tmp'
 
-        df.toPandas()\
+        sdf.toPandas()\
             .to_json(destination_temp, orient='split', index=False, date_format='iso', date_unit='s')
 
         with open(destination_temp, 'r') as temp_file:
@@ -28,7 +28,7 @@ def df_to_json_file(df, destination_path, date_cols_indexes=()) -> None:
 
         os.remove(destination_temp)
     else:
-        df.toPandas()\
+        sdf.toPandas()\
             .to_json(destination_path, orient='split', index=False, date_format='iso', date_unit='s', force_ascii=False)
 
 
@@ -70,3 +70,14 @@ def json_file_to_df(json_path: str, spark: SparkSession, sp_schema: StructType,
     print('DEBUG: read rows: {rows}'.format(rows=sdf.count()))
 
     return sdf
+
+
+def json_to_df(json_data, spark: SparkSession, sp_schema: StructType) -> DataFrame:
+    df = pd.DataFrame(json_data['data'], columns=json_data['columns'])
+
+    for column in df:
+        if df[column].dtype == 'float64':
+            df[column] = df[column].apply(lambda v: Decimal(v))
+
+    return spark.createDataFrame(df, schema=sp_schema)\
+        .cache()

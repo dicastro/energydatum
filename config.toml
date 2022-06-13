@@ -1,21 +1,12 @@
 [github]
-# used to build github urls
 username = "dicastro"
-# used to build github download url
 configuration_backup_filename = "site_configuration_backup.json"
 
 [pvgis]
-calibrate_angle_and_aspect = "true"
-# Common params are:
-#   - peakpower [float]: Nominal power of the PV system, in kWp (default: 1)
-#   - loss      [float]: Sum of system losses, in percent (default: 0)
-#   - angle     [float]: Inclination angle from horizontal plane of the (fixed) PV system (default: 30)
-#   - aspect    [float]: Orientation (azimuth) angle of the (fixed) PV system: 0=south, 90=west, -90=east (default: 0)
-#
-# All params can be found in official documentation: https://joint-research-centre.ec.europa.eu/pvgis-photovoltaic-geographical-information-system/getting-started-pvgis/api-non-interactive-service_en
+calibrate_angle_and_aspect = false
+
 [pvgis.params]
-peakpower = 2
 loss = 14
-# (46, -2)
-angle =	36
-aspect = -2
+peakpower = 2
+angle = 39
+aspect = -6

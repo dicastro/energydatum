@@ -336,11 +336,16 @@ En estas gráficas se muestra tanto el precio medio (línea) como la desviación
 - [x] Implementada lógica para tener en cuenta los cambios de hora en los precios de la electricidad
 - [x] Implementada lógica para tener en cuenta los adelantos de hora en los consumos
 
-:rocket: Versión 1.0.0.alpha4
+:checkered_flag: Versión 1.0.0.alpha4
 
-- [ ] Visualización de estimación de energía generada por horas. Se hace uso de [PVGIS](https://joint-research-centre.ec.europa.eu/pvgis-photovoltaic-geographical-information-system/pvgis-tools/monthly-radiation_en). Se añade variable de entorno con las coordenadas geográficas. Añadir al fichero de configuración propiedades para indicar la potencia instalada, orientación, y demás datos necesarios para la estimación.
+- [x] Calibrado de ángulo de inclinación y orientación. Se hace uso de [PVGIS](https://joint-research-centre.ec.europa.eu/pvgis-photovoltaic-geographical-information-system/pvgis-tools/monthly-radiation_en). Se añade variable de entorno con las coordenadas geográficas
 
-:rocket: Versión 1.0.0.alpha5
+:construction: Versión 1.0.0.alpha5 :arrow_left:
+
+- [ ] Visualización de estimación de energía generada por meses, bien para las mejores configuraciones del calibrado, o bien para los parámetros indicados en el fichero de configuración
+- [ ] Se tienen en cuenta en el fichero de configuración propiedades para indicar la potencia instalada, orientación, y demás datos necesarios para la estimación de la producción
+
+:rocket: Versión 1.0.0.alpha6
 
 - [ ] Añadir en la pantalla de configuración la posibilidad de añadir ofertas de compra de electricidad
 - [ ] En la pantalla *Precio PVPC > Compra* mostrar la oferta de compra en uso
@@ -379,43 +384,11 @@ Algunas ideas que se me van ocurriendo y que todavía no he planificado (ni sé 
   - propiedad para deshabilitar la recuperación de los precios
   - propiedad para deshabilitar la recuperación de la generación eléctrica
   - propiedad para deshabilitar la recuperación del histórico del clima
+- Migrar código Spark (PySpark) a Pandas
+- Traducir tablas a español
 
 # Otros Links
 
 - [Manejo de Plotly con JS](https://plotly.com/javascript/plotlyjs-function-reference/#plotlynewplot)
 - [Herramienta web PVGIS](https://re.jrc.ec.europa.eu/pvg_tools/en/tools.html)
 - [Manual usuario PVGIS](https://joint-research-centre.ec.europa.eu/pvgis-photovoltaic-geographical-information-system/getting-started-pvgis/pvgis-user-manual_en)
-
-# TODELETE (temporal notes)
-
-```json
-{
-  "calibrations": {
-    "20210601_20220430": {
-      "angle": {
-        "12342144321": {
-          "id": "12342144321",
-          "params": {
-            "peakpower": 2.0,
-            "angle": 36,
-            "aspect": -2
-          },
-          "dataframe": {
-            "columns": [
-              "month_year", "peakpower", "angle", "aspect", "total_consumption_kwh", "selfsupply_kwh", "exceeding_kwh", "exceeding_pct_vs_total"
-            ],
-            "data": [
-              ["06-2021", 2.0, 36, -2, 0.0, 0.0, 0.0, 9]
-            ]
-          },
-          "summary": {
-            "total_consumption_kwh": 0.0,
-            "selfsupply_kwh": 0.0,
-            "exceeding_kwt": 0.0
-          }
-        }
-      }
-    }
-  }
-}
-```
