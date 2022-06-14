@@ -340,6 +340,10 @@ En estas gráficas se muestra tanto el precio medio (línea) como la desviación
 
 - [x] Calibrado de ángulo de inclinación y orientación. Se hace uso de [PVGIS](https://joint-research-centre.ec.europa.eu/pvgis-photovoltaic-geographical-information-system/pvgis-tools/monthly-radiation_en). Se añade variable de entorno con las coordenadas geográficas
 
+:checkered_flag: Versión 1.0.0.alpha4b
+
+- [x] Descomentado código en `main.py`
+
 :construction: Versión 1.0.0.alpha5 :arrow_left:
 
 - [ ] Visualización de estimación de energía generada por meses, bien para las mejores configuraciones del calibrado, o bien para los parámetros indicados en el fichero de configuración

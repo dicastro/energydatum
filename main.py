@@ -722,268 +722,268 @@ angle_aspect_calibration_y_fig_html = pvgis.get_yearly_calibration_figure_html('
 with open('config.toml', 'w', encoding='utf-8') as config_file:
     toml.dump(config, config_file)
 
-# # ----------------------------------------------------------------------------------------------------------------------
-#
-# # -------------------------------
-# # Configuration
-# # -------------------------------
-# print('DEBUG: configuration')
-#
-# # -------------------------------
-# # Data
-# # -------------------------------
-#
-# # Esios Indicators
-# print('DEBUG: esios indicators')
-#
-# EsiosIndicator(jinja_env, jinja_common_context).refresh_esios_indicators()
-#
-# # Esios price
-# print('DEBUG: esios price')
-#
-# price_period_from = price_date_max - relativedelta(years=1)
-#
-# price_period_from = max(price_date_min, price_period_from)
-#
-# esios_price_years = list(price_sdf.select(col('year')).distinct().orderBy('year').toPandas()['year'])
-#
-# price_pvpc_evol = price_sdf\
-#     .filter(col('date') >= price_period_from)\
-#     .cache()
-#
-# # Esios Buy Price
-# print('DEBUG: esios buy price')
-#
-# price_rate_figure_ids = {}
-#
-# price_dates_sdf = price_sdf\
-#     .filter(col('date') >= price_period_from)\
-#     .select(col('date'))\
-#     .distinct()\
-#     .orderBy(col('date'))
-#
-# price_buy_pvpc_evol_fig = px.line(price_pvpc_evol.toPandas(),
-#                                   x='datetime',
-#                                   y='price_buy_kwh',
-#                                   labels=dict(date='Fecha',
-#                                           price_buy_kwh='Precio (€/kWh)'))
-# price_buy_pvpc_evol_fig.update_layout(xaxis={'title': None})
-# price_buy_pvpc_evol_fig.update_xaxes(
-#     tickangle=90,
-#     rangeselector=dict(
-#         buttons=list([
-#             dict(count=1, label="1m", step="month", stepmode="backward"),
-#             dict(count=3, label="3m", step="month", stepmode="backward"),
-#             dict(count=6, label="6m", step="month", stepmode="backward"),
-#             dict(count=9, label="9m", step="month", stepmode="backward"),
-#             dict(label="12m", step="all")
-#         ])
-#     ))
-#
-# price_buy_pvpc_evol_fig_html = price_buy_pvpc_evol_fig.to_html(include_plotlyjs=False, full_html=False, div_id='price_pvpc_evol_figure')
-#
-#
-# def missing_value(x):
-#     return not x or math.isnan(x)
-#
-#
-# rate_info_list = [rate_20td_info, rate_wk_info, rate_fix_info]
-#
-# html_template_data = {}
-#
-# for rate_info in rate_info_list:
-#     print('DEBUG:     {rate_type}'.format(rate_type=rate_info.get_rate_type()))
-#
-#     price_pvpc_rate_evol = price_pvpc_evol\
-#         .join(bank_days_sdf
-#               .select(col('year'), col('month'), col('dom'), lit(True).alias('is_bank_day')),
-#               on=['year', 'month', 'dom'], how='left')\
-#         .fillna(False, subset=['is_bank_day'])\
-#         .withColumn('period', rate_info.get_period('hour', 'dow', 'is_bank_day'))\
-#         .groupBy(col('date'), col('period'))\
-#         .agg(
-#             ps_round(avg(col('price_buy_kwh')), 3).alias('avg_period_kwh'),
-#             ps_round(std(col('price_buy_kwh')), 3).alias('std_period_kwh')
-#         )\
-#         .withColumn('avg_period_kwh', col('avg_period_kwh').cast(DecimalType(10, 3)))\
-#         .withColumn('std_period_kwh', col('std_period_kwh').cast(DecimalType(10, 3)))\
-#         .withColumn('upp_period_kwh', col('avg_period_kwh') + col('std_period_kwh'))\
-#         .withColumn('low_period_kwh', col('avg_period_kwh') - col('std_period_kwh'))\
-#         .orderBy('date', 'period')
-#
-#     rate_period_list = rate_info.get_periods()
-#
-#     price_pvpc_rate_evol_fig = make_subplots(rows=len(rate_period_list), cols=1,
-#                                              vertical_spacing=0.2,
-#                                              row_titles=rate_info.get_periods())
-#
-#     for (rate_i, rate_period) in enumerate(rate_period_list):
-#         row = rate_i + 1
-#
-#         price_pvpc_rate_period_evol = price_pvpc_rate_evol\
-#             .filter(col('period') == rate_period)\
-#             .join(price_dates_sdf, on='date', how='right')\
-#             .fillna(rate_period, subset=['period'])\
-#             .orderBy('date')\
-#             .toPandas()
-#
-#         price_pvpc_rate_period_x = list(price_pvpc_rate_period_evol['date'])
-#         price_pvpc_rate_period_y = list(price_pvpc_rate_period_evol['avg_period_kwh'])
-#         price_pvpc_rate_period_y_upper = list(price_pvpc_rate_period_evol['upp_period_kwh'])
-#         price_pvpc_rate_period_y_lower = list(price_pvpc_rate_period_evol['low_period_kwh'])
-#
-#         price_pvpc_rate_evol_fig.add_trace(go.Scatter(
-#             name=rate_period,
-#             x=price_pvpc_rate_period_x,
-#             y=price_pvpc_rate_period_y,
-#             mode='lines',
-#             line=dict(color=rate_info.get_period_color_rgba(rate_period)),
-#             showlegend=True,
-#             connectgaps=False,
-#             customdata=np.dstack((price_pvpc_rate_period_y_lower, price_pvpc_rate_period_y_upper))[0],
-#             hovertemplate='Fecha=%{x}<br>Precio (\u20ac/kWh)=[%{customdata[0]} > %{y} < %{customdata[1]}]'
-#         ), row=row, col=1)
-#
-#         filling_x = price_pvpc_rate_period_x + price_pvpc_rate_period_x[::-1]
-#         filling_y = price_pvpc_rate_period_y_upper + price_pvpc_rate_period_y_lower[::-1]
-#
-#         gaps = []
-#
-#         for (prev_pos, curr) in enumerate(filling_y[1:]):
-#             prev = filling_y[prev_pos]
-#             pos = prev_pos + 1
-#
-#             if not missing_value(prev) and missing_value(curr):
-#                 gaps.append(dict(pos=pos, date=filling_x[prev_pos]))
-#             elif missing_value(prev) and not missing_value(curr):
-#                 gaps.append(dict(pos=pos, date=filling_x[pos]))
-#
-#         for (gap_i, gap) in enumerate(gaps):
-#             filling_x.insert(gap['pos'] + gap_i, gap['date'])
-#             filling_y.insert(gap['pos'] + gap_i, Decimal('0.0'))
-#
-#         filling_y = [y if y and not math.isnan(y) else Decimal('0.0') for y in filling_y]
-#
-#         price_pvpc_rate_evol_fig.add_trace(go.Scatter(
-#             name=f'{rate_period} (±SD)',
-#             x=filling_x,
-#             y=filling_y,
-#             fill='toself',
-#             fillcolor=rate_info.get_period_color_rgba(rate_period, 0.2),
-#             line=dict(width=0),
-#             showlegend=True,
-#             hoverinfo='skip',
-#             connectgaps=True
-#         ), row=row, col=1)
-#
-#         if row > 1:
-#             price_pvpc_rate_evol_fig.update_yaxes(matches='y', row=row, col=1)
-#             price_pvpc_rate_evol_fig.update_xaxes(matches='x', row=row, col=1)
-#             price_pvpc_rate_evol_fig.update_layout(**{f'yaxis{row}': {'title': 'Precio medio (€/kWh)'}})
-#
-#     price_pvpc_rate_evol_fig.update_layout(xaxis={'title': None}, yaxis={'title': 'Precio medio (€/kWh)'}, legend=dict(title='Periodo'), hovermode='x')
-#     price_pvpc_rate_evol_fig.update_xaxes(
-#         tickangle=90,
-#         rangeselector=dict(
-#             buttons=list([
-#                 dict(count=1, label="1m", step="month", stepmode="backward"),
-#                 dict(count=3, label="3m", step="month", stepmode="backward"),
-#                 dict(count=6, label="6m", step="month", stepmode="backward"),
-#                 dict(count=9, label="9m", step="month", stepmode="backward"),
-#                 dict(label="12m", step="all")
-#             ])
-#         )
-#     )
-#
-#     figure_id = f'price_pvpc_{rate_info.get_rate_type()}_evol_figure'
-#     price_rate_figure_ids[rate_info.get_rate_type()] = figure_id
-#
-#     price_pvpc_rate_evol_fig_html = price_pvpc_rate_evol_fig.to_html(include_plotlyjs=False,
-#                                                                      full_html=False,
-#                                                                      div_id=figure_id,
-#                                                                      default_height=f'{len(rate_period_list) * 400}px')
-#
-#     html_template_data[f'price_pvpc_{rate_info.get_rate_type()}_evol_fig'] = price_pvpc_rate_evol_fig_html
-#     html_template_data[f'rate_{rate_info.get_rate_type()}_info_series'] = rate_wk_info.get_series()
-#     html_template_data[f'rate_{rate_info.get_rate_type()}_info_periods'] = rate_wk_info.get_periods()
-#
-# # Esios sell price
-# print('DEBUG: esios sell price')
-#
-# price_sell_pvpc_evol_fig = px.line(price_pvpc_evol.toPandas(),
-#                                    x='datetime',
-#                                    y='price_sell_kwh',
-#                                    labels=dict(date='Fecha',
-#                                                price_sell_kwh='Precio (€/kWh)'))
-# price_sell_pvpc_evol_fig.update_layout(xaxis={'title': None})
-# price_sell_pvpc_evol_fig.update_xaxes(
-#     tickangle=90,
-#     rangeselector=dict(
-#         buttons=list([
-#             dict(count=1, label="1m", step="month", stepmode="backward"),
-#             dict(count=3, label="3m", step="month", stepmode="backward"),
-#             dict(count=6, label="6m", step="month", stepmode="backward"),
-#             dict(count=9, label="9m", step="month", stepmode="backward"),
-#             dict(label="12m", step="all")
-#         ])
-#     ))
-#
-# price_sell_pvpc_evol_fig_html = price_sell_pvpc_evol_fig.to_html(include_plotlyjs=False, full_html=False, div_id='price_pvpc_evol_figure')
-#
-#
-# price_pvpc_evol_m_sdf = price_pvpc_evol\
-#     .groupBy(col('year'), col('month'))\
-#     .agg(
-#         ps_round(avg(col('price_sell_kwh')).alias('avg_price_sell_kwh'), 3).alias('avg_price_sell_kwh'),
-#         ps_round(std(col('price_sell_kwh')).alias('std_price_sell_kwh'), 3).alias('std_price_sell_kwh'),
-#     )\
-#     .withColumn('avg_price_sell_kwh', col('avg_price_sell_kwh').cast(DecimalType(10, 3)))\
-#     .withColumn('std_price_sell_kwh', col('std_price_sell_kwh').cast(DecimalType(10, 3)))\
-#     .withColumn('upp_price_sell_kwh', col('avg_price_sell_kwh') + col('std_price_sell_kwh'))\
-#     .withColumn('low_price_sell_kwh', col('avg_price_sell_kwh') - col('std_price_sell_kwh'))\
-#     .orderBy(col('year'), col('month'))\
-#     .withColumn('month_year', concat(lpad(col('month'), 2, '0'), lit('-'), col('year')))\
-#     .drop('month', 'year')\
-#
-# price_pvpc_evol_m_df = price_pvpc_evol_m_sdf.toPandas()
-#
-# price_sell_pvpc_evol_m_x = list(price_pvpc_evol_m_df['month_year'])
-# price_sell_pvpc_evol_m_y = list(price_pvpc_evol_m_df['avg_price_sell_kwh'])
-# price_sell_pvpc_evol_m_y_upper = list(price_pvpc_evol_m_df['upp_price_sell_kwh'])
-# price_sell_pvpc_evol_m_y_lower = list(price_pvpc_evol_m_df['low_price_sell_kwh'])
-#
-# price_sell_pvpc_evol_m_fig = px.line(price_pvpc_evol_m_df,
-#                                      x='month_year',
-#                                      y='avg_price_sell_kwh',
-#                                      custom_data=['low_price_sell_kwh', 'upp_price_sell_kwh'],
-#                                      labels=dict(month_year='Mes/Año',
-#                                                  avg_price_sell_kwh='Precio (€/kWh)'))
-# price_sell_pvpc_evol_m_fig.update_traces(hovertemplate='Fecha=%{x}<br>Precio (\u20ac/kWh)=[%{customdata[0]} > %{y} < %{customdata[1]}]')
-# price_sell_pvpc_evol_m_fig.update_layout(xaxis={'title': None})
-# price_sell_pvpc_evol_m_fig.update_xaxes(tickangle=90)
-#
-# price_sell_pvpc_evol_m_filling_x = price_sell_pvpc_evol_m_x + price_sell_pvpc_evol_m_x[::-1]
-# price_sell_pvpc_evol_m_filling_y = price_sell_pvpc_evol_m_y_upper + price_sell_pvpc_evol_m_y_lower[::-1]
-#
-# price_sell_pvpc_evol_m_fig.add_trace(go.Scatter(
-#             name=f'Precio (±SD)',
-#             x=price_sell_pvpc_evol_m_filling_x,
-#             y=price_sell_pvpc_evol_m_filling_y,
-#             fill='toself',
-#             fillcolor='rgba(99,110,250,0.2)',
-#             line=dict(width=0),
-#             showlegend=False,
-#             hoverinfo='skip',
-#             connectgaps=True
-#         ))
-#
-# price_sell_pvpc_evol_m_fig_html = price_sell_pvpc_evol_m_fig.to_html(include_plotlyjs=False, full_html=False, div_id='price_pvpc_evol_m_figure')
-#
-# # bank days
-# print('DEBUG: bank days')
-#
-# # weather
-# print('DEBUG: weather')
+# ----------------------------------------------------------------------------------------------------------------------
+
+# -------------------------------
+# Configuration
+# -------------------------------
+print('DEBUG: configuration')
+
+# -------------------------------
+# Data
+# -------------------------------
+
+# Esios Indicators
+print('DEBUG: esios indicators')
+
+EsiosIndicator(jinja_env, jinja_common_context).refresh_esios_indicators()
+
+# Esios price
+print('DEBUG: esios price')
+
+price_period_from = price_date_max - relativedelta(years=1)
+
+price_period_from = max(price_date_min, price_period_from)
+
+esios_price_years = list(price_sdf.select(col('year')).distinct().orderBy('year').toPandas()['year'])
+
+price_pvpc_evol = price_sdf\
+    .filter(col('date') >= price_period_from)\
+    .cache()
+
+# Esios Buy Price
+print('DEBUG: esios buy price')
+
+price_rate_figure_ids = {}
+
+price_dates_sdf = price_sdf\
+    .filter(col('date') >= price_period_from)\
+    .select(col('date'))\
+    .distinct()\
+    .orderBy(col('date'))
+
+price_buy_pvpc_evol_fig = px.line(price_pvpc_evol.toPandas(),
+                                  x='datetime',
+                                  y='price_buy_kwh',
+                                  labels=dict(date='Fecha',
+                                          price_buy_kwh='Precio (€/kWh)'))
+price_buy_pvpc_evol_fig.update_layout(xaxis={'title': None})
+price_buy_pvpc_evol_fig.update_xaxes(
+    tickangle=90,
+    rangeselector=dict(
+        buttons=list([
+            dict(count=1, label="1m", step="month", stepmode="backward"),
+            dict(count=3, label="3m", step="month", stepmode="backward"),
+            dict(count=6, label="6m", step="month", stepmode="backward"),
+            dict(count=9, label="9m", step="month", stepmode="backward"),
+            dict(label="12m", step="all")
+        ])
+    ))
+
+price_buy_pvpc_evol_fig_html = price_buy_pvpc_evol_fig.to_html(include_plotlyjs=False, full_html=False, div_id='price_pvpc_evol_figure')
+
+
+def missing_value(x):
+    return not x or math.isnan(x)
+
+
+rate_info_list = [rate_20td_info, rate_wk_info, rate_fix_info]
+
+html_template_data = {}
+
+for rate_info in rate_info_list:
+    print('DEBUG:     {rate_type}'.format(rate_type=rate_info.get_rate_type()))
+
+    price_pvpc_rate_evol = price_pvpc_evol\
+        .join(bank_days_sdf
+              .select(col('year'), col('month'), col('dom'), lit(True).alias('is_bank_day')),
+              on=['year', 'month', 'dom'], how='left')\
+        .fillna(False, subset=['is_bank_day'])\
+        .withColumn('period', rate_info.get_period('hour', 'dow', 'is_bank_day'))\
+        .groupBy(col('date'), col('period'))\
+        .agg(
+            ps_round(avg(col('price_buy_kwh')), 3).alias('avg_period_kwh'),
+            ps_round(std(col('price_buy_kwh')), 3).alias('std_period_kwh')
+        )\
+        .withColumn('avg_period_kwh', col('avg_period_kwh').cast(DecimalType(10, 3)))\
+        .withColumn('std_period_kwh', col('std_period_kwh').cast(DecimalType(10, 3)))\
+        .withColumn('upp_period_kwh', col('avg_period_kwh') + col('std_period_kwh'))\
+        .withColumn('low_period_kwh', col('avg_period_kwh') - col('std_period_kwh'))\
+        .orderBy('date', 'period')
+
+    rate_period_list = rate_info.get_periods()
+
+    price_pvpc_rate_evol_fig = make_subplots(rows=len(rate_period_list), cols=1,
+                                             vertical_spacing=0.2,
+                                             row_titles=rate_info.get_periods())
+
+    for (rate_i, rate_period) in enumerate(rate_period_list):
+        row = rate_i + 1
+
+        price_pvpc_rate_period_evol = price_pvpc_rate_evol\
+            .filter(col('period') == rate_period)\
+            .join(price_dates_sdf, on='date', how='right')\
+            .fillna(rate_period, subset=['period'])\
+            .orderBy('date')\
+            .toPandas()
+
+        price_pvpc_rate_period_x = list(price_pvpc_rate_period_evol['date'])
+        price_pvpc_rate_period_y = list(price_pvpc_rate_period_evol['avg_period_kwh'])
+        price_pvpc_rate_period_y_upper = list(price_pvpc_rate_period_evol['upp_period_kwh'])
+        price_pvpc_rate_period_y_lower = list(price_pvpc_rate_period_evol['low_period_kwh'])
+
+        price_pvpc_rate_evol_fig.add_trace(go.Scatter(
+            name=rate_period,
+            x=price_pvpc_rate_period_x,
+            y=price_pvpc_rate_period_y,
+            mode='lines',
+            line=dict(color=rate_info.get_period_color_rgba(rate_period)),
+            showlegend=True,
+            connectgaps=False,
+            customdata=np.dstack((price_pvpc_rate_period_y_lower, price_pvpc_rate_period_y_upper))[0],
+            hovertemplate='Fecha=%{x}<br>Precio (\u20ac/kWh)=[%{customdata[0]} > %{y} < %{customdata[1]}]'
+        ), row=row, col=1)
+
+        filling_x = price_pvpc_rate_period_x + price_pvpc_rate_period_x[::-1]
+        filling_y = price_pvpc_rate_period_y_upper + price_pvpc_rate_period_y_lower[::-1]
+
+        gaps = []
+
+        for (prev_pos, curr) in enumerate(filling_y[1:]):
+            prev = filling_y[prev_pos]
+            pos = prev_pos + 1
+
+            if not missing_value(prev) and missing_value(curr):
+                gaps.append(dict(pos=pos, date=filling_x[prev_pos]))
+            elif missing_value(prev) and not missing_value(curr):
+                gaps.append(dict(pos=pos, date=filling_x[pos]))
+
+        for (gap_i, gap) in enumerate(gaps):
+            filling_x.insert(gap['pos'] + gap_i, gap['date'])
+            filling_y.insert(gap['pos'] + gap_i, Decimal('0.0'))
+
+        filling_y = [y if y and not math.isnan(y) else Decimal('0.0') for y in filling_y]
+
+        price_pvpc_rate_evol_fig.add_trace(go.Scatter(
+            name=f'{rate_period} (±SD)',
+            x=filling_x,
+            y=filling_y,
+            fill='toself',
+            fillcolor=rate_info.get_period_color_rgba(rate_period, 0.2),
+            line=dict(width=0),
+            showlegend=True,
+            hoverinfo='skip',
+            connectgaps=True
+        ), row=row, col=1)
+
+        if row > 1:
+            price_pvpc_rate_evol_fig.update_yaxes(matches='y', row=row, col=1)
+            price_pvpc_rate_evol_fig.update_xaxes(matches='x', row=row, col=1)
+            price_pvpc_rate_evol_fig.update_layout(**{f'yaxis{row}': {'title': 'Precio medio (€/kWh)'}})
+
+    price_pvpc_rate_evol_fig.update_layout(xaxis={'title': None}, yaxis={'title': 'Precio medio (€/kWh)'}, legend=dict(title='Periodo'), hovermode='x')
+    price_pvpc_rate_evol_fig.update_xaxes(
+        tickangle=90,
+        rangeselector=dict(
+            buttons=list([
+                dict(count=1, label="1m", step="month", stepmode="backward"),
+                dict(count=3, label="3m", step="month", stepmode="backward"),
+                dict(count=6, label="6m", step="month", stepmode="backward"),
+                dict(count=9, label="9m", step="month", stepmode="backward"),
+                dict(label="12m", step="all")
+            ])
+        )
+    )
+
+    figure_id = f'price_pvpc_{rate_info.get_rate_type()}_evol_figure'
+    price_rate_figure_ids[rate_info.get_rate_type()] = figure_id
+
+    price_pvpc_rate_evol_fig_html = price_pvpc_rate_evol_fig.to_html(include_plotlyjs=False,
+                                                                     full_html=False,
+                                                                     div_id=figure_id,
+                                                                     default_height=f'{len(rate_period_list) * 400}px')
+
+    html_template_data[f'price_pvpc_{rate_info.get_rate_type()}_evol_fig'] = price_pvpc_rate_evol_fig_html
+    html_template_data[f'rate_{rate_info.get_rate_type()}_info_series'] = rate_wk_info.get_series()
+    html_template_data[f'rate_{rate_info.get_rate_type()}_info_periods'] = rate_wk_info.get_periods()
+
+# Esios sell price
+print('DEBUG: esios sell price')
+
+price_sell_pvpc_evol_fig = px.line(price_pvpc_evol.toPandas(),
+                                   x='datetime',
+                                   y='price_sell_kwh',
+                                   labels=dict(date='Fecha',
+                                               price_sell_kwh='Precio (€/kWh)'))
+price_sell_pvpc_evol_fig.update_layout(xaxis={'title': None})
+price_sell_pvpc_evol_fig.update_xaxes(
+    tickangle=90,
+    rangeselector=dict(
+        buttons=list([
+            dict(count=1, label="1m", step="month", stepmode="backward"),
+            dict(count=3, label="3m", step="month", stepmode="backward"),
+            dict(count=6, label="6m", step="month", stepmode="backward"),
+            dict(count=9, label="9m", step="month", stepmode="backward"),
+            dict(label="12m", step="all")
+        ])
+    ))
+
+price_sell_pvpc_evol_fig_html = price_sell_pvpc_evol_fig.to_html(include_plotlyjs=False, full_html=False, div_id='price_pvpc_evol_figure')
+
+
+price_pvpc_evol_m_sdf = price_pvpc_evol\
+    .groupBy(col('year'), col('month'))\
+    .agg(
+        ps_round(avg(col('price_sell_kwh')).alias('avg_price_sell_kwh'), 3).alias('avg_price_sell_kwh'),
+        ps_round(std(col('price_sell_kwh')).alias('std_price_sell_kwh'), 3).alias('std_price_sell_kwh'),
+    )\
+    .withColumn('avg_price_sell_kwh', col('avg_price_sell_kwh').cast(DecimalType(10, 3)))\
+    .withColumn('std_price_sell_kwh', col('std_price_sell_kwh').cast(DecimalType(10, 3)))\
+    .withColumn('upp_price_sell_kwh', col('avg_price_sell_kwh') + col('std_price_sell_kwh'))\
+    .withColumn('low_price_sell_kwh', col('avg_price_sell_kwh') - col('std_price_sell_kwh'))\
+    .orderBy(col('year'), col('month'))\
+    .withColumn('month_year', concat(lpad(col('month'), 2, '0'), lit('-'), col('year')))\
+    .drop('month', 'year')\
+
+price_pvpc_evol_m_df = price_pvpc_evol_m_sdf.toPandas()
+
+price_sell_pvpc_evol_m_x = list(price_pvpc_evol_m_df['month_year'])
+price_sell_pvpc_evol_m_y = list(price_pvpc_evol_m_df['avg_price_sell_kwh'])
+price_sell_pvpc_evol_m_y_upper = list(price_pvpc_evol_m_df['upp_price_sell_kwh'])
+price_sell_pvpc_evol_m_y_lower = list(price_pvpc_evol_m_df['low_price_sell_kwh'])
+
+price_sell_pvpc_evol_m_fig = px.line(price_pvpc_evol_m_df,
+                                     x='month_year',
+                                     y='avg_price_sell_kwh',
+                                     custom_data=['low_price_sell_kwh', 'upp_price_sell_kwh'],
+                                     labels=dict(month_year='Mes/Año',
+                                                 avg_price_sell_kwh='Precio (€/kWh)'))
+price_sell_pvpc_evol_m_fig.update_traces(hovertemplate='Fecha=%{x}<br>Precio (\u20ac/kWh)=[%{customdata[0]} > %{y} < %{customdata[1]}]')
+price_sell_pvpc_evol_m_fig.update_layout(xaxis={'title': None})
+price_sell_pvpc_evol_m_fig.update_xaxes(tickangle=90)
+
+price_sell_pvpc_evol_m_filling_x = price_sell_pvpc_evol_m_x + price_sell_pvpc_evol_m_x[::-1]
+price_sell_pvpc_evol_m_filling_y = price_sell_pvpc_evol_m_y_upper + price_sell_pvpc_evol_m_y_lower[::-1]
+
+price_sell_pvpc_evol_m_fig.add_trace(go.Scatter(
+            name=f'Precio (±SD)',
+            x=price_sell_pvpc_evol_m_filling_x,
+            y=price_sell_pvpc_evol_m_filling_y,
+            fill='toself',
+            fillcolor='rgba(99,110,250,0.2)',
+            line=dict(width=0),
+            showlegend=False,
+            hoverinfo='skip',
+            connectgaps=True
+        ))
+
+price_sell_pvpc_evol_m_fig_html = price_sell_pvpc_evol_m_fig.to_html(include_plotlyjs=False, full_html=False, div_id='price_pvpc_evol_m_figure')
+
+# bank days
+print('DEBUG: bank days')
+
+# weather
+print('DEBUG: weather')
 
 
 # htmls
