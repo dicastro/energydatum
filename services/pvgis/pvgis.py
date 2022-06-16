@@ -4,7 +4,7 @@ import itertools
 import json
 import os
 from decimal import Decimal
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Tuple, Union
 
 import plotly.colors
 import plotly.express as px
@@ -13,15 +13,18 @@ import requests
 from plotly.subplots import make_subplots
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import col, to_date, to_timestamp, hour, round as ps_round, month, dayofmonth, \
-    avg, year, when, sum, lit, expr, least
+    avg, year, when, sum, lit, expr, least, concat, first
 from pyspark.sql.types import StructType, StructField, StringType, DecimalType, FloatType, IntegerType
 
 import constants
 import utils
+from services.rates.rate_20td_info import Rate20TDInfo
+from services.rates.rate_fix_info import RateFixInfo
+from services.rates.rate_wk_info import RateWKInfo
 
 
 class Pvgis:
-    def __init__(self, pvgis_config, spark, consumption_sdf: DataFrame, consumption_date_min: dt.date, consumption_date_max: dt.date):
+    def __init__(self, pvgis_config, spark, consumption_sdf: DataFrame, consumption_date_min: dt.date, consumption_date_max: dt.date, rate_info_list: List[Union[Rate20TDInfo, RateWKInfo, RateFixInfo]]):
         self.range_definition_regex = r'range\((?P<start>-?\d+(?:\.\d+)?),\s*(?P<end>-?\d+(?:\.\d+)?),\s*(?P<step>\d+(?:\.\d+)?)\)'
 
         self.url = 'https://re.jrc.ec.europa.eu/api/v5_2/seriescalc'
@@ -30,7 +33,47 @@ class Pvgis:
         self.consumption_sdf = consumption_sdf
         self.consumption_date_min = consumption_date_min
         self.consumption_date_max = consumption_date_max
-        self.calibration_date_scope = f'{consumption_date_min.strftime("%Y%m%d")}_{consumption_date_max.strftime("%Y%m%d")}'
+        self.consumption_date_scope = f'{consumption_date_min.strftime("%Y%m%d")}_{consumption_date_max.strftime("%Y%m%d")}'
+        self.rate_info_list = rate_info_list
+
+        self.rate_info_columns = []
+
+        for rate_info in self.rate_info_list:
+            period_column = self._get_period_column_name(rate_info)
+
+            rate_info_column = {
+                'rate': rate_info.get_rate_type(),
+                'rate_info': rate_info,
+                'period_column': period_column,
+                'periods': []
+            }
+
+            for period in rate_info.get_periods():
+                period_column_suffix = f'{period_column}_{period}_kwh'
+
+                hour_period_column = f'hour_{period_column_suffix}'
+                month_period_column = f'month_{period_column_suffix}'
+                year_period_column = f'year_{period_column_suffix}'
+
+                rate_info_column_period = {
+                    'period': period,
+                    'hour_period_column': hour_period_column,
+                    'hour_selfsupply': hour_period_column.replace("_kwh", "_selfsupply_kwh"),
+                    'hour_exceeding': hour_period_column.replace("_kwh", "_exceeding_kwh"),
+                    'hour_finalconsumption': hour_period_column.replace("_kwh", "_finalconsumption_kwh"),
+                    'month_period_column': month_period_column,
+                    'month_selfsupply': month_period_column.replace("_kwh", "_selfsupply_kwh"),
+                    'month_exceeding': month_period_column.replace("_kwh", "_exceeding_kwh"),
+                    'month_finalconsumption': month_period_column.replace("_kwh", "_finalconsumption_kwh"),
+                    'year_period_column': year_period_column,
+                    'year_selfsupply': year_period_column.replace("_kwh", "_selfsupply_kwh"),
+                    'year_exceeding': year_period_column.replace("_kwh", "_exceeding_kwh"),
+                    'year_finalconsumption': year_period_column.replace("_kwh", "_finalconsumption_kwh")
+                }
+
+                rate_info_column['periods'].append(rate_info_column_period)
+
+            self.rate_info_columns.append(rate_info_column)
 
         self.pvgis_schema = StructType([
             StructField('time', StringType(), False),
@@ -59,10 +102,10 @@ class Pvgis:
                 StructField('month_selfsupply_kwh', DecimalType(precision=10, scale=3), False),
                 StructField('month_exceeding_kwh', DecimalType(precision=10, scale=3), False),
                 StructField('month_finalconsumption_kwh', DecimalType(precision=10, scale=3), False),
-                StructField('month_avg_price_buy_kwh', DecimalType(precision=10, scale=5), False),
-                StructField('month_avg_price_sell_kwh', DecimalType(precision=10, scale=5), False),
-                StructField('price_sell_vs_buy', DecimalType(precision=10, scale=3), False),
-                StructField('price_buy_vs_sell', DecimalType(precision=10, scale=3), False),
+                StructField('month_avg_pricebuy_ekwh', DecimalType(precision=10, scale=5), False),
+                StructField('month_avg_pricesell_ekwh', DecimalType(precision=10, scale=5), False),
+                StructField('month_avg_pricesell_vs_pricebuy_ekwh', DecimalType(precision=10, scale=3), False),
+                StructField('month_avg_pricebuy_vs_pricesell_ekwh', DecimalType(precision=10, scale=3), False),
                 StructField('scoring', DecimalType(precision=10, scale=3), False),
             ]),
             'aspect': StructType([
@@ -74,10 +117,10 @@ class Pvgis:
                 StructField('month_selfsupply_kwh', DecimalType(precision=10, scale=3), False),
                 StructField('month_exceeding_kwh', DecimalType(precision=10, scale=3), False),
                 StructField('month_finalconsumption_kwh', DecimalType(precision=10, scale=3), False),
-                StructField('month_avg_price_buy_kwh', DecimalType(precision=10, scale=5), False),
-                StructField('month_avg_price_sell_kwh', DecimalType(precision=10, scale=5), False),
-                StructField('price_sell_vs_buy', DecimalType(precision=10, scale=3), False),
-                StructField('price_buy_vs_sell', DecimalType(precision=10, scale=3), False),
+                StructField('month_avg_pricebuy_ekwh', DecimalType(precision=10, scale=5), False),
+                StructField('month_avg_pricesell_ekwh', DecimalType(precision=10, scale=5), False),
+                StructField('month_avg_pricesell_vs_pricebuy_ekwh', DecimalType(precision=10, scale=3), False),
+                StructField('month_avg_pricebuy_vs_pricesell_ekwh', DecimalType(precision=10, scale=3), False),
                 StructField('scoring', DecimalType(precision=10, scale=3), False),
             ]),
             'angle+aspect': StructType([
@@ -90,10 +133,10 @@ class Pvgis:
                 StructField('month_selfsupply_kwh', DecimalType(precision=10, scale=3), False),
                 StructField('month_exceeding_kwh', DecimalType(precision=10, scale=3), False),
                 StructField('month_finalconsumption_kwh', DecimalType(precision=10, scale=3), False),
-                StructField('month_avg_price_buy_kwh', DecimalType(precision=10, scale=5), False),
-                StructField('month_avg_price_sell_kwh', DecimalType(precision=10, scale=5), False),
-                StructField('price_sell_vs_buy', DecimalType(precision=10, scale=3), False),
-                StructField('price_buy_vs_sell', DecimalType(precision=10, scale=3), False),
+                StructField('month_avg_pricebuy_ekwh', DecimalType(precision=10, scale=5), False),
+                StructField('month_avg_pricesell_ekwh', DecimalType(precision=10, scale=5), False),
+                StructField('month_avg_pricesell_vs_pricebuy_ekwh', DecimalType(precision=10, scale=3), False),
+                StructField('month_avg_pricebuy_vs_pricesell_ekwh', DecimalType(precision=10, scale=3), False),
                 StructField('scoring', DecimalType(precision=10, scale=3), False),
             ])
         }
@@ -129,6 +172,55 @@ class Pvgis:
             ])
         }
 
+        self.production_estimation_m_schema = StructType([
+            StructField('peakpower', DecimalType(precision=6, scale=2), False),
+            StructField('angle', IntegerType(), False),
+            StructField('aspect', IntegerType(), False),
+            StructField('year', IntegerType(), False),
+            StructField('month', IntegerType(), False),
+            StructField('month_consumption_kwh', DecimalType(precision=10, scale=3), False),
+            StructField('month_production_kwh', DecimalType(precision=10, scale=3), False),
+            StructField('month_selfsupply_kwh', DecimalType(precision=10, scale=3), False),
+            StructField('month_exceeding_kwh', DecimalType(precision=10, scale=3), False),
+            StructField('month_finalconsumption_kwh', DecimalType(precision=10, scale=3), False),
+            StructField('month_exceedingwasted_simplified_kwh', DecimalType(precision=10, scale=3), False),
+            StructField('month_exceedingsold_simplified_kwh', DecimalType(precision=10, scale=3), False),
+            StructField('month_consumption_eur', DecimalType(precision=10, scale=3), False),
+            StructField('month_finalconsumption_eur', DecimalType(precision=10, scale=3), False),
+            StructField('month_exceeding_real_eur', DecimalType(precision=10, scale=3), False),
+            StructField('month_exceeding_simplified_eur', DecimalType(precision=10, scale=3), False),
+            StructField('month_exceeding_real_fixed_eur', DecimalType(precision=10, scale=3), False),
+            StructField('month_exceeding_simplified_fixed_eur', DecimalType(precision=10, scale=3), False),
+            StructField('month_real_final_eur', DecimalType(precision=10, scale=3), False),
+            StructField('month_simplified_final_eur', DecimalType(precision=10, scale=3), False),
+            StructField('month_pvpc_real_savings_eur', DecimalType(precision=10, scale=3), False),
+            StructField('month_pvpc_simplified_savings_eur', DecimalType(precision=10, scale=3), False),
+            StructField('month_period_20td_P1_kwh', DecimalType(precision=10, scale=3), False),
+            StructField('month_period_20td_P1_selfsupply_kwh', DecimalType(precision=10, scale=3), False),
+            StructField('month_period_20td_P1_exceeding_kwh', DecimalType(precision=10, scale=3), False),
+            StructField('month_period_20td_P1_finalconsumption_kwh', DecimalType(precision=10, scale=3), False),
+            StructField('month_period_20td_P2_kwh', DecimalType(precision=10, scale=3), False),
+            StructField('month_period_20td_P2_selfsupply_kwh', DecimalType(precision=10, scale=3), False),
+            StructField('month_period_20td_P2_exceeding_kwh', DecimalType(precision=10, scale=3), False),
+            StructField('month_period_20td_P2_finalconsumption_kwh', DecimalType(precision=10, scale=3), False),
+            StructField('month_period_20td_P3_kwh', DecimalType(precision=10, scale=3), False),
+            StructField('month_period_20td_P3_selfsupply_kwh', DecimalType(precision=10, scale=3), False),
+            StructField('month_period_20td_P3_exceeding_kwh', DecimalType(precision=10, scale=3), False),
+            StructField('month_period_20td_P3_finalconsumption_kwh', DecimalType(precision=10, scale=3), False),
+            StructField('month_period_wk_P1_kwh', DecimalType(precision=10, scale=3), False),
+            StructField('month_period_wk_P1_selfsupply_kwh', DecimalType(precision=10, scale=3), False),
+            StructField('month_period_wk_P1_exceeding_kwh', DecimalType(precision=10, scale=3), False),
+            StructField('month_period_wk_P1_finalconsumption_kwh', DecimalType(precision=10, scale=3), False),
+            StructField('month_period_wk_P3_kwh', DecimalType(precision=10, scale=3), False),
+            StructField('month_period_wk_P3_selfsupply_kwh', DecimalType(precision=10, scale=3), False),
+            StructField('month_period_wk_P3_exceeding_kwh', DecimalType(precision=10, scale=3), False),
+            StructField('month_period_wk_P3_finalconsumption_kwh', DecimalType(precision=10, scale=3), False),
+            StructField('month_period_fix_P1_kwh', DecimalType(precision=10, scale=3), False),
+            StructField('month_period_fix_P1_selfsupply_kwh', DecimalType(precision=10, scale=3), False),
+            StructField('month_period_fix_P1_exceeding_kwh', DecimalType(precision=10, scale=3), False),
+            StructField('month_period_fix_P1_finalconsumption_kwh', DecimalType(precision=10, scale=3), False),
+        ])
+
         self.default_params = {
             'peakpower': 1,
             'pvtechchoice': 'crystSi',
@@ -158,10 +250,20 @@ class Pvgis:
         self.calibrations_cache: Dict[str, DataFrame] = dict()
 
         if os.path.exists(self.calibrations_file):
-            with open(self.calibrations_file, 'r') as f:
+            with open(self.calibrations_file, 'r', encoding='utf-8') as f:
                 self.calibrations = json.load(f)
 
         self.calibration_done = False
+
+        self.production_estimations = None
+        self.production_estimations_file = os.path.join('docs', 'data', 'pvgis', 'pvgis_production_estimations.json')
+        self.production_estimations_cache: Dict[str, DataFrame] = dict()
+
+        if os.path.exists(self.production_estimations_file):
+            with open(self.production_estimations_file, 'r', encoding='utf-8') as f:
+                self.production_estimations = json.load(f)
+
+        self.production_estimation_done = False
 
         self.figure_y_titles = {
             'angle': {
@@ -178,7 +280,15 @@ class Pvgis:
             }
         }
 
+        self.consumption_with_rate_info_sdf = None
+
+        self.period_column_name_hour_list = []
+        self.period_column_month_list = []
+        self.period_column_month_agg_list = []
+        self.period_column_year_agg_list = []
+
         self._calibrate()
+        self._estimate_production()
 
     def _get_range_values(self, start, end, step):
         start = Decimal(start) if isinstance(start, float) else start
@@ -240,31 +350,40 @@ class Pvgis:
         else:
             print('[WARN] COORDINATES environment variable not set, PVGIS data will not be retrieved')
 
-    def _get_value_from_combination(self, combination_value):
-        return combination_value[0] if isinstance(combination_value, Tuple) else combination_value
-
-    def _calibrate_attribute(self, attribute: str, params_to_combine: List[List[any]], best_count: int = 5) -> List[int]:
-        attribute_parts = attribute.split('+')
-
+    def _combine_params(self, params_to_combine: List[List[any]]) -> List[Dict[str, any]]:
         params_combinations = []
 
         for combination in itertools.product(*params_to_combine):
-            series_params = {
-                'peakpower': self._get_value_from_combination(combination[0]),
-                'angle': self._get_value_from_combination(combination[1]),
-                'aspect': self._get_value_from_combination(combination[2])
-            }
+            if len(combination) == 3:
+                series_params = {
+                    'peakpower': combination[0],
+                    'angle': combination[1],
+                    'aspect': combination[2]
+                }
+            else:
+                series_params = {
+                    'peakpower': combination[0],
+                    'angle': combination[1][0],
+                    'aspect': combination[1][1]
+                }
 
             params_combinations.append(series_params)
+
+        return params_combinations
+
+    def _calibrate_attribute(self, attribute: str, params_to_combine: List[List[any]], best_count: int = 5) -> Union[List[Tuple[int]], List[int]]:
+        attribute_parts = attribute.split('+')
+
+        params_combinations = self._combine_params(params_to_combine)
 
         for params in params_combinations:
             data_id = self._get_data_id(params)
 
             if self.calibrations\
-                    and self.calibration_date_scope in self.calibrations\
-                    and attribute in self.calibrations[self.calibration_date_scope]\
-                    and any([True for a in self.calibrations[self.calibration_date_scope][attribute] if a['id'] == data_id]):
-                current_calibration = next(a for a in self.calibrations[self.calibration_date_scope][attribute] if a['id'] == data_id)
+                    and self.consumption_date_scope in self.calibrations\
+                    and attribute in self.calibrations[self.consumption_date_scope]\
+                    and any([True for a in self.calibrations[self.consumption_date_scope][attribute] if a['id'] == data_id]):
+                current_calibration = next(a for a in self.calibrations[self.consumption_date_scope][attribute] if a['id'] == data_id)
 
                 print(f'[DEBUG] already calibrated {attribute} ({json.dumps(current_calibration["params"])}) with a score {current_calibration["scoring"]}')
                 continue
@@ -283,12 +402,12 @@ class Pvgis:
                         sum(col('hour_selfsupply_kwh')).cast(DecimalType(precision=10, scale=3)).alias('month_selfsupply_kwh'),
                         sum(col('hour_exceeding_kwh')).cast(DecimalType(precision=10, scale=3)).alias('month_exceeding_kwh'),
                         sum(col('hour_finalconsumption_kwh')).cast(DecimalType(precision=10, scale=3)).alias('month_finalconsumption_kwh'),
-                        ps_round(avg(col('price_buy_kwh')), 5).cast(DecimalType(precision=10, scale=5)).alias('month_avg_price_buy_kwh'),
-                        ps_round(avg(col('price_sell_kwh')), 5).cast(DecimalType(precision=10, scale=5)).alias('month_avg_price_sell_kwh'),
+                        first(col('month_avg_pricebuy_ekwh')).alias('month_avg_pricebuy_ekwh'),
+                        first(col('month_avg_pricesell_ekwh')).alias('month_avg_pricesell_ekwh'),
                     )\
-                    .withColumn('price_sell_vs_buy', ps_round(col('month_avg_price_sell_kwh') / col('month_avg_price_buy_kwh'), 3).cast(DecimalType(precision=10, scale=3)))\
-                    .withColumn('price_buy_vs_sell', ps_round(col('month_avg_price_buy_kwh') / col('month_avg_price_sell_kwh'), 3).cast(DecimalType(precision=10, scale=3)))\
-                    .withColumn('scoring', ps_round(col('month_selfsupply_kwh') + (least(col('month_exceeding_kwh'), col('month_finalconsumption_kwh') * col('price_buy_vs_sell')) * col('price_sell_vs_buy')), 3).cast(DecimalType(precision=10, scale=3)))
+                    .withColumn('month_avg_pricesell_vs_pricebuy_ekwh', ps_round(col('month_avg_pricesell_ekwh') / col('month_avg_pricebuy_ekwh'), 3).cast(DecimalType(precision=10, scale=3)))\
+                    .withColumn('month_avg_pricebuy_vs_pricesell_ekwh', ps_round(col('month_avg_pricebuy_ekwh') / col('month_avg_pricesell_ekwh'), 3).cast(DecimalType(precision=10, scale=3)))\
+                    .withColumn('scoring', ps_round(col('month_selfsupply_kwh') + (least(col('month_exceeding_kwh'), col('month_finalconsumption_kwh') * col('month_avg_pricebuy_vs_pricesell_ekwh')) * col('month_avg_pricesell_vs_pricebuy_ekwh')), 3).cast(DecimalType(precision=10, scale=3)))
 
                 attribute_cols = []
 
@@ -300,12 +419,13 @@ class Pvgis:
 
                 calibration_m_sdf = calibration_m_sdf\
                     .orderBy(col('year'), col('month'))\
-                    .select(*attribute_cols, col('year'), col('month'), col('month_consumption_kwh'), col('month_production_kwh'), col('month_selfsupply_kwh'), col('month_exceeding_kwh'), col('month_finalconsumption_kwh'), col('month_avg_price_buy_kwh'), col('month_avg_price_sell_kwh'), col('price_sell_vs_buy'), col('price_buy_vs_sell'), col('scoring'))
+                    .select(*attribute_cols, col('year'), col('month'), col('month_consumption_kwh'), col('month_production_kwh'), col('month_selfsupply_kwh'), col('month_exceeding_kwh'), col('month_finalconsumption_kwh'), col('month_avg_pricebuy_ekwh'), col('month_avg_pricesell_ekwh'), col('month_avg_pricesell_vs_pricebuy_ekwh'), col('month_avg_pricebuy_vs_pricesell_ekwh'), col('scoring'))\
+                    .cache()
 
-                if not self.calibrations or self.calibration_date_scope not in self.calibrations:
-                    self.calibrations = {self.calibration_date_scope: {attribute: []}}
-                elif attribute not in self.calibrations[self.calibration_date_scope]:
-                    self.calibrations[self.calibration_date_scope][attribute] = []
+                if not self.calibrations or self.consumption_date_scope not in self.calibrations:
+                    self.calibrations = {self.consumption_date_scope: {attribute: []}}
+                elif attribute not in self.calibrations[self.consumption_date_scope]:
+                    self.calibrations[self.consumption_date_scope][attribute] = []
 
                 calibration_y_sdf = calibration_m_sdf\
                     .groupBy(*attribute_cols)\
@@ -316,11 +436,12 @@ class Pvgis:
                         sum(col('month_exceeding_kwh')).cast(DecimalType(precision=10, scale=3)).alias('year_exceeding_kwh'),
                         sum(col('month_finalconsumption_kwh')).cast(DecimalType(precision=10, scale=3)).alias('year_finalconsumption_kwh'),
                         sum(col('scoring')).cast(DecimalType(precision=10, scale=3)).alias('scoring'),
-                    )
+                    )\
+                    .cache()
 
                 scoring = float(calibration_y_sdf.select('scoring').first()['scoring'])
 
-                self.calibrations[self.calibration_date_scope][attribute].append({
+                self.calibrations[self.consumption_date_scope][attribute].append({
                     'id': data_id,
                     'params': params,
                     'dataframe_m': utils.df_to_json(calibration_m_sdf),
@@ -328,14 +449,17 @@ class Pvgis:
                     'scoring': scoring
                 })
 
-                self.calibrations[self.calibration_date_scope][attribute].sort(key=lambda c: c['scoring'], reverse=True)
+                self.calibrations[self.consumption_date_scope][attribute].sort(key=lambda c: c['scoring'], reverse=True)
 
                 self.calibration_done = True
 
                 print(f'[DEBUG] calibrated {attribute} ({json.dumps(params)}) with a score {scoring}')
                 calibration_y_sdf.show()
 
-        return [tuple([c['params'][a] for a in attribute_parts]) if len(attribute_parts) > 0 else c['params'][attribute] for c in self.calibrations[self.calibration_date_scope][attribute][0:best_count]]
+                calibration_m_sdf.unpersist()
+                calibration_y_sdf.unpersist()
+
+        return [tuple([c['params'][a] for a in attribute_parts]) if len(attribute_parts) > 1 else c['params'][attribute] for c in self.calibrations[self.consumption_date_scope][attribute][0:best_count]]
 
     def _calibrate_angle(self) -> List[int]:
         to_combine = [[1.0], self._get_range_values(25, 50, 1), [0]]
@@ -347,7 +471,7 @@ class Pvgis:
 
         return self._calibrate_attribute('aspect', to_combine)
 
-    def _calibrate_angle_and_aspect(self, best_angles: List[int], best_aspects: List[int]) -> List[int]:
+    def _calibrate_angle_and_aspect(self, best_angles: List[int], best_aspects: List[int]) -> List[Tuple[int]]:
         to_combine = [[1.0], best_angles, best_aspects]
 
         return self._calibrate_attribute('angle+aspect', to_combine, best_count=10)
@@ -356,6 +480,11 @@ class Pvgis:
         if force or self.calibration_done:
             with open(self.calibrations_file, 'w', encoding='utf-8') as f:
                 json.dump(self.calibrations, f, ensure_ascii=False)
+
+    def _persist_production_estimations(self, force: bool = False) -> None:
+        if force or self.production_estimation_done:
+            with open(self.production_estimations_file, 'w', encoding='utf-8') as f:
+                json.dump(self.production_estimations, f, ensure_ascii=False)
 
     def _calibrate(self) -> None:
         if self.pvgis_config['calibrate_angle_and_aspect']:
@@ -369,7 +498,6 @@ class Pvgis:
 
             best_angle_aspect_list = self._calibrate_angle_and_aspect(best_angles, best_aspects)
 
-            self.pvgis_config['calibrate_angle_and_aspect'] = False
             self.pvgis_config['params']['angle'] = best_angle_aspect_list[0][0]
             self.pvgis_config['params']['aspect'] = best_angle_aspect_list[0][1]
 
@@ -377,7 +505,7 @@ class Pvgis:
                 for c in self.calibrations.values():
                     c['is_last'] = False
 
-                self.calibrations[self.calibration_date_scope]['is_last'] = True
+                self.calibrations[self.consumption_date_scope]['is_last'] = True
 
             self._persist_calibrations()
 
@@ -561,3 +689,237 @@ class Pvgis:
         calibration_m_fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
 
         return calibration_m_fig.to_html(include_plotlyjs=False, full_html=False, div_id=f'{attribute}_calibration_m_figure', default_height='1200px')
+
+    def _get_best_calibrations_params(self):
+        _, calibration = self._get_current_calibration()
+
+        params_to_combine = [self.pvgis_config['params']['peakpower']]
+
+        if 'angle+aspect' in calibration:
+            angles_aspects = [(c['params']['angle'], c['params']['aspect']) for c in calibration['angle+aspect'][0:10]]
+
+            params_to_combine.append(angles_aspects)
+        elif 'angle' in calibration:
+            angles = [c['params']['angle'] for c in calibration['angle'][0:5]]
+
+            params_to_combine.append(angles)
+            params_to_combine.append(self.pvgis_config['params']['aspect'] or self.default_params['aspect'])
+        elif 'aspect' in calibration:
+            aspects = [c['params']['aspect'] for c in calibration['aspect'][0:5]]
+
+            params_to_combine.append(self.pvgis_config['params']['angle'] or self.default_params['angle'])
+            params_to_combine.append(aspects)
+
+        return self._combine_params(params_to_combine)
+
+    def _get_period_column_name(self, rate_info) -> str:
+        return f'period_{rate_info.get_rate_type()}'
+
+    def _add_rate_info_to_consumptions(self) -> None:
+        if not self.consumption_with_rate_info_sdf:
+            temp_sdf = None
+
+            for rate_info_column in self.rate_info_columns:
+                if not temp_sdf:
+                    temp_sdf = self.consumption_sdf
+
+                temp_sdf = temp_sdf\
+                    .withColumn(rate_info_column['period_column'], rate_info_column['rate_info'].get_period('hour', 'dow', 'is_bank_day'))
+
+                for rate_info_column_period in rate_info_column['periods']:
+                    temp_sdf = temp_sdf\
+                        .withColumn(rate_info_column_period['hour_period_column'], when(col(rate_info_column['period_column']) == rate_info_column_period['period'], col('hour_consumption_kwh')).otherwise(None))
+
+                    self.period_column_name_hour_list.append(rate_info_column_period['hour_period_column'])
+
+                    self.period_column_month_list.append(col(rate_info_column_period['month_period_column']))
+                    self.period_column_month_list.append(col(rate_info_column_period['month_selfsupply']))
+                    self.period_column_month_list.append(col(rate_info_column_period['month_exceeding']))
+                    self.period_column_month_list.append(col(rate_info_column_period['month_finalconsumption']))
+
+                    self.period_column_month_agg_list.append(sum(col(rate_info_column_period['hour_period_column'])).cast(DecimalType(precision=10, scale=3)).alias(rate_info_column_period['month_period_column']))
+                    self.period_column_month_agg_list.append(sum(col(rate_info_column_period['hour_selfsupply'])).cast(DecimalType(precision=10, scale=3)).alias(rate_info_column_period['month_selfsupply']))
+                    self.period_column_month_agg_list.append(sum(col(rate_info_column_period['hour_exceeding'])).cast(DecimalType(precision=10, scale=3)).alias(rate_info_column_period['month_exceeding']))
+                    self.period_column_month_agg_list.append(sum(col(rate_info_column_period['hour_finalconsumption'])).cast(DecimalType(precision=10, scale=3)).alias(rate_info_column_period['month_finalconsumption']))
+
+                    self.period_column_year_agg_list.append(sum(col(rate_info_column_period['month_period_column'])).cast(DecimalType(precision=10, scale=3)).alias(rate_info_column_period['year_period_column']))
+                    self.period_column_year_agg_list.append(sum(col(rate_info_column_period['month_selfsupply'])).cast(DecimalType(precision=10, scale=3)).alias(rate_info_column_period['year_selfsupply']))
+                    self.period_column_year_agg_list.append(sum(col(rate_info_column_period['month_exceeding'])).cast(DecimalType(precision=10, scale=3)).alias(rate_info_column_period['year_exceeding']))
+                    self.period_column_year_agg_list.append(sum(col(rate_info_column_period['month_finalconsumption'])).cast(DecimalType(precision=10, scale=3)).alias(rate_info_column_period['year_finalconsumption']))
+
+            self.consumption_with_rate_info_sdf = temp_sdf\
+                .cache()
+
+    def _estimate_production(self):
+        params_series = self._get_best_calibrations_params()
+
+        for params in params_series:
+            data_id = self._get_data_id(params)
+
+            if self.production_estimations \
+                    and self.consumption_date_scope in self.production_estimations \
+                    and any([True for a in self.production_estimations[self.consumption_date_scope]['estimations'] if a['id'] == data_id]):
+                current_production_estimation = next(a for a in self.production_estimations[self.consumption_date_scope]['estimations'] if a['id'] == data_id)
+
+                print(f'[DEBUG] already estimated production ({json.dumps(current_production_estimation["params"])})')
+                continue
+            else:
+                self._add_rate_info_to_consumptions()
+
+                pvgis_hourly_production_sdf = self._load_data(self.default_params | self.pvgis_config['params'] | self.fixed_params | self.runtime_params | params, data_id)
+
+                production_estimation_m_sdf = self.consumption_with_rate_info_sdf\
+                    .join(pvgis_hourly_production_sdf, on=['month', 'dom', 'hour'], how='left')\
+                    .withColumn('hour_selfsupply_kwh', when(col('hour_production_kwh') <= col('hour_consumption_kwh'), col('hour_production_kwh')).otherwise(col('hour_consumption_kwh')))\
+                    .withColumn('hour_exceeding_kwh', when(col('hour_production_kwh') <= col('hour_consumption_kwh'), 0.0).otherwise(col('hour_production_kwh') - col('hour_consumption_kwh')))\
+                    .withColumn('hour_finalconsumption_kwh', when(col('hour_production_kwh') >= col('hour_consumption_kwh'), 0.0).otherwise(col('hour_consumption_kwh') - col('hour_production_kwh')))
+
+                for rate_info_column in self.rate_info_columns:
+                    for rate_info_column_period in rate_info_column['periods']:
+                        production_estimation_m_sdf = production_estimation_m_sdf\
+                            .withColumn(rate_info_column_period['hour_selfsupply'],
+                                        when(col(rate_info_column_period['hour_period_column']).isNull(), None).otherwise(
+                                            when(col('hour_production_kwh') <= col(rate_info_column_period['hour_period_column']), col('hour_production_kwh')).otherwise(col(rate_info_column_period['hour_period_column']))))\
+                            .withColumn(rate_info_column_period['hour_exceeding'],
+                                        when(col(rate_info_column_period['hour_period_column']).isNull(), None).otherwise(
+                                            when(col('hour_production_kwh') <= col(rate_info_column_period['hour_period_column']), 0.0).otherwise(col('hour_production_kwh') - col(rate_info_column_period['hour_period_column']))))\
+                            .withColumn(rate_info_column_period['hour_finalconsumption'],
+                                        when(col(rate_info_column_period['hour_period_column']).isNull(), None).otherwise(
+                                            when(col('hour_production_kwh') >= col(rate_info_column_period['hour_period_column']), 0.0).otherwise(col(rate_info_column_period['hour_period_column']) - col('hour_production_kwh'))))
+
+                    production_estimation_m_sdf = production_estimation_m_sdf\
+                        .drop(rate_info_column['period_column'])
+
+                production_estimation_m_sdf = production_estimation_m_sdf\
+                    .withColumn('hour_consumption_eur', col('hour_consumption_kwh') * col('hour_pricebuy_ekwh'))\
+                    .withColumn('hour_finalconsumption_eur', col('hour_finalconsumption_kwh') * col('hour_pricebuy_ekwh'))\
+                    .withColumn('hour_exceeding_real_eur', col('hour_exceeding_kwh') * col('hour_pricesell_ekwh'))\
+                    .withColumn('hour_exceeding_simplified_eur', col('hour_exceeding_kwh') * col('month_avg_pricesell_ekwh'))\
+                    .groupBy(col('year'), col('month')) \
+                    .agg(
+                        sum(col('hour_consumption_kwh')).cast(DecimalType(precision=10, scale=3)).alias('month_consumption_kwh'),
+                        sum(col('hour_production_kwh')).cast(DecimalType(precision=10, scale=3)).alias('month_production_kwh'),
+                        sum(col('hour_selfsupply_kwh')).cast(DecimalType(precision=10, scale=3)).alias('month_selfsupply_kwh'),
+                        sum(col('hour_exceeding_kwh')).cast(DecimalType(precision=10, scale=3)).alias('month_exceeding_kwh'),
+                        sum(col('hour_finalconsumption_kwh')).cast(DecimalType(precision=10, scale=3)).alias('month_finalconsumption_kwh'),
+                        ps_round(sum(col('hour_consumption_eur')), 3).cast(DecimalType(precision=10, scale=3)).alias('month_consumption_eur'),
+                        ps_round(sum(col('hour_finalconsumption_eur')), 3).cast(DecimalType(precision=10, scale=3)).alias('month_finalconsumption_eur'),
+                        ps_round(sum(col('hour_exceeding_real_eur')), 3).cast(DecimalType(precision=10, scale=3)).alias('month_exceeding_real_eur'),
+                        ps_round(sum(col('hour_exceeding_simplified_eur')), 3).cast(DecimalType(precision=10, scale=3)).alias('month_exceeding_simplified_eur'),
+                        first(col('month_avg_pricesell_ekwh')).alias('month_avg_pricesell_ekwh'),
+                        *self.period_column_month_agg_list
+                    )\
+                    .withColumn('month_exceeding_real_fixed_eur', least(col('month_finalconsumption_eur'), col('month_exceeding_real_eur')))\
+                    .withColumn('month_exceeding_simplified_fixed_eur', least(col('month_finalconsumption_eur'), col('month_exceeding_simplified_eur')))\
+                    .withColumn('month_exceedingwasted_simplified_kwh', ps_round((col('month_exceeding_simplified_eur') - col('month_exceeding_simplified_fixed_eur')) / col('month_avg_pricesell_ekwh'), 3).cast(DecimalType(precision=10, scale=3)))\
+                    .withColumn('month_exceedingsold_simplified_kwh', (col('month_exceeding_kwh') - col('month_exceedingwasted_simplified_kwh')).cast(DecimalType(precision=10, scale=3)))\
+                    .withColumn('month_real_final_eur', col('month_finalconsumption_eur') - col('month_exceeding_real_fixed_eur'))\
+                    .withColumn('month_simplified_final_eur', col('month_finalconsumption_eur') - col('month_exceeding_simplified_fixed_eur'))\
+                    .withColumn('month_pvpc_real_savings_eur', ps_round(col('month_consumption_eur') - col('month_real_final_eur'), 3).cast(DecimalType(precision=10, scale=3)))\
+                    .withColumn('month_pvpc_simplified_savings_eur', ps_round(col('month_consumption_eur') - col('month_simplified_final_eur'), 3).cast(DecimalType(precision=10, scale=3)))\
+                    .withColumn('peakpower', lit(params['peakpower']))\
+                    .withColumn('angle', lit(params['angle']))\
+                    .withColumn('aspect', lit(params['aspect']))\
+                    .orderBy(col('year'), col('month')) \
+                    .select(col('peakpower'), col('angle'), col('aspect'),
+                            col('year'), col('month'),
+                            col('month_consumption_kwh'), col('month_production_kwh'),
+                            col('month_selfsupply_kwh'), col('month_exceeding_kwh'), col('month_finalconsumption_kwh'),
+                            col('month_exceedingwasted_simplified_kwh'), col('month_exceedingsold_simplified_kwh'),
+                            col('month_consumption_eur'), col('month_finalconsumption_eur'),
+                            col('month_exceeding_real_eur'), col('month_exceeding_simplified_eur'),
+                            col('month_exceeding_real_fixed_eur'), col('month_exceeding_simplified_fixed_eur'),
+                            col('month_real_final_eur'), col('month_simplified_final_eur'),
+                            col('month_pvpc_real_savings_eur'), col('month_pvpc_simplified_savings_eur'),
+                            *self.period_column_month_list)\
+                    .cache()
+
+                production_estimation_y_sdf = production_estimation_m_sdf\
+                    .groupBy(col('peakpower'), col('angle'), col('aspect'))\
+                    .agg(
+                        sum(col('month_consumption_kwh')).cast(DecimalType(precision=10, scale=3)).alias('year_consumption_kwh'),
+                        sum(col('month_production_kwh')).cast(DecimalType(precision=10, scale=3)).alias('year_production_kwh'),
+                        sum(col('month_selfsupply_kwh')).cast(DecimalType(precision=10, scale=3)).alias('year_selfsupply_kwh'),
+                        sum(col('month_exceeding_kwh')).cast(DecimalType(precision=10, scale=3)).alias('year_exceeding_kwh'),
+                        sum(col('month_finalconsumption_kwh')).cast(DecimalType(precision=10, scale=3)).alias('year_finalconsumption_kwh'),
+                        sum(col('month_exceedingwasted_simplified_kwh')).cast(DecimalType(precision=10, scale=3)).alias('year_exceedinwasted_simplified_kwh'),
+                        sum(col('month_exceedingsold_simplified_kwh')).cast(DecimalType(precision=10, scale=3)).alias('year_exceedingsold_simplified_kwh'),
+                        sum(col('month_consumption_eur')).cast(DecimalType(precision=10, scale=3)).alias('year_consumption_eur'),
+                        sum(col('month_finalconsumption_eur')).cast(DecimalType(precision=10, scale=3)).alias('year_finalconsumption_eur'),
+                        sum(col('month_exceeding_real_eur')).cast(DecimalType(precision=10, scale=3)).alias('year_exceeding_real_eur'),
+                        sum(col('month_exceeding_simplified_eur')).cast(DecimalType(precision=10, scale=3)).alias('year_exceeding_simplified_eur'),
+                        sum(col('month_exceeding_real_fixed_eur')).cast(DecimalType(precision=10, scale=3)).alias('year_exceeding_real_fixed_eur'),
+                        sum(col('month_exceeding_simplified_fixed_eur')).cast(DecimalType(precision=10, scale=3)).alias('year_exceeding_simplified_fixed_eur'),
+                        sum(col('month_real_final_eur')).cast(DecimalType(precision=10, scale=3)).alias('year_real_final_eur'),
+                        sum(col('month_simplified_final_eur')).cast(DecimalType(precision=10, scale=3)).alias('year_simplified_final_eur'),
+                        sum(col('month_pvpc_real_savings_eur')).cast(DecimalType(precision=10, scale=3)).alias('year_pvpc_real_savings_eur'),
+                        sum(col('month_pvpc_simplified_savings_eur')).cast(DecimalType(precision=10, scale=3)).alias('year_pvpc_simplified_savings_eur'),
+                        *self.period_column_year_agg_list
+                    )\
+                    .withColumn('peakpower', lit(params['peakpower']))\
+                    .withColumn('angle', lit(params['angle']))\
+                    .withColumn('aspect', lit(params['aspect']))\
+                    .cache()
+
+                year_pvpc_real_savings_eur = float(production_estimation_y_sdf.select('year_pvpc_real_savings_eur').first()['year_pvpc_real_savings_eur'])
+                year_pvpc_simplified_savings_eur = float(production_estimation_y_sdf.select('year_pvpc_simplified_savings_eur').first()['year_pvpc_simplified_savings_eur'])
+
+                if not self.production_estimations or self.consumption_date_scope not in self.production_estimations:
+                    self.production_estimations = {self.consumption_date_scope: {'estimations': []}}
+
+                self.production_estimations[self.consumption_date_scope]['estimations'].append({
+                    'id': data_id,
+                    'params': params,
+                    'dataframe_m': utils.df_to_json(production_estimation_m_sdf),
+                    'dataframe_y': utils.df_to_json(production_estimation_y_sdf),
+                    'year_pvpc_real_savings_eur': year_pvpc_real_savings_eur,
+                    'year_pvpc_simplified_savings_eur': year_pvpc_simplified_savings_eur,
+                })
+
+                self.production_estimations[self.consumption_date_scope]['estimations'].sort(key=lambda c: c['year_pvpc_simplified_savings_eur'], reverse=True)
+
+                self.production_estimation_done = True
+
+                print(f'[DEBUG] estimated production ({json.dumps(params)}) with savings of {year_pvpc_simplified_savings_eur} € (real: {year_pvpc_real_savings_eur} €) (PVPC)')
+                production_estimation_y_sdf.show()
+
+                production_estimation_m_sdf.unpersist()
+                production_estimation_y_sdf.unpersist()
+
+        if self.production_estimation_done:
+            for pe in self.production_estimations.values():
+                pe['is_last'] = False
+
+            self.production_estimations[self.consumption_date_scope]['is_last'] = True
+
+        self._persist_production_estimations()
+
+    def get_best_production_estimation(self) -> DataFrame:
+        month_unpivot_expr = "stack(4, 'Autoconsumo', month_selfsupply_kwh, 'Consumo', month_finalconsumption_kwh, 'Exceso Vendido', month_exceedingsold_simplified_kwh, 'Exceso Regalado', month_exceedingwasted_simplified_kwh) as (energy_type, energy_qty_kwh)"
+
+        df_data = {
+            'columns': self.production_estimations[self.consumption_date_scope]['estimations'][0]['dataframe_m']['columns'],
+            'data': self.production_estimations[self.consumption_date_scope]['estimations'][0]['dataframe_m']['data'] +
+                    self.production_estimations[self.consumption_date_scope]['estimations'][1]['dataframe_m']['data'] +
+                    self.production_estimations[self.consumption_date_scope]['estimations'][2]['dataframe_m']['data'] +
+                    self.production_estimations[self.consumption_date_scope]['estimations'][3]['dataframe_m']['data']
+        }
+
+        return utils.json_to_df(df_data, self.spark, self.production_estimation_m_schema)\
+            .withColumn('name', concat(lit('PP: '), col('peakpower'), lit(' - AN: '), col('angle'), lit(' - AS: '), col('aspect')))\
+            .orderBy(col('month'), col('name'))\
+            .withColumn('month_text',
+                        when(col('month') == 1, 'ENE')
+                        .when(col('month') == 2, 'FEB')
+                        .when(col('month') == 3, 'MAR')
+                        .when(col('month') == 4, 'ABR')
+                        .when(col('month') == 5, 'MAY')
+                        .when(col('month') == 6, 'JUN')
+                        .when(col('month') == 7, 'JUL')
+                        .when(col('month') == 8, 'AGO')
+                        .when(col('month') == 9, 'SEP')
+                        .when(col('month') == 10, 'OCT')
+                        .when(col('month') == 11, 'NOV')
+                        .when(col('month') == 12, 'DIC'))\
+            .drop('month')\
+            .withColumnRenamed('month_text', 'month')

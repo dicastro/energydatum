@@ -389,10 +389,17 @@ Algunas ideas que se me van ocurriendo y que todavía no he planificado (ni sé 
   - propiedad para deshabilitar la recuperación de la generación eléctrica
   - propiedad para deshabilitar la recuperación del histórico del clima
 - Migrar código Spark (PySpark) a Pandas
-- Traducir tablas a español
+- Traducir tablas de datatables a español
+- Añadir visualización de la evolución del precio de compra/venta de PVPC en cada hora del día
+- Añadir visualización de la evolución de la media móvil del precio de compra/venta de PVPC en cada hora del día
 
 # Otros Links
 
 - [Manejo de Plotly con JS](https://plotly.com/javascript/plotlyjs-function-reference/#plotlynewplot)
 - [Herramienta web PVGIS](https://re.jrc.ec.europa.eu/pvg_tools/en/tools.html)
 - [Manual usuario PVGIS](https://joint-research-centre.ec.europa.eu/pvgis-photovoltaic-geographical-information-system/getting-started-pvgis/pvgis-user-manual_en)
+
+# Dudas
+
+- ¿Se puede tener con cualquier comercilizadora precio de mercado libre para la energía comprada y precio de mercado regulado para la vendida?
+- ¿Cómo se vende la energía excedente con precio de mercado regulado? ¿Se vende al precio de venta de la hora en la que esa energía sea excedente, o toda la energía excedente se vende al precio medio del mes del precio de venta?

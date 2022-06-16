@@ -12,8 +12,8 @@ from dateutil.relativedelta import relativedelta
 from jinja2 import Environment
 from pyspark.sql import SparkSession, DataFrame, Window
 from pyspark.sql.functions import to_date, col, min as ps_min, max as ps_max, year, month, when, dayofmonth, dayofweek, \
-    lit, date_format, concat, to_timestamp, lpad, row_number, count as ps_count
-from pyspark.sql.types import StructType, StructField, DateType, IntegerType, DecimalType
+    lit, date_format, concat, to_timestamp, lpad, row_number, count as ps_count, avg, round as ps_round
+from pyspark.sql.types import StructType, StructField, DateType, IntegerType, DecimalType, TimestampType, StringType
 
 import utils
 from services.esios.esios_base import EsiosBase
@@ -45,8 +45,8 @@ class EsiosPrice(EsiosBase):
         self.output_schema = StructType([
             StructField('date', DateType(), False),
             StructField('hour', IntegerType(), False),
-            StructField('price_buy_mwh', DecimalType(scale=2), False),
-            StructField('price_sell_mwh', DecimalType(scale=2), False)
+            StructField('hour_pricebuy_emwh', DecimalType(scale=2), False),
+            StructField('hour_pricesell_emwh', DecimalType(scale=2), False)
         ])
 
         self.window_date = Window.partitionBy(col('date'))
@@ -65,10 +65,10 @@ class EsiosPrice(EsiosBase):
         self.price_years = list(self.sdf.select(year('date').alias('year')).distinct().orderBy('year').toPandas()['year'])
 
     def _calculate_price_buy_scale(self) -> None:
-        self.price_buy_scale = len(str(self.sdf.select(ps_max('price_buy_mwh').alias('price_mwh_max')).first()['price_mwh_max'])) - 1
+        self.price_buy_scale = len(str(self.sdf.select(ps_max('hour_pricebuy_emwh').alias('price_mwh_max')).first()['price_mwh_max'])) - 1
 
     def _calculate_price_sell_scale(self) -> None:
-        self.price_sell_scale = len(str(self.sdf.select(ps_max('price_sell_mwh').alias('price_mwh_max')).first()['price_mwh_max'])) - 1
+        self.price_sell_scale = len(str(self.sdf.select(ps_max('hour_pricesell_emwh').alias('price_mwh_max')).first()['price_mwh_max'])) - 1
 
     def _calculate_price_scale(self) -> None:
         self._calculate_price_buy_scale()
@@ -84,7 +84,7 @@ class EsiosPrice(EsiosBase):
         self._calculate_price_dates()
 
     def _load_prices(self):
-        price_files = glob.glob(os.path.join('docs', 'data', 'esios', 'price', 'esios_price_20td_*.json'))
+        price_files = glob.glob(os.path.join('docs', 'data', 'esios', 'price', 'raw', 'esios_price_20td_*.json'))
 
         self.sdf = self.spark.createDataFrame(self.spark.sparkContext.emptyRDD(), schema=self.output_schema)
 
@@ -96,8 +96,8 @@ class EsiosPrice(EsiosBase):
                 price_file_sdf = self.spark.createDataFrame(price_file_df)\
                     .withColumn('date', to_date(col('date'), 'yyyy-MM-dd'))\
                     .withColumn('hour', col('hour').cast(IntegerType()))\
-                    .withColumn('price_buy_mwh', col('price_buy_mwh').cast(DecimalType(scale=2)))\
-                    .withColumn('price_sell_mwh', col('price_sell_mwh').cast(DecimalType(scale=2)))
+                    .withColumn('hour_pricebuy_emwh', col('hour_pricebuy_emwh').cast(DecimalType(scale=2)))\
+                    .withColumn('hour_pricesell_emwh', col('hour_pricesell_emwh').cast(DecimalType(scale=2)))
 
                 # new spark DataFrame is created in order to ensure that it has the same schema as the previous ones
                 self.sdf = self.sdf.union(self.spark.createDataFrame(price_file_sdf.toPandas(), schema=self.output_schema))
@@ -188,13 +188,13 @@ class EsiosPrice(EsiosBase):
 
             print('[DEBUG]: downloading buy prices ...')
             buy_price_subset = self._download_data(buy_url, buy_params)\
-                .withColumnRenamed('price_mwh', 'price_buy_mwh')
+                .withColumnRenamed('price_mwh', 'hour_pricebuy_emwh')
 
             sell_url, sell_params = self._get_esios_price_sell_url(range_s, range_e)
 
             print('[DEBUG]: downloading sell prices ...')
             sell_price_subset = self._download_data(sell_url, sell_params)\
-                .withColumnRenamed('price_mwh', 'price_sell_mwh')
+                .withColumnRenamed('price_mwh', 'hour_pricesell_emwh')
 
             print('[DEBUG]: merging buy and sell prices ...')
             price_subset = buy_price_subset\
@@ -209,7 +209,7 @@ class EsiosPrice(EsiosBase):
                 utils.df_to_json_file(self.sdf
                                       .filter(year('date') == price_year)
                                       .orderBy(col('date'), col('hour')),
-                                      os.path.join('docs', 'data', 'esios', 'price', f'esios_price_20td_{price_year}.json'), (0,))
+                                      os.path.join('docs', 'data', 'esios', 'price', 'raw', f'esios_price_20td_{price_year}.json'), (0,))
 
             print('[DEBUG]: reloading prices from persisted files ...')
             self._load_prices()
@@ -222,14 +222,18 @@ class EsiosPrice(EsiosBase):
     def get_prices(self, until: dt.date) -> DataFrame:
         self._refresh_prices(until)
 
+        window_year_month = Window.partitionBy(col('year'), col('month'))
+
         # consumption hour goes from 1 to 24, however, esios prices are for the hour 0 to 23
         # that is why we need to add 1 to the hour column
         return self.sdf\
             .withColumn('datetime', to_timestamp(concat(date_format(col('date'), 'yyyy-MM-dd'), lit(' '), lpad(col('hour'), 2, '0'), lit(':00:00')), format='yyyy-MM-dd HH:mm:ss'))\
-            .withColumn('price_buy_kwh', (col('price_buy_mwh') / 1000).cast(DecimalType(scale=self.price_buy_scale)))\
-            .withColumn('price_sell_kwh', (col('price_sell_mwh') / 1000).cast(DecimalType(scale=self.price_buy_scale)))\
+            .withColumn('hour_pricebuy_ekwh', (col('hour_pricebuy_emwh') / 1000).cast(DecimalType(scale=self.price_buy_scale)))\
+            .withColumn('hour_pricesell_ekwh', (col('hour_pricesell_emwh') / 1000).cast(DecimalType(scale=self.price_sell_scale)))\
             .withColumn('year', year('date'))\
             .withColumn('month', month('date'))\
+            .withColumn('month_avg_pricebuy_ekwh', ps_round(avg('hour_pricebuy_ekwh').over(window_year_month), self.price_buy_scale).cast(DecimalType(scale=self.price_buy_scale)))\
+            .withColumn('month_avg_pricesell_ekwh', ps_round(avg('hour_pricesell_ekwh').over(window_year_month), self.price_buy_scale).cast(DecimalType(scale=self.price_buy_scale)))\
             .withColumn('hour', col('hour') + 1)\
             .withColumn('month_text',
                         when(col('month') == 1, 'Enero')

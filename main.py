@@ -24,7 +24,7 @@ from services.bank_days import BankDays
 from services.esios.esios_indicator import EsiosIndicator
 from services.esios.esios_price import EsiosPrice
 from services.pvgis.pvgis import Pvgis
-from services.rates.rate_20td_info import RateInfo20TDInfo
+from services.rates.rate_20td_info import Rate20TDInfo
 from services.rates.rate_fix_info import RateFixInfo
 from services.rates.rate_wk_info import RateWKInfo
 from utils import df_to_json_file
@@ -507,7 +507,7 @@ rate_period_from = consumption_date_max - relativedelta(years=1)
 rate_period_from = max(price_date_min, consumption_date_min, rate_period_from)
 
 # 2.0TD
-rate_20td_info = RateInfo20TDInfo()
+rate_20td_info = Rate20TDInfo()
 
 year_month_window_spec = Window.partitionBy([col('year'), col('month')])
 
@@ -673,13 +673,16 @@ print(f"DEBUG:   consumption rows: {consumption_sdf.filter(col('date') > rate_pe
 
 consumption_with_price_sdf = consumption_sdf\
     .filter(col('date') > rate_period_from)\
-    .join(price_sdf.select(col('year'), col('month'), col('dom'), col('hour'), col('price_buy_kwh'), col('price_sell_kwh')), on=['year', 'month', 'dom', 'hour'], how='left')\
+    .join(price_sdf.select(col('year'), col('month'), col('dom'), col('hour'),
+                           col('hour_pricebuy_ekwh'), col('hour_pricesell_ekwh'),
+                           col('month_avg_pricebuy_ekwh'), col('month_avg_pricesell_ekwh')),
+          on=['year', 'month', 'dom', 'hour'], how='left')\
     .cache()
 
 print(f'DEBUG:   consumption rows (including price): {consumption_with_price_sdf.count()}')
 
 rate_20td_pvpc_cost = consumption_with_price_sdf\
-    .withColumn('hour_cost', ps_round(col('hour_consumption_kwh') * col('price_buy_kwh'), 5))\
+    .withColumn('hour_cost', ps_round(col('hour_consumption_kwh') * col('hour_pricebuy_ekwh'), 5))\
     .groupBy(col('year'), col('month'))\
     .agg(sum(col('hour_cost')).alias('month_cost'))\
     .orderBy(col('year'), col('month'))\
@@ -698,7 +701,13 @@ month_year_list = [dt_i.strftime('%m-%Y') for dt_i in rrule.rrule(rrule.MONTHLY,
 
 print('DEBUG: self-supply')
 
-pvgis = Pvgis(config['pvgis'], spark, consumption_with_price_sdf, consumption_date_min, consumption_date_max)
+consumption_with_price_and_bankdays_sdf = consumption_with_price_sdf\
+    .join(bank_days_sdf
+          .select(col('year'), col('month'), col('dom'), lit(True).alias('is_bank_day')),
+          on=['year', 'month', 'dom'], how='left')\
+    .fillna(False, subset=['is_bank_day'])
+
+pvgis = Pvgis(config['pvgis'], spark, consumption_with_price_and_bankdays_sdf, consumption_date_min, consumption_date_max, [rate_20td_info, rate_wk_info, rate_fix_info])
 
 jinja_common_context['has_calibrations'] = pvgis.has_calibrations()
 
@@ -721,6 +730,46 @@ angle_aspect_calibration_y_fig_html = pvgis.get_yearly_calibration_figure_html('
 
 with open('config.toml', 'w', encoding='utf-8') as config_file:
     toml.dump(config, config_file)
+
+
+# -------------------------------
+# production estimation
+# -------------------------------
+print('DEBUG: production estimation')
+
+best_production_estimation_m_sdf = pvgis.get_best_production_estimation()
+
+best_production_estimation_m_df = best_production_estimation_m_sdf.toPandas()
+
+x = [
+    list(best_production_estimation_m_df['month']),
+    list(best_production_estimation_m_df['name']),
+]
+
+production_estimation_m_fig = go.Figure()
+production_estimation_m_fig.add_trace(go.Bar(x=x, y=list(best_production_estimation_m_df['month_selfsupply_kwh']), name='Autoconsumo'))
+production_estimation_m_fig.add_trace(go.Bar(x=x, y=list(best_production_estimation_m_df['month_finalconsumption_kwh']), name='Consumo'))
+production_estimation_m_fig.add_trace(go.Bar(x=x, y=list(best_production_estimation_m_df['month_exceedingsold_simplified_kwh']), name='Exceso Vendido'))
+production_estimation_m_fig.add_trace(go.Bar(x=x, y=list(best_production_estimation_m_df['month_exceedingwasted_simplified_kwh']), name='Exceso Regalado'))
+
+# production_estimation_m_fig = px.bar(best_production_estimation_m_sdf.toPandas(),
+#                                      x='month',
+#                                      y='energy_qty_kwh',
+#                                      color='energy_type',
+#                                      category_orders={'month': constants.MONTHS_ES_ORDER},
+#                                      hover_data=['energy_pct'],
+#                                      labels=dict(energy_qty_kwh='kWh', energy_type='T.Energía', energy_pct='% Consumo', month='Mes'))
+
+production_estimation_m_fig.update_xaxes(tickangle=90)
+production_estimation_m_fig.update_layout(barmode='relative', legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
+
+# production_estimation_m_fig.for_each_annotation(lambda a: a.update(text=a.text.replace("Mes=", "")))
+#
+# for axis in production_estimation_m_fig.layout:
+#     if type(production_estimation_m_fig.layout[axis]) == go.layout.XAxis:
+#         production_estimation_m_fig.layout[axis].title.text = ''
+
+production_estimation_m_fig_html = production_estimation_m_fig.to_html(include_plotlyjs=False, full_html=False, div_id='production_estimation_m_figure', default_height='800px')
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -749,6 +798,7 @@ esios_price_years = list(price_sdf.select(col('year')).distinct().orderBy('year'
 
 price_pvpc_evol = price_sdf\
     .filter(col('date') >= price_period_from)\
+    .orderBy(col('date'))\
     .cache()
 
 # Esios Buy Price
@@ -756,17 +806,17 @@ print('DEBUG: esios buy price')
 
 price_rate_figure_ids = {}
 
-price_dates_sdf = price_sdf\
-    .filter(col('date') >= price_period_from)\
+price_dates_sdf = price_pvpc_evol\
     .select(col('date'))\
     .distinct()\
-    .orderBy(col('date'))
+    .orderBy(col('date'))\
+    .cache()
 
 price_buy_pvpc_evol_fig = px.line(price_pvpc_evol.toPandas(),
                                   x='datetime',
-                                  y='price_buy_kwh',
+                                  y='hour_pricebuy_ekwh',
                                   labels=dict(date='Fecha',
-                                          price_buy_kwh='Precio (€/kWh)'))
+                                          hour_pricebuy_ekwh='Precio (€/kWh)'))
 price_buy_pvpc_evol_fig.update_layout(xaxis={'title': None})
 price_buy_pvpc_evol_fig.update_xaxes(
     tickangle=90,
@@ -791,25 +841,29 @@ rate_info_list = [rate_20td_info, rate_wk_info, rate_fix_info]
 
 html_template_data = {}
 
+price_evol_with_bank_days_sdf = price_pvpc_evol\
+    .join(bank_days_sdf
+          .select(col('year'), col('month'), col('dom'), lit(True).alias('is_bank_day')),
+          on=['year', 'month', 'dom'], how='left')\
+    .fillna(False, subset=['is_bank_day'])\
+    .cache()
+
 for rate_info in rate_info_list:
     print('DEBUG:     {rate_type}'.format(rate_type=rate_info.get_rate_type()))
 
-    price_pvpc_rate_evol = price_pvpc_evol\
-        .join(bank_days_sdf
-              .select(col('year'), col('month'), col('dom'), lit(True).alias('is_bank_day')),
-              on=['year', 'month', 'dom'], how='left')\
-        .fillna(False, subset=['is_bank_day'])\
+    price_pvpc_rate_evol = price_evol_with_bank_days_sdf\
         .withColumn('period', rate_info.get_period('hour', 'dow', 'is_bank_day'))\
         .groupBy(col('date'), col('period'))\
         .agg(
-            ps_round(avg(col('price_buy_kwh')), 3).alias('avg_period_kwh'),
-            ps_round(std(col('price_buy_kwh')), 3).alias('std_period_kwh')
+            ps_round(avg(col('hour_pricebuy_ekwh')), 3).alias('avg_period_kwh'),
+            ps_round(std(col('hour_pricebuy_ekwh')), 3).alias('std_period_kwh')
         )\
         .withColumn('avg_period_kwh', col('avg_period_kwh').cast(DecimalType(10, 3)))\
         .withColumn('std_period_kwh', col('std_period_kwh').cast(DecimalType(10, 3)))\
         .withColumn('upp_period_kwh', col('avg_period_kwh') + col('std_period_kwh'))\
         .withColumn('low_period_kwh', col('avg_period_kwh') - col('std_period_kwh'))\
-        .orderBy('date', 'period')
+        .orderBy('date', 'period')\
+        .cache()
 
     rate_period_list = rate_info.get_periods()
 
@@ -820,11 +874,16 @@ for rate_info in rate_info_list:
     for (rate_i, rate_period) in enumerate(rate_period_list):
         row = rate_i + 1
 
-        price_pvpc_rate_period_evol = price_pvpc_rate_evol\
-            .filter(col('period') == rate_period)\
-            .join(price_dates_sdf, on='date', how='right')\
+        # price_pvpc_rate_period_evol = price_pvpc_rate_evol\
+        #     .filter(col('period') == rate_period)\
+        #     .join(price_dates_sdf, on='date', how='right')\
+        #     .fillna(rate_period, subset=['period'])\
+        #     .orderBy('date')\
+        #     .toPandas()
+
+        price_pvpc_rate_period_evol = price_dates_sdf\
+            .join(price_pvpc_rate_evol.filter(col('period') == rate_period), on='date', how='left')\
             .fillna(rate_period, subset=['period'])\
-            .orderBy('date')\
             .toPandas()
 
         price_pvpc_rate_period_x = list(price_pvpc_rate_period_evol['date'])
@@ -907,14 +966,19 @@ for rate_info in rate_info_list:
     html_template_data[f'rate_{rate_info.get_rate_type()}_info_series'] = rate_wk_info.get_series()
     html_template_data[f'rate_{rate_info.get_rate_type()}_info_periods'] = rate_wk_info.get_periods()
 
+    price_pvpc_rate_evol.unpersist()
+
+price_evol_with_bank_days_sdf.unpersist()
+price_dates_sdf.unpersist()
+
 # Esios sell price
 print('DEBUG: esios sell price')
 
 price_sell_pvpc_evol_fig = px.line(price_pvpc_evol.toPandas(),
                                    x='datetime',
-                                   y='price_sell_kwh',
+                                   y='hour_pricesell_ekwh',
                                    labels=dict(date='Fecha',
-                                               price_sell_kwh='Precio (€/kWh)'))
+                                               hour_pricesell_ekwh='Precio (€/kWh)'))
 price_sell_pvpc_evol_fig.update_layout(xaxis={'title': None})
 price_sell_pvpc_evol_fig.update_xaxes(
     tickangle=90,
@@ -934,8 +998,8 @@ price_sell_pvpc_evol_fig_html = price_sell_pvpc_evol_fig.to_html(include_plotlyj
 price_pvpc_evol_m_sdf = price_pvpc_evol\
     .groupBy(col('year'), col('month'))\
     .agg(
-        ps_round(avg(col('price_sell_kwh')).alias('avg_price_sell_kwh'), 3).alias('avg_price_sell_kwh'),
-        ps_round(std(col('price_sell_kwh')).alias('std_price_sell_kwh'), 3).alias('std_price_sell_kwh'),
+        ps_round(avg(col('hour_pricesell_ekwh')).alias('avg_price_sell_kwh'), 3).alias('avg_price_sell_kwh'),
+        ps_round(std(col('hour_pricesell_ekwh')).alias('std_price_sell_kwh'), 3).alias('std_price_sell_kwh'),
     )\
     .withColumn('avg_price_sell_kwh', col('avg_price_sell_kwh').cast(DecimalType(10, 3)))\
     .withColumn('std_price_sell_kwh', col('std_price_sell_kwh').cast(DecimalType(10, 3)))\
@@ -1061,7 +1125,7 @@ jinja_env.get_template('cost.html')\
 
 jinja_env.get_template('selfsupply/calibrations.html')\
     .stream(
-        pvgis_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
+        calibrations_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
         angle_calibration_m_fig=angle_calibration_m_fig_html,
         angle_calibration_y_fig=angle_calibration_y_fig_html,
         aspect_calibration_m_fig=aspect_calibration_m_fig_html,
@@ -1069,6 +1133,13 @@ jinja_env.get_template('selfsupply/calibrations.html')\
         angle_aspect_calibration_y_fig=angle_aspect_calibration_y_fig_html,
         **jinja_common_context
     ).dump(os.path.join('docs', 'selfsupply', 'calibrations.html'))
+
+jinja_env.get_template('selfsupply/production.html')\
+    .stream(
+        production_estimation_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
+        production_estimation_m_fig=production_estimation_m_fig_html,
+        **jinja_common_context
+    ).dump(os.path.join('docs', 'selfsupply', 'production.html'))
 
 jinja_env.get_template('configuration.html')\
     .stream(
@@ -1084,23 +1155,23 @@ jinja_env.get_template('configuration.html')\
         **jinja_common_context
     ).dump(os.path.join('docs', 'configuration.html'))
 
-# jinja_env.get_template('esios/esios_price_buy_20td.html')\
-#     .stream(
-#         price_buy_pvpc_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
-#         esios_price_years=esios_price_years,
-#         price_pvpc_evol_fig=price_buy_pvpc_evol_fig_html,
-#         price_rate_figure_ids=price_rate_figure_ids,
-#         **(jinja_common_context | html_template_data)
-#     ).dump(os.path.join('docs', 'esios', 'esios_price_buy_20td.html'))
-#
-# jinja_env.get_template('esios/esios_price_sell_20td.html')\
-#     .stream(
-#         price_sell_pvpc_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
-#         esios_price_years=esios_price_years,
-#         price_pvpc_evol_fig=price_sell_pvpc_evol_fig_html,
-#         price_pvpc_evol_m_fig=price_sell_pvpc_evol_m_fig_html,
-#         **jinja_common_context
-#     ).dump(os.path.join('docs', 'esios', 'esios_price_sell_20td.html'))
+jinja_env.get_template('esios/esios_price_buy_20td.html')\
+    .stream(
+        price_buy_pvpc_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
+        esios_price_years=esios_price_years,
+        price_pvpc_evol_fig=price_buy_pvpc_evol_fig_html,
+        price_rate_figure_ids=price_rate_figure_ids,
+        **(jinja_common_context | html_template_data)
+    ).dump(os.path.join('docs', 'esios', 'esios_price_buy_20td.html'))
+
+jinja_env.get_template('esios/esios_price_sell_20td.html')\
+    .stream(
+        price_sell_pvpc_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
+        esios_price_years=esios_price_years,
+        price_pvpc_evol_fig=price_sell_pvpc_evol_fig_html,
+        price_pvpc_evol_m_fig=price_sell_pvpc_evol_m_fig_html,
+        **jinja_common_context
+    ).dump(os.path.join('docs', 'esios', 'esios_price_sell_20td.html'))
 
 jinja_env.get_template('bank_days.html')\
     .stream(

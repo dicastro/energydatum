@@ -5,7 +5,7 @@ import constants
 from services.rates.rate_base import RateInfoBase
 
 
-class RateInfo20TDInfo(RateInfoBase):
+class Rate20TDInfo(RateInfoBase):
     def __init__(self):
         super().__init__('20td')
 

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="ui container">
+    <h1 class="ui header">Producción estimada</h1>
+
+    <div class="content">
+        {{production_estimation_m_fig | safe}}
+    </div>
+</div>
+{% endblock %}

@@ -1,4 +1,4 @@
-VERSION = '1.0.0-alpha4b'
+VERSION = '1.0.0-alpha5'
 
 CONTEXT_PATH = '/energydatum'
 
