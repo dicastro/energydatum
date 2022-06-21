@@ -344,7 +344,7 @@ En estas gráficas se muestra tanto el precio medio (línea) como la desviación
 
 - [x] Descomentado código en `main.py`
 
-:construction: Versión 1.0.0.alpha5
+:checkered_flag: Versión 1.0.0.alpha5
 
 - [x] Visualización de estimación de energía generada por meses, bien para las mejores configuraciones del calibrado, o bien para los parámetros indicados en el fichero de configuración
 - [x] Visualización de estimación de energía generada anualmente, bien para las mejores configuraciones del calibrado, o bien para los parámetros indicados en el fichero de configuración
