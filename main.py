@@ -737,39 +737,28 @@ with open('config.toml', 'w', encoding='utf-8') as config_file:
 # -------------------------------
 print('DEBUG: production estimation')
 
-best_production_estimation_m_sdf = pvgis.get_best_production_estimation()
+production_estimation_configurations = pvgis.get_production_estimation_configurations()
 
-best_production_estimation_m_df = best_production_estimation_m_sdf.toPandas()
-
-x = [
-    list(best_production_estimation_m_df['month']),
-    list(best_production_estimation_m_df['name']),
-]
-
-production_estimation_m_fig = go.Figure()
-production_estimation_m_fig.add_trace(go.Bar(x=x, y=list(best_production_estimation_m_df['month_selfsupply_kwh']), name='Autoconsumo'))
-production_estimation_m_fig.add_trace(go.Bar(x=x, y=list(best_production_estimation_m_df['month_finalconsumption_kwh']), name='Consumo'))
-production_estimation_m_fig.add_trace(go.Bar(x=x, y=list(best_production_estimation_m_df['month_exceedingsold_simplified_kwh']), name='Exceso Vendido'))
-production_estimation_m_fig.add_trace(go.Bar(x=x, y=list(best_production_estimation_m_df['month_exceedingwasted_simplified_kwh']), name='Exceso Regalado'))
-
-# production_estimation_m_fig = px.bar(best_production_estimation_m_sdf.toPandas(),
-#                                      x='month',
-#                                      y='energy_qty_kwh',
-#                                      color='energy_type',
-#                                      category_orders={'month': constants.MONTHS_ES_ORDER},
-#                                      hover_data=['energy_pct'],
-#                                      labels=dict(energy_qty_kwh='kWh', energy_type='T.Energía', energy_pct='% Consumo', month='Mes'))
-
-production_estimation_m_fig.update_xaxes(tickangle=90)
-production_estimation_m_fig.update_layout(barmode='relative', legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
-
-# production_estimation_m_fig.for_each_annotation(lambda a: a.update(text=a.text.replace("Mes=", "")))
+# TODO: delete this
+# best_production_estimation_m_sdf = pvgis.get_best_production_estimation()
 #
-# for axis in production_estimation_m_fig.layout:
-#     if type(production_estimation_m_fig.layout[axis]) == go.layout.XAxis:
-#         production_estimation_m_fig.layout[axis].title.text = ''
-
-production_estimation_m_fig_html = production_estimation_m_fig.to_html(include_plotlyjs=False, full_html=False, div_id='production_estimation_m_figure', default_height='800px')
+# best_production_estimation_m_df = best_production_estimation_m_sdf.toPandas()
+#
+# x = [
+#     list(best_production_estimation_m_df['month']),
+#     list(best_production_estimation_m_df['name']),
+# ]
+#
+# production_estimation_m_fig = go.Figure()
+# production_estimation_m_fig.add_trace(go.Bar(x=x, y=list(best_production_estimation_m_df['month_selfsupply_kwh']), name='Autoconsumo'))
+# production_estimation_m_fig.add_trace(go.Bar(x=x, y=list(best_production_estimation_m_df['month_finalconsumption_kwh']), name='Consumo'))
+# production_estimation_m_fig.add_trace(go.Bar(x=x, y=list(best_production_estimation_m_df['month_exceedingsold_simplified_kwh']), name='Exceso Vendido'))
+# production_estimation_m_fig.add_trace(go.Bar(x=x, y=list(best_production_estimation_m_df['month_exceedingwasted_simplified_kwh']), name='Exceso Regalado'))
+#
+# production_estimation_m_fig.update_xaxes(tickangle=90)
+# production_estimation_m_fig.update_layout(barmode='relative', legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
+#
+# production_estimation_m_fig_html = production_estimation_m_fig.to_html(include_plotlyjs=False, full_html=False, div_id='production_estimation_m_figure', default_height='800px')
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -873,13 +862,6 @@ for rate_info in rate_info_list:
 
     for (rate_i, rate_period) in enumerate(rate_period_list):
         row = rate_i + 1
-
-        # price_pvpc_rate_period_evol = price_pvpc_rate_evol\
-        #     .filter(col('period') == rate_period)\
-        #     .join(price_dates_sdf, on='date', how='right')\
-        #     .fillna(rate_period, subset=['period'])\
-        #     .orderBy('date')\
-        #     .toPandas()
 
         price_pvpc_rate_period_evol = price_dates_sdf\
             .join(price_pvpc_rate_evol.filter(col('period') == rate_period), on='date', how='left')\
@@ -1137,7 +1119,8 @@ jinja_env.get_template('selfsupply/calibrations.html')\
 jinja_env.get_template('selfsupply/production.html')\
     .stream(
         production_estimation_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
-        production_estimation_m_fig=production_estimation_m_fig_html,
+        production_estimation_configurations=production_estimation_configurations,
+        production_estimation_date_scope=pvgis.get_date_scope(),
         **jinja_common_context
     ).dump(os.path.join('docs', 'selfsupply', 'production.html'))
 

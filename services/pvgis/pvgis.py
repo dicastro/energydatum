@@ -255,15 +255,18 @@ class Pvgis:
 
         self.calibration_done = False
 
-        self.production_estimations = None
-        self.production_estimations_file = os.path.join('docs', 'data', 'pvgis', 'pvgis_production_estimations.json')
-        self.production_estimations_cache: Dict[str, DataFrame] = dict()
+        self.production_estimations = []
 
-        if os.path.exists(self.production_estimations_file):
-            with open(self.production_estimations_file, 'r', encoding='utf-8') as f:
-                self.production_estimations = json.load(f)
+        self.production_estimation_basepath = os.path.join('docs', 'data', 'selfsupply', 'production_estimation', self.consumption_date_scope)
+        os.makedirs(self.production_estimation_basepath, exist_ok=True)
 
-        self.production_estimation_done = False
+        production_estimations_files = glob.glob(os.path.join(self.production_estimation_basepath, '*.json'))
+
+        for production_estimations_file in production_estimations_files:
+            with open(production_estimations_file, 'r', encoding='utf-8') as f:
+                self.production_estimations.append(json.load(f))
+
+        self._sort_production_estimations()
 
         self.figure_y_titles = {
             'angle': {
@@ -307,6 +310,9 @@ class Pvgis:
 
     def _get_data_id(self, params) -> str:
         return f'PP{params["peakpower"]}_AN{params["angle"]}_AS{params["aspect"]}'.replace('.', 'P').replace('-', 'M')
+
+    def _get_data_label(self, params) -> str:
+        return f'P: {params["peakpower"]:.2f} kWhp | I: {params["angle"]}º | A: {params["aspect"]: 3}º'
 
     def _get_file_name(self, data_id: str) -> str:
         return f'pvgis_{data_id}.json'
@@ -481,10 +487,9 @@ class Pvgis:
             with open(self.calibrations_file, 'w', encoding='utf-8') as f:
                 json.dump(self.calibrations, f, ensure_ascii=False)
 
-    def _persist_production_estimations(self, force: bool = False) -> None:
-        if force or self.production_estimation_done:
-            with open(self.production_estimations_file, 'w', encoding='utf-8') as f:
-                json.dump(self.production_estimations, f, ensure_ascii=False)
+    def _persist_production_estimation(self, production_estimation: Dict[str, any]) -> None:
+        with open(os.path.join(self.production_estimation_basepath, f'production_estimation_{production_estimation["id"]}.json'), 'w', encoding='utf-8') as f:
+            json.dump(production_estimation, f, ensure_ascii=False)
 
     def _calibrate(self) -> None:
         if self.pvgis_config['calibrate_angle_and_aspect']:
@@ -540,7 +545,7 @@ class Pvgis:
 
             y_sdf = utils.json_to_df({'data': y_data, 'columns': y_columns}, self.spark, y_schema)
 
-            utils.df_to_json_file(y_sdf, os.path.join('docs', 'data', 'selfsupply', f'{attribute}_calibrations_y_data.json'))
+            utils.df_to_json_file(y_sdf, os.path.join('docs', 'data', 'selfsupply', 'calibration', f'{attribute}_calibrations_y_data.json'))
 
             self.calibrations_cache[calibration_cache_key] = y_sdf.orderBy(*attribute_cols).cache()
 
@@ -690,25 +695,50 @@ class Pvgis:
 
         return calibration_m_fig.to_html(include_plotlyjs=False, full_html=False, div_id=f'{attribute}_calibration_m_figure', default_height='1200px')
 
-    def _get_best_calibrations_params(self):
+    def _get_param(self, param: str):
+        print(f'DEBUG: getting param "{param}" ...')
+
+        if param in self.pvgis_config['params']:
+            value = self.pvgis_config['params'][param]
+            print(f'DEBUG: using value present in config.toml for param "{param}": {value}')
+        else:
+            value = self.default_params[param]
+            print(f'DEBUG: missing value in config.toml for param "{param}", using default one ({value})')
+
+        return value
+
+    def _get_params_to_estimate_production(self):
+        print('DEBUG: determinig params to estimate production ...')
+
         _, calibration = self._get_current_calibration()
 
-        params_to_combine = [self.pvgis_config['params']['peakpower']]
+        params_to_combine = [self._get_param('peakpower')]
 
         if 'angle+aspect' in calibration:
             angles_aspects = [(c['params']['angle'], c['params']['aspect']) for c in calibration['angle+aspect'][0:10]]
+
+            print(f'DEBUG: "angle" and "aspect" params were calibrated, using {len(angles_aspects)} best combinations of them: {angles_aspects}')
 
             params_to_combine.append(angles_aspects)
         elif 'angle' in calibration:
             angles = [c['params']['angle'] for c in calibration['angle'][0:5]]
 
+            print(f'DEBUG: "angle" param was calibrated, using {len(angles)} best values of it: {angles}')
+
             params_to_combine.append(angles)
-            params_to_combine.append(self.pvgis_config['params']['aspect'] or self.default_params['aspect'])
+            params_to_combine.append(self._get_param('aspect'))
         elif 'aspect' in calibration:
             aspects = [c['params']['aspect'] for c in calibration['aspect'][0:5]]
 
-            params_to_combine.append(self.pvgis_config['params']['angle'] or self.default_params['angle'])
+            print(f'DEBUG: "aspect" param was calibrated, using {len(aspects)} best values of it: {aspects}')
+
+            params_to_combine.append(self._get_param('angle'))
             params_to_combine.append(aspects)
+        else:
+            print('DEBUG: no params were calibrated')
+
+            params_to_combine.append(self._get_param('angle'))
+            params_to_combine.append(self._get_param('aspect'))
 
         return self._combine_params(params_to_combine)
 
@@ -750,16 +780,17 @@ class Pvgis:
             self.consumption_with_rate_info_sdf = temp_sdf\
                 .cache()
 
+    def _sort_production_estimations(self):
+        self.production_estimations.sort(key=lambda c: c['year_pvpc_simplified_savings_eur'], reverse=True)
+
     def _estimate_production(self):
-        params_series = self._get_best_calibrations_params()
+        params_series = self._get_params_to_estimate_production()
 
         for params in params_series:
             data_id = self._get_data_id(params)
 
-            if self.production_estimations \
-                    and self.consumption_date_scope in self.production_estimations \
-                    and any([True for a in self.production_estimations[self.consumption_date_scope]['estimations'] if a['id'] == data_id]):
-                current_production_estimation = next(a for a in self.production_estimations[self.consumption_date_scope]['estimations'] if a['id'] == data_id)
+            if any([True for a in self.production_estimations if a['id'] == data_id]):
+                current_production_estimation = next(a for a in self.production_estimations if a['id'] == data_id)
 
                 print(f'[DEBUG] already estimated production ({json.dumps(current_production_estimation["params"])})')
                 continue
@@ -864,21 +895,21 @@ class Pvgis:
                 year_pvpc_real_savings_eur = float(production_estimation_y_sdf.select('year_pvpc_real_savings_eur').first()['year_pvpc_real_savings_eur'])
                 year_pvpc_simplified_savings_eur = float(production_estimation_y_sdf.select('year_pvpc_simplified_savings_eur').first()['year_pvpc_simplified_savings_eur'])
 
-                if not self.production_estimations or self.consumption_date_scope not in self.production_estimations:
-                    self.production_estimations = {self.consumption_date_scope: {'estimations': []}}
-
-                self.production_estimations[self.consumption_date_scope]['estimations'].append({
+                production_estimation = {
                     'id': data_id,
+                    'name': self._get_data_label(params),
                     'params': params,
                     'dataframe_m': utils.df_to_json(production_estimation_m_sdf),
                     'dataframe_y': utils.df_to_json(production_estimation_y_sdf),
                     'year_pvpc_real_savings_eur': year_pvpc_real_savings_eur,
                     'year_pvpc_simplified_savings_eur': year_pvpc_simplified_savings_eur,
-                })
+                }
 
-                self.production_estimations[self.consumption_date_scope]['estimations'].sort(key=lambda c: c['year_pvpc_simplified_savings_eur'], reverse=True)
+                self._persist_production_estimation(production_estimation)
 
-                self.production_estimation_done = True
+                self.production_estimations.append(production_estimation)
+
+                self._sort_production_estimations()
 
                 print(f'[DEBUG] estimated production ({json.dumps(params)}) with savings of {year_pvpc_simplified_savings_eur} € (real: {year_pvpc_real_savings_eur} €) (PVPC)')
                 production_estimation_y_sdf.show()
@@ -886,23 +917,16 @@ class Pvgis:
                 production_estimation_m_sdf.unpersist()
                 production_estimation_y_sdf.unpersist()
 
-        if self.production_estimation_done:
-            for pe in self.production_estimations.values():
-                pe['is_last'] = False
-
-            self.production_estimations[self.consumption_date_scope]['is_last'] = True
-
-        self._persist_production_estimations()
+    def get_production_estimation_configurations(self) -> List[Dict[str, str]]:
+        return [{'id': pe['id'], 'label': pe['name']} for pe in self.production_estimations]
 
     def get_best_production_estimation(self) -> DataFrame:
-        month_unpivot_expr = "stack(4, 'Autoconsumo', month_selfsupply_kwh, 'Consumo', month_finalconsumption_kwh, 'Exceso Vendido', month_exceedingsold_simplified_kwh, 'Exceso Regalado', month_exceedingwasted_simplified_kwh) as (energy_type, energy_qty_kwh)"
-
         df_data = {
-            'columns': self.production_estimations[self.consumption_date_scope]['estimations'][0]['dataframe_m']['columns'],
-            'data': self.production_estimations[self.consumption_date_scope]['estimations'][0]['dataframe_m']['data'] +
-                    self.production_estimations[self.consumption_date_scope]['estimations'][1]['dataframe_m']['data'] +
-                    self.production_estimations[self.consumption_date_scope]['estimations'][2]['dataframe_m']['data'] +
-                    self.production_estimations[self.consumption_date_scope]['estimations'][3]['dataframe_m']['data']
+            'columns': self.production_estimations[0]['dataframe_m']['columns'],
+            'data': self.production_estimations[0]['dataframe_m']['data'] +
+                    self.production_estimations[1]['dataframe_m']['data'] +
+                    self.production_estimations[2]['dataframe_m']['data'] +
+                    self.production_estimations[3]['dataframe_m']['data']
         }
 
         return utils.json_to_df(df_data, self.spark, self.production_estimation_m_schema)\
@@ -923,3 +947,6 @@ class Pvgis:
                         .when(col('month') == 12, 'DIC'))\
             .drop('month')\
             .withColumnRenamed('month_text', 'month')
+
+    def get_date_scope(self) -> str:
+        return self.consumption_date_scope

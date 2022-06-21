@@ -344,12 +344,13 @@ En estas gráficas se muestra tanto el precio medio (línea) como la desviación
 
 - [x] Descomentado código en `main.py`
 
-:construction: Versión 1.0.0.alpha5 :arrow_left:
+:construction: Versión 1.0.0.alpha5
 
-- [ ] Visualización de estimación de energía generada por meses, bien para las mejores configuraciones del calibrado, o bien para los parámetros indicados en el fichero de configuración
-- [ ] Se tienen en cuenta en el fichero de configuración propiedades para indicar la potencia instalada, orientación, y demás datos necesarios para la estimación de la producción
+- [x] Visualización de estimación de energía generada por meses, bien para las mejores configuraciones del calibrado, o bien para los parámetros indicados en el fichero de configuración
+- [x] Visualización de estimación de energía generada anualmente, bien para las mejores configuraciones del calibrado, o bien para los parámetros indicados en el fichero de configuración
+- [x] Se tienen en cuenta en el fichero de configuración propiedades para indicar la potencia instalada, orientación, y demás datos necesarios para la estimación de la producción
 
-:rocket: Versión 1.0.0.alpha6
+:construction: Versión 1.0.0.alpha6 :arrow_left:
 
 - [ ] Añadir en la pantalla de configuración la posibilidad de añadir ofertas de compra de electricidad
 - [ ] En la pantalla *Precio PVPC > Compra* mostrar la oferta de compra en uso
