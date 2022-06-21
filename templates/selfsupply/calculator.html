@@ -2,23 +2,23 @@
 
 {% block content %}
 
-<h1 class="ui header">Producción estimada</h1>
+<h1 class="ui header">Calculadora autoconsumo</h1>
 
 <div class="content">
     <div id="production-estimation-configuration-selector"></div>
 
-    <div id="production-estimation-monthly-figure" class="plotly-graph-div" style="min-height:600px; width:100%;"></div>
+    <div id="production-estimation-monthly" style="margin-top: 2em;"></div>
 
-    <div id="production-estimation-yearly-figure" class="plotly-graph-div" style="min-height:600px; width:100%;"></div>
+    <div id="production-estimation-yearly" style="margin-top: 2em;"></div>
 </div>
 {% endblock %}
 
 {% block custom_javascript %}
 <script type="text/javascript" charset="utf-8">
 $(document).ready(function() {
-    let productionEstimationMonthly = $('#production-estimation-monthly-figure').productionestimationmonthly();
+    let productionEstimationMonthly = $('#production-estimation-monthly').productionestimationmonthly();
 
-    let productionEstimationYearly = $('#production-estimation-yearly-figure').productionestimationyearly();
+    let productionEstimationYearly = $('#production-estimation-yearly').productionestimationyearly();
 
     let productionEstimationConfigurationSelector = $('#production-estimation-configuration-selector').productionestimationconfigurationselector({
         loadingContainerSelector: '#main-container',

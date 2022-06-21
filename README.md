@@ -350,11 +350,14 @@ En estas gráficas se muestra tanto el precio medio (línea) como la desviación
 - [x] Visualización de estimación de energía generada anualmente, bien para las mejores configuraciones del calibrado, o bien para los parámetros indicados en el fichero de configuración
 - [x] Se tienen en cuenta en el fichero de configuración propiedades para indicar la potencia instalada, orientación, y demás datos necesarios para la estimación de la producción
 
+:checkered_flag: Versión 1.0.0.alpha5b
+
+- [x] Visualización del consumo teniendo en cuenta la producción. Se podrá ver la energía sobrante y la que se acaba comprando a la comercializadora. Este cálculo se hará para los últimos 12 meses. Se mostrará una visión mensual y una anual
+
 :construction: Versión 1.0.0.alpha6 :arrow_left:
 
 - [ ] Añadir en la pantalla de configuración la posibilidad de añadir ofertas de compra de electricidad
 - [ ] En la pantalla *Precio PVPC > Compra* mostrar la oferta de compra en uso
-- [ ] Visualización del consumo teniendo en cuenta la producción. Se podrá ver la energía sobrante y la que se acaba comprando a la comercializadora. Esto se hará para 12 meses.
 
 :rocket: versión 1.0.0.beta1
 

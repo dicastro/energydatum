@@ -112,23 +112,26 @@ $.widget('ed.productionestimationyearly', {
             "xanchor": "right",
             "x": 1
         },
-        "title": {
-            "text": "Producción estimada anual"
-        },
         "barmode":"relative"
     },
     _dataSeries: [{
         column: 'year_selfsupply_kwh',
         label: 'Autoconsumo',
-        color: '#636efa'
+        color: '#636efa',
+        template: 'Configuración<br>%{x}<br>Autoconsumo: %{y:.3f} kWh<br>%{customdata[2]:.2f} % (T.Consumida: %{customdata[0]:.3f} kWh)<br>%{customdata[3]:.2f} % (T.Producida: %{customdata[1]:.3f} kWh)<extra></extra>',
+        extra_data: ['year_consumption_kwh', 'year_production_kwh', 'pct_selfsupply_vs_consumption', 'pct_selfsupply_vs_production']
     }, {
         column: 'year_finalconsumption_kwh',
         label: 'Consumo',
-        color: '#EF553B'
+        color: '#EF553B',
+        template: 'Configuración<br>%{x}<br>Consumo: %{y} kWh<br>%{customdata[1]:.2f} % (T.Consumida: %{customdata[0]:.3f} kWh)<extra></extra>',
+        extra_data: ['year_consumption_kwh', 'pct_finalconsumption_vs_consumption']
     }, {
         column: 'year_exceeding_kwh',
         label: 'Excedente',
-        color: '#00cc96'
+        color: '#00cc96',
+        template: 'Configuración<br>%{x}<br>Excedente: %{y} kWh<br>%{customdata[1]:.2f} % (T.Producida: %{customdata[0]:.3f} kWh)<extra></extra>',
+        extra_data: ['year_production_kwh', 'pct_exceeding_vs_production']
     }],
 
     _configurations: [],
@@ -144,20 +147,38 @@ $.widget('ed.productionestimationyearly', {
     },
 
     _getPlotlyFigureLayout: function() {
-        return JSON.parse(JSON.stringify(this._plotlyFigureLayout));
+        let layout = JSON.parse(JSON.stringify(this._plotlyFigureLayout));
+
+        if (this._configurations.length > 3) {
+            layout['xaxis'] = {
+                'tickangle': 90
+            }
+        }
+
+        return layout;
     },
     _getPlotlyData: function() {
         let self = this;
 
-        let x = self._configurations.map(configuration => configuration.name.replaceAll(' | ', '<br>'));
+        let x = self._configurations.map(configuration => configuration.name);
 
         return this._dataSeries.map(item => {
             let y = self._configurations.map(configuration => configuration['data'][item.column]);
+
+            let customData = [];
+
+            if (item.extra_data) {
+                this._configurations.forEach(configuration => {
+                    customData.push(item.extra_data.map(extra_data => configuration['extra'][extra_data][0]));
+                });
+            }
 
             return {
                 'name': item.label,
                 'x': x,
                 'y': y,
+                'customdata': customData,
+                'hovertemplate': item.template,
                 'marker': {
                     'color': item.color
                 },
@@ -176,7 +197,23 @@ $.widget('ed.productionestimationyearly', {
     },
 
     _refreshFigure: function() {
-        Plotly.newPlot(this.element.attr('id'), this._getPlotlyData(), this._getPlotlyFigureLayout(), this._plotlyFigureConfig);
+        let elementId = this.element.attr('id');
+
+        let titleId = `${elementId}-title`
+        let $titleElement = $(`#${titleId}`);
+
+        if ($titleElement.length === 0) {
+            this.element.append($('<h2>', {id: titleId, text: 'Consumo estimado anual'}))
+        }
+
+        let figureId = `${elementId}-figure`
+        let $figureElement = $(`#${figureId}`);
+
+        if ($figureElement.length === 0) {
+            this.element.append($('<div>', {id: figureId,  style: 'min-height:600px; width:100%;', class: 'plotly-graph-div'}));
+        }
+
+        Plotly.newPlot(figureId, this._getPlotlyData(), this._getPlotlyFigureLayout(), this._plotlyFigureConfig);
     },
 
     addConfiguration: function(rawConfiguration) {
@@ -195,7 +232,8 @@ $.widget('ed.productionestimationyearly', {
                 configuration = {
                     id: rc.id,
                     name: rc.name,
-                    data: {}
+                    data: {},
+                    extra: {}
                 }
 
                 let df = new self.DataFrame(rc.dataframe_y.data, rc.dataframe_y.columns);
@@ -203,6 +241,13 @@ $.widget('ed.productionestimationyearly', {
                 self._dataSeries.forEach(function(ds) {
                     configuration['data'][ds.column] = df.select(ds.column).toDict()[ds.column][0];
                 });
+
+                configuration['extra']['year_consumption_kwh'] = df.sortBy('month').select('year_consumption_kwh').toDict()['year_consumption_kwh'];
+                configuration['extra']['year_production_kwh'] = df.sortBy('month').select('year_production_kwh').toDict()['year_production_kwh'];
+                configuration['extra']['pct_selfsupply_vs_consumption'] = df.withColumn('aux', (row) => row.get('year_selfsupply_kwh') / row.get('year_consumption_kwh') * 100).sortBy('month').select('aux').toDict()['aux'];
+                configuration['extra']['pct_selfsupply_vs_production'] = df.withColumn('aux', (row) => row.get('year_selfsupply_kwh') / row.get('year_production_kwh') * 100).sortBy('month').select('aux').toDict()['aux'];
+                configuration['extra']['pct_finalconsumption_vs_consumption'] = df.withColumn('aux', (row) => row.get('year_finalconsumption_kwh') / row.get('year_consumption_kwh') * 100).sortBy('month').select('aux').toDict()['aux'];
+                configuration['extra']['pct_exceeding_vs_production'] = df.withColumn('aux', (row) => row.get('year_exceeding_kwh') / row.get('year_production_kwh') * 100).sortBy('month').select('aux').toDict()['aux'];
 
                 self._storeConfiguration(configuration);
             }

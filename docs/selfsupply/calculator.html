@@ -67,7 +67,7 @@
                 
                 <a id="calibrations_menu_item" class=" item" href="/energydatum/selfsupply/calibrations.html">Calibrado</a>
                 
-                <a id="production_estimation_menu_item" class="active item" href="/energydatum/selfsupply/production.html">Producción</a>
+                <a id="production_estimation_menu_item" class="active item" href="/energydatum/selfsupply/calculator.html">Calculadora</a>
             </div>
         </div>
         <a id="configuration_menu_item" class="item right " href="/energydatum/configuration.html">
@@ -79,14 +79,14 @@
 <div id="main-container" class="ui container">
     
 
-<h1 class="ui header">Producción estimada</h1>
+<h1 class="ui header">Calculadora autoconsumo</h1>
 
 <div class="content">
     <div id="production-estimation-configuration-selector"></div>
 
-    <div id="production-estimation-monthly-figure" class="plotly-graph-div" style="min-height:600px; width:100%;"></div>
+    <div id="production-estimation-monthly" style="margin-top: 2em;"></div>
 
-    <div id="production-estimation-yearly-figure" class="plotly-graph-div" style="min-height:600px; width:100%;"></div>
+    <div id="production-estimation-yearly" style="margin-top: 2em;"></div>
 </div>
 
 </div>
@@ -121,7 +121,7 @@
                     
                     <a class="item" href="/energydatum/selfsupply/calibrations.html">Calibrado</a>
                     
-                    <a class="item" href="/energydatum/selfsupply/production.html">Producción</a>
+                    <a class="item" href="/energydatum/selfsupply/calculator.html">Calculadora</a>
                 </div>
             </div>
             <div class="seven wide column">
@@ -142,7 +142,7 @@
         <img src="/energydatum/assets/img/logo_40x40.png" class="ui centered mini image">
         <div class="ui horizontal inverted small divided link list">
             <a class="item" href="https://diegocastroviadero.com/#contact" target="_blank">Contáctame</a>
-            <p class="item">1.0.0-alpha5</p>
+            <p class="item">1.0.0-alpha5b</p>
             <p class="item">Generado el 21/06/2022 con datos entre 01/06/2020 y 31/05/2022</p>
         </div>
     </div>
@@ -164,9 +164,9 @@
 
 <script type="text/javascript" charset="utf-8">
 $(document).ready(function() {
-    let productionEstimationMonthly = $('#production-estimation-monthly-figure').productionestimationmonthly();
+    let productionEstimationMonthly = $('#production-estimation-monthly').productionestimationmonthly();
 
-    let productionEstimationYearly = $('#production-estimation-yearly-figure').productionestimationyearly();
+    let productionEstimationYearly = $('#production-estimation-yearly').productionestimationyearly();
 
     let productionEstimationConfigurationSelector = $('#production-estimation-configuration-selector').productionestimationconfigurationselector({
         loadingContainerSelector: '#main-container',

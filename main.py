@@ -1116,13 +1116,13 @@ jinja_env.get_template('selfsupply/calibrations.html')\
         **jinja_common_context
     ).dump(os.path.join('docs', 'selfsupply', 'calibrations.html'))
 
-jinja_env.get_template('selfsupply/production.html')\
+jinja_env.get_template('selfsupply/calculator.html')\
     .stream(
         production_estimation_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
         production_estimation_configurations=production_estimation_configurations,
         production_estimation_date_scope=pvgis.get_date_scope(),
         **jinja_common_context
-    ).dump(os.path.join('docs', 'selfsupply', 'production.html'))
+    ).dump(os.path.join('docs', 'selfsupply', 'calculator.html'))
 
 jinja_env.get_template('configuration.html')\
     .stream(
