@@ -97,7 +97,10 @@ $(document).ready(function() {
         dataUrl = $this.attr('dt-dataUrl')
 
         if (dataUrl) {
-            dataTableConfig['ajax'] = dataUrl;
+            dataTableConfig['ajax'] = {
+                url: dataUrl,
+                cache: true
+            };
         }
 
         $this.DataTable(dataTableConfig);

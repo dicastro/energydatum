@@ -104,18 +104,18 @@ function addHLine(company, value, row, period) {
 }
 
 $(document).ready(function() {
-    let currentConsumptionOffer = offerdb.getCurrentConsumptionOffer();
+    let currentBuyOffer = offerdb.getCurrentBuyOffer();
 
-    if (currentConsumptionOffer) {
-        let figureId = price_rate_figure_ids[currentConsumptionOffer['rateType']];
+    if (currentBuyOffer) {
+        let figureId = price_rate_figure_ids[currentBuyOffer['rateType']];
 
         if (figureId) {
-            currentConsumptionOffer['periods'].forEach((period, index) => {
+            currentBuyOffer['periods'].forEach((period, index) => {
                 let row = index + 1;
                 let value = period[1];
                 let periodName = period[0];
 
-                addHLine(currentConsumptionOffer['company'], value, row, periodName);
+                addHLine(currentBuyOffer['company']['name'], value, row, periodName);
             });
 
             Plotly.relayout(figureId, {

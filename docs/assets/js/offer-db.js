@@ -1,128 +1,53 @@
 offerdb = {
-    _hash(str, seed = 0) {
-        let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
-        for (let i = 0, ch; i < str.length; i++) {
-            ch = str.charCodeAt(i);
-            h1 = Math.imul(h1 ^ ch, 2654435761);
-            h2 = Math.imul(h2 ^ ch, 1597334677);
-        }
-        h1 = Math.imul(h1 ^ (h1>>>16), 2246822507) ^ Math.imul(h2 ^ (h2>>>13), 3266489909);
-        h2 = Math.imul(h2 ^ (h2>>>16), 2246822507) ^ Math.imul(h1 ^ (h1>>>13), 3266489909);
-        return (4294967296 * (2097151 & h2) + (h1>>>0)).toString().padStart(16, '0');
+    _getBuyOfferIds: function () {
+        return Object.keys(localStorage).filter(key => key.match(/buy_offer_\d+/));
+    },
+    _getSellOfferIds: function () {
+        return Object.keys(localStorage).filter(key => key.match(/sell_offer_\d+/));
     },
 
-    _isId: function (id) {
-        return id.match(/consumption_offer_\d+/);
-    },
-
-    getConsumptionOfferIds: function () {
-        that = this;
-        return Object.keys(localStorage).filter(key => that._isId(key));
-    },
-
-    saveConsumptionOffer: function (company, date, rateType, periods, dto) {
-        let offer = {
-            'company': company,
-            'date': date,
-            'rateType': rateType,
-            'periods': periods,
-            'rawPeriods': periods,
-            'dto': dto
-        }
-
-        if (dto) {
-            finalDto = dto.split('>').map(si => parseInt(si.trim()) / 100).reduce((a, b) => a * (1 - b), 1);
-
-            offer['periods'] = periods.map(period => {
-                return [period[0], Math.round((period[1] * finalDto) * 100000) / 100000]
-            })
-        }
-
-        let offerId = `consumption_offer_${this._hash(JSON.stringify(offer))}`;
-
-        offer['id'] = offerId;
-
-        localStorage.setItem(offer.id, JSON.stringify(offer));
-
-        return offer;
-    },
-
-    getConsumptionOfferRaw: function (offerId) {
+    _getOfferRaw: function (offerId) {
         return localStorage.getItem(offerId);
     },
 
-    getConsumptionOffer: function (offerId) {
-        return JSON.parse(this.getConsumptionOfferRaw(offerId));
+    _getOffer: function (offerId) {
+        return JSON.parse(this._getOfferRaw(offerId));
     },
 
-    getAllConsumptionOffers: function () {
-        that = this;
-        return this.getConsumptionOfferIds().map(offerId => that.getConsumptionOffer(offerId));
+    getAllBuyOffers: function () {
+        let self = this;
+        return this._getBuyOfferIds().map(offerId => self._getOffer(offerId));
+    },
+    getAllSellOffers: function () {
+        let self = this;
+        return this._getSellOfferIds().map(offerId => self._getOffer(offerId));
     },
 
-    getConsumptionOffersByRateType: function (rateType) {
-        return this.getAllConsumptionOffers().filter(offer => offer.rateType === rateType);
+    getBuyOfferRateTypes: function () {
+        let self = this;
+        return this._getBuyOfferIds().map(offerId => self._getOffer(offerId).rateType).filter((v, i, acc) => acc.indexOf(v) === i);
     },
 
-    deleteConsumptionOffer: function (offerId) {
-        localStorage.removeItem(offerId);
+    getCurrentBuyOffer: function () {
+        let cboId = localStorage.getItem('current_buy_offer');
 
-        if (this.consumptionOfferIsCurrent(offerId)) {
-            this.unsetConsumptionOfferAsCurrent();
+        let cbo;
+
+        if (cboId) {
+            cbo = this._getOffer(cboId);
         }
+
+        return cbo;
     },
+    getCurrentSellOffer: function () {
+        let csoId = localStorage.getItem('current_sell_offer');
 
-    deleteAllConsumptionOffers: function () {
-        that = this;
-        this.getConsumptionOfferIds().forEach(offerId => that.deleteConsumptionOffer(offerId));
-    },
+        let cso;
 
-    getConsumptionOfferRateTypes: function () {
-        that = this;
-        return this.getConsumptionOfferIds().map(offerId => that.getConsumptionOffer(offerId).rateType).filter((v, i, acc) => acc.indexOf(v) === i);
-    },
-
-    setConsumptionOfferAsCurrent: function (offerId) {
-        localStorage.setItem('consumption_offer_current', this.getConsumptionOfferRaw(offerId));
-    },
-
-    unsetConsumptionOfferAsCurrent: function () {
-        localStorage.removeItem('consumption_offer_current');
-    },
-
-    getCurrentConsumptionOffer: function () {
-        return this.getConsumptionOffer('consumption_offer_current');
-    },
-
-    consumptionOfferIsCurrent: function (offerId) {
-        let currentConsumptionOffer = this.getCurrentConsumptionOffer();
-        return currentConsumptionOffer && currentConsumptionOffer.id === offerId;
-    },
-
-    dump: function () {
-        dump = {};
-
-        this.getConsumptionOfferIds().forEach(offerId => {
-            dump[offerId] = this.getConsumptionOffer(offerId);
-        });
-
-        dump['consumption_offer_current'] = this.getCurrentConsumptionOffer();
-
-        return dump;
-    },
-
-    load: function (data) {
-        that = this;
-        this.deleteAllConsumptionOffers();
-
-        Object.keys(data).forEach(key => {
-            if (that._isId(key)) {
-                this.saveConsumptionOffer(data[key].company, data[key].date, data[key].rateType, data[key].rawPeriods, data[key].dto);
-            }
-        });
-
-        if (data['consumption_offer_current']) {
-            this.setConsumptionOfferAsCurrent(data['consumption_offer_current'].id);
+        if (csoId) {
+            cso = this._getOffer(csoId);
         }
-    }
+
+        return cso;
+    },
 }

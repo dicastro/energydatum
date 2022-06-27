@@ -55,8 +55,46 @@
 
 {% block custom_javascript %}
 <script type="text/javascript" charset="utf8">
-$(document).ready(function() {
+let shapes = [];
+let annotations = [];
 
+function addHLine(company, value) {
+    shapes.push({
+        'line': {
+            'dash': 'dot'
+        },
+        'type': 'line',
+        'x0': 0,
+        'x1': 1,
+        'xref': 'x domain',
+        'y0': value,
+        'y1': value,
+        'yref': 'y'
+    });
+
+    annotations.push({
+        'showarrow': false,
+        'text': `[${company}] Actual - ${value} €/kWh`,
+        'x': 1,
+        'xanchor': 'right',
+        'xref': 'x domain',
+        'y': value,
+        'yanchor': 'top',
+        'yref': 'y'
+    });
+}
+
+$(document).ready(function() {
+    let currentSellOffer = offerdb.getCurrentSellOffer();
+
+    if (currentSellOffer) {
+        addHLine(currentSellOffer['company']['name'], currentSellOffer['price']);
+
+        Plotly.relayout('price_pvpc_evol_m_figure', {
+            'shapes': shapes,
+            'annotations': annotations
+        });
+    }
 });
 </script>
 {% endblock %}

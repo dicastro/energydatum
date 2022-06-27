@@ -35,7 +35,8 @@ config = toml.load('config.toml')
 
 jinja_env = Environment(loader=FileSystemLoader('templates'), autoescape=select_autoescape(['html']))
 
-today = dt.date.today()
+now = dt.datetime.now()
+today = now.date()
 
 TABLE_CLASSES = ('ui', 'celled', 'table', 'dt')
 
@@ -234,6 +235,7 @@ jinja_common_context = {
     'version': constants.VERSION,
     'contextpath': constants.CONTEXT_PATH,
     'today': today.strftime('%d/%m/%Y'),
+    'ts': now.strftime('%Y%m%d%H%M%S'),
     'date_min': consumption_date_min.strftime('%d/%m/%Y'),
     'date_max': consumption_date_max.strftime('%d/%m/%Y'),
     'table_classes': TABLE_CLASSES,

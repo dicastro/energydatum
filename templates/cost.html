@@ -14,7 +14,7 @@
 </div>
 
 <div class="content">
-    <div id="cost_total_figure" class="plotly-graph-div" style="height:100%; width:100%;"></div>
+    <div id="cost_total_figure" class="plotly-graph-div" style="height:600px; width:100%;"></div>
 </div>
 {% endblock %}
 {% block custom_javascript %}
@@ -186,7 +186,7 @@
 
         var periods = {};
 
-        offerdb.getConsumptionOfferRateTypes().forEach(rateType => {
+        offerdb.getBuyOfferRateTypes().forEach(rateType => {
             request = $.get(`{{contextpath}}/data/consumption/rate_${rateType}_m_periods.json`).done(function(response) {
                 periods[rateType] = response;
             });
@@ -194,7 +194,7 @@
         });
 
         $.when.apply(window, period_requests).done(function() {
-            offerdb.getAllConsumptionOffers().forEach(offer => {
+            offerdb.getAllBuyOffers().forEach(offer => {
                 const df_period_price = new DataFrame(offer.periods, ['period', 'period_price']);
 
                 const periods_data = periods[offer.rateType];
@@ -207,7 +207,7 @@
                 values = df_period_consumption.groupBy('year', 'month').aggregate(group => group.stat.sum('period_cost')).rename('aggregation', 'month_cost').select('month_cost').toDict()['month_cost'];
 
                 offers.push({
-                    'title': `${offer.company} - ${offer.rateType} - ${offer.date}`,
+                    'title': `${offer.company.name} - ${offer.rateType} - ${offer.date}`,
                     'values': values
                 });
             });

@@ -244,9 +244,9 @@ Pudiendo añadir más de un día al mismo tiempo:
 
 ![Menu Configuracion](./README_RESOURCES/energy_datum_menu_configuracion.png)
 
-En esta pantalla se pueden confirurar las ofertas recibidas de diferentes compañías comercializadoras. Estas ofertas son las que se utilizan en el apartado de *costes* (explicado más abajo) para hacer una comparativa del coste de la energía consumida.
+En esta pantalla se pueden confirurar las ofertas recibidas de diferentes compañías comercializadoras (tanto para el precio de compra como para el precio de venta). Estas ofertas (precio de compra) son las que se utilizan en el apartado de *costes* (explicado más abajo) para hacer una comparativa del coste de la energía consumida. El precio de venta se utiliza en el apartado de *Autoconsumo* (explicado más abajo) para calcular el precio final teniendo en cuenta la venta de los excedentes.
 
-Esta configuración **se guarda en el propio navegador**, por lo que si se cambia de navegador o de disposito habrá que volver a introducir la configuración. Existe la opción de exportar la configuración, para evitar tener que volver a introducirla manualmente. También existe la posibilidad de importar la configuración a partir de una URL. Es por esto que he incluido una [copia de la configuración](https://github.com/dicastro/energydatum/blob/main/site_configuration_backup.json) en el repositorio de GitHub, y así poder importarla fácilmente desde cualquier dispositivo. 
+Esta configuración **se guarda en el propio navegador**, por lo que si se cambia de navegador o de disposito habrá que volver a introducir la configuración. Existe la opción de exportar la configuración, para evitar tener que volver a introducirla manualmente. También existe la posibilidad de importar la configuración a partir de una URL. Es por esto, que he incluido una [copia de la configuración](https://github.com/dicastro/energydatum/blob/main/site_configuration_backup.json) en el repositorio de GitHub, y así poder importarla fácilmente desde cualquier dispositivo. 
 
 Existe la posibilidad de introducir los precios finales (habiendo aplicado todos los descuentos) o bien introducir los precios en bruto e indicar el descuento que se tiene. Si se tuvieran varios descuentos (como por ejemplo en mi caso con *TotalEnergies*), se pueden indicar de la siguiente forma: `dto1 > dto2` (ejemplo: `5 > 35`, ya que no es lo mismo un 40% que primero un 5% y luego un 35%).
 
@@ -354,12 +354,12 @@ En estas gráficas se muestra tanto el precio medio (línea) como la desviación
 
 - [x] Visualización del consumo teniendo en cuenta la producción. Se podrá ver la energía sobrante y la que se acaba comprando a la comercializadora. Este cálculo se hará para los últimos 12 meses. Se mostrará una visión mensual y una anual
 
-:construction: Versión 1.0.0.alpha6 :arrow_left:
+:checkered_flag: Versión 1.0.0.alpha6
 
-- [ ] Añadir en la pantalla de configuración la posibilidad de añadir ofertas de compra de electricidad
-- [ ] En la pantalla *Precio PVPC > Compra* mostrar la oferta de compra en uso
+- [x] Añadir en la pantalla de configuración la posibilidad de añadir ofertas de compra de electricidad
+- [x] En la pantalla *Precio PVPC > Compra* mostrar la oferta de compra en uso
 
-:rocket: versión 1.0.0.beta1
+:construction: versión 1.0.0.beta1 :arrow_left:
 
 - [ ] Visualización del coste con autoconsumo y comparación sin él
 
