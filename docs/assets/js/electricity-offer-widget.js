@@ -29,72 +29,7 @@ $.widget('ed.electricityoffer', {
 
     _elements: {},
 
-    _offers: [{
-        company: {
-            id: 'totalenergies',
-            name: 'TotalEnergies',
-        },
-        buyOffers: [{
-            id: 1,
-            rateType: '20td',
-            company: {
-                id: 'totalenergies',
-                name: 'TotalEnergies',
-            },
-            date: '01/01/2022',
-            periods: [['P1', 0.17473], ['P2', 0.12433], ['P3', 0.1047]],
-            rawPeriods: [['P1', '0.28297'], ['P2', '0.20134'], ['P3', '0.16955']],
-            dto: '5>35'
-        }, {
-            id: 2,
-            rateType: 'wk',
-            company: {
-                id: 'totalenergies',
-                name: 'TotalEnergies',
-            },
-            date: '01/01/2022',
-            periods: [['P1', 0.14892], ['P3', 0.10534]],
-            rawPeriods: [['P1', '0.24117'], ['P3', '0.17059']],
-            dto: '5>35'
-        }, {
-            id: 3,
-            rateType: 'fix',
-            company: {
-                id: 'totalenergies',
-                name: 'TotalEnergies',
-            },
-            date: '0101/2022',
-            periods: [['P1', 0.13052]],
-            rawPeriods: [['P1', '0.21137']],
-            dto: '5>35'
-        }],
-        sellOffers: [{
-            company: {
-                id: 'totalenergies',
-                name: 'TotalEnergies',
-            },
-            date: '01/01/2022',
-            price: 0.07
-        }]
-    }, {
-        company: {
-            id: 'holaluz',
-            name: 'HolaLuz',
-        },
-        buyOffers: [{
-            id: 4,
-            rateType: '20td',
-            company: {
-                id: 'holaluz',
-                name: 'HolaLuz',
-            },
-            date: '01/01/2022',
-            periods: [['P1', 0.413], ['P2', 0.326], ['P3', 0.258]],
-            rawPeriods: [['P1', '0.413'], ['P2', '0.326'], ['P3', '0.258']],
-            dto: 0
-        }],
-        sellOffers: []
-    }],
+    _offers: [],
 
     _hash(str, seed = 0) {
         let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;

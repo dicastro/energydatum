@@ -313,7 +313,7 @@ $.widget('ed.productionestimationmonthly', {
             }
         });
 
-        self._refreshFigure();
+        this._refreshFigure();
     },
     removeConfiguration: function(configurationId) {
         let index = this._configurations.findIndex(function(configuration) {

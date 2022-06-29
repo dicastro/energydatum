@@ -13,7 +13,7 @@
     <link rel="stylesheet" type="text/css" href="/energydatum/assets/jqueryui/1.13.1/css/jquery-ui.min.css">
     <link rel="stylesheet" type="text/css" href="/energydatum/assets/fomanticui/2.8.8/css/semantic.min.css">
     <link rel="stylesheet" type="text/css" href="/energydatum/assets/datatables/1.11.5/css/dataTables.semanticui.min.css">
-    <link rel="stylesheet" type="text/css" href="/energydatum/assets/css/style.css?_ts=20220627100505">
+    <link rel="stylesheet" type="text/css" href="/energydatum/assets/css/style.css?_ts=20220629133806">
 </head>
 <body>
 <script type="text/javascript" charset="utf8" src="/energydatum/assets/plotly/2.12.1/js/plotly.min.js"></script>
@@ -84,7 +84,23 @@
 
 <h1 class="ui header">Coste</h1>
 
-<p>Se muestran datos del coste de los últimos 12 meses para los cuales hay registro</p>
+<p>Se muestran datos del coste (únicamente el coste de la energía consumida) de los últimos 12 meses para los cuales hay registro</p>
+
+<div id="tax-form" class="ui form">
+    <div class="fields">
+        <div class="one wide field">
+            <label>IVA (%)</label>
+            <input name="tax" type="text" value="21" maxlength="2">
+        </div>
+        <div class="one wide field">
+            <label>Con IVA</label>
+            <div class="ui slider checkbox checkbox-comp">
+                <input type="radio" name="include_tax">
+                <label>&nbsp;</label>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="content">
     <div id="cost_figure" class="plotly-graph-div" style="height:100%; width:100%;"></div>
@@ -147,8 +163,8 @@
         <img src="/energydatum/assets/img/logo_40x40.png" class="ui centered mini image">
         <div class="ui horizontal inverted small divided link list">
             <a class="item" href="https://diegocastroviadero.com/#contact" target="_blank">Contáctame</a>
-            <p class="item">1.0.0-alpha6</p>
-            <p class="item">Generado el 27/06/2022 con datos entre 01/06/2020 y 31/05/2022</p>
+            <p class="item">1.0.0-beta1</p>
+            <p class="item">Generado el 29/06/2022 con datos entre 01/06/2020 y 31/05/2022</p>
         </div>
     </div>
 </div>
@@ -159,14 +175,15 @@
 <script type="text/javascript" charset="utf8" src="/energydatum/assets/datatables/1.11.5/js/dataTables.semanticui.min.js"></script>
 <script type="text/javascript" charset="utf8" src="/energydatum/assets/fomanticui/2.8.8/js/semantic.min.js"></script>
 <script type="text/javascript" charset="utf8" src="/energydatum/assets/dataframejs/1.4.3/js/dataframe.min.js"></script>
-<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/menu.js?_ts=20220627100505"></script>
-<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/main.js?_ts=20220627100505"></script>
-<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/table.js?_ts=20220627100505"></script>
-<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/offer-db.js?_ts=20220627100505"></script>
-<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/electricity-offer-widget.js?_ts=20220627100505"></script>
-<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/production-estimation-monthly-widget.js?_ts=20220627100505"></script>
-<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/production-estimation-yearly-widget.js?_ts=20220627100505"></script>
-<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/production-estimation-configuration-selector-widget.js?_ts=20220627100505"></script>
+<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/menu.js?_ts=20220629133806"></script>
+<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/main.js?_ts=20220629133806"></script>
+<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/table.js?_ts=20220629133806"></script>
+<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/offer-db.js?_ts=20220629133806"></script>
+<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/electricity-offer-widget.js?_ts=20220629133806"></script>
+<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/production-estimation-monthly-widget.js?_ts=20220629133806"></script>
+<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/production-estimation-yearly-widget.js?_ts=20220629133806"></script>
+<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/production-estimation-configuration-selector-widget.js?_ts=20220629133806"></script>
+<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/cost-estimation-widget.js?_ts=20220629133806"></script>
 
 <script type="text/javascript" charset="utf-8">
     window.PLOTLYENV=window.PLOTLYENV || {};
@@ -174,6 +191,21 @@
     const COLOR_SEQ = ['#636efa', '#EF553B', '#00cc96', '#ab63fa', '#FFA15A', '#19d3f3', '#FF6692', '#B6E880', '#FF97FF', '#FECB52'];
 
     let COLORS = {};
+
+    var taxConfig = {
+        enabled: false,
+        value: 21
+    };
+
+    const offers = [{'title': 'PVPC', 'values': [28.96584, 31.91486, 29.66694, 45.15997, 50.87778, 62.23007, 102.07506, 98.86564, 84.7194, 132.5181, 64.86807, 67.4046]}];
+
+    function applyTax(value) {
+        if (taxConfig.enabled) {
+            return value * (1 + taxConfig.value / 100);
+        }
+
+        return value;
+    }
 
     function getColor(title) {
         let selectedColor = COLORS[title];
@@ -187,6 +219,8 @@
     }
 
     function get_cost_figure_data(title, values) {
+        let valuesWithTax = values.map(applyTax.bind(this));
+
         return {
             'hovertemplate': `Oferta=${title}<br>Mes/A\u00f1o=%{x}<br>Coste (\u20ac)=%{y}<extra></extra>`,
             'legendgroup': title,
@@ -203,13 +237,15 @@
             'showlegend': true,
             'x': ['06-2021', '07-2021', '08-2021', '09-2021', '10-2021', '11-2021', '12-2021', '01-2022', '02-2022', '03-2022', '04-2022', '05-2022'],
             'xaxis': 'x',
-            'y': values,
+            'y': valuesWithTax,
             'yaxis': 'y',
             'type': 'scatter'
         }
     }
 
     function get_cost_total_figure_data(title, values) {
+        let valuesWithTax = values.map(applyTax.bind(this));
+
         return {
             'alignmentgroup': 'True',
             'hovertemplate': 'Oferta=%{x}<br>Coste (\u20ac)=%{y}<extra></extra>',
@@ -225,7 +261,7 @@
             'textposition': 'auto',
             'x': [title],
             'xaxis': 'x',
-            'y': [values.reduce((a, b) => a + b, 0)],
+            'y': [valuesWithTax.reduce((a, b) => a + b, 0)],
             'yaxis': 'y',
             'type': 'bar'
         };
@@ -327,8 +363,96 @@
         "margin":{"t":60}
     };
 
+    function isNumeric(str) {
+        if (typeof str != "string") {
+            return false
+        }
+
+        return !isNaN(str) && !isNaN(parseFloat(str))
+    }
+
+    function persistTaxConfiguration() {
+        sessionStorage.setItem('cost_tax_config', JSON.stringify(taxConfig));
+    }
+
+    function refreshFigures() {
+        $('#loading').show();
+
+        var cost_figure_data = [];
+        var cost_total_figure_data = [];
+
+        offers.forEach(offer => {
+            cost_figure_data.push(get_cost_figure_data(offer.title, offer.values));
+            cost_total_figure_data.push(get_cost_total_figure_data(offer.title, offer.values));
+        });
+
+        // Cost figure
+        var cost_figure_layout = Object.assign({}, plotly_figure_layout_template);
+        cost_figure_layout.legend['title'] = { 'text': 'Oferta'}
+
+        Plotly.newPlot("cost_figure", cost_figure_data, cost_figure_layout, plotly_figure_config);
+
+        // Cost total figure
+        var cost_total_figure_layout = Object.assign({}, plotly_figure_layout_template);
+        cost_total_figure_layout['barmode'] = 'relative';
+
+        Plotly.newPlot("cost_total_figure", cost_total_figure_data.sort((a, b) => a.y[0] - b.y[0]), cost_total_figure_layout, plotly_figure_config);
+
+        $('#loading').hide();
+    }
+
     $(document).ready(function() {
-        const offers = [{'title': 'PVPC', 'values': [28.96584, 31.91486, 29.66694, 45.15997, 50.87778, 62.23007, 102.07506, 98.86564, 84.7194, 132.5181, 64.86807, 67.4046]}];
+        let rawTaxConfig = sessionStorage.getItem('cost_tax_config');
+
+        if (rawTaxConfig) {
+            taxConfig = JSON.parse(rawTaxConfig);
+        }
+
+        if (taxConfig.enabled) {
+            $('input[name="include_tax"]').attr('checked', 'checked');
+        }
+
+        $('.checkbox-comp').checkbox({
+            uncheckable: true,
+            beforeChecked: function() {
+                let $taxFieldElement = $(this).parents('.fields').find('input[name="tax"]')
+                let tax = $taxFieldElement.val();
+
+                if (!isNumeric(tax) || parseInt(tax) === 0) {
+                    $taxFieldElement.effect('shake', { times: 4, distance: 8 }, 750);
+                    return false;
+                }
+
+                return true;
+            },
+            onChecked: function() {
+                taxConfig.enabled = true;
+                taxConfig.value = $(this).parents('.fields').find('input[name="tax"]').val();
+
+                persistTaxConfiguration();
+                refreshFigures();
+            },
+            onUnchecked: function() {
+                taxConfig.enabled = false;
+
+                persistTaxConfiguration();
+                refreshFigures();
+            }
+        });
+
+        $('input[name="tax"]').on('change', handler => {
+            let taxValue = $(handler.currentTarget).val();
+
+            if (taxConfig.value !== taxValue) {
+                taxConfig.value = taxValue
+
+                persistTaxConfiguration();
+
+                if (taxConfig.enabled) {
+                    refreshFigures();
+                }
+            }
+        });
 
         var DataFrame = dfjs.DataFrame;
 
@@ -362,27 +486,7 @@
                 });
             });
 
-            var cost_figure_data = [];
-            var cost_total_figure_data = [];
-
-            offers.forEach(offer => {
-                cost_figure_data.push(get_cost_figure_data(offer.title, offer.values));
-                cost_total_figure_data.push(get_cost_total_figure_data(offer.title, offer.values));
-            });
-
-            // Cost figure
-            var cost_figure_layout = Object.assign({}, plotly_figure_layout_template);
-            cost_figure_layout.legend['title'] = { 'text': 'Oferta'}
-
-            Plotly.newPlot("cost_figure", cost_figure_data, cost_figure_layout, plotly_figure_config);
-
-            // Cost total figure
-            var cost_total_figure_layout = Object.assign({}, plotly_figure_layout_template);
-            cost_total_figure_layout['barmode'] = 'relative';
-
-            Plotly.newPlot("cost_total_figure", cost_total_figure_data.sort((a, b) => a.y[0] - b.y[0]), cost_total_figure_layout, plotly_figure_config);
-
-            $('#loading').remove();
+            refreshFigures();
         });
     });
 </script>

@@ -7,7 +7,23 @@
 
 <h1 class="ui header">Coste</h1>
 
-<p>Se muestran datos del coste de los últimos {{months_count}} meses para los cuales hay registro</p>
+<p>Se muestran datos del coste (únicamente el coste de la energía consumida) de los últimos {{months_count}} meses para los cuales hay registro</p>
+
+<div id="tax-form" class="ui form">
+    <div class="fields">
+        <div class="one wide field">
+            <label>IVA (%)</label>
+            <input name="tax" type="text" value="21" maxlength="2">
+        </div>
+        <div class="one wide field">
+            <label>Con IVA</label>
+            <div class="ui slider checkbox checkbox-comp">
+                <input type="radio" name="include_tax">
+                <label>&nbsp;</label>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="content">
     <div id="cost_figure" class="plotly-graph-div" style="height:100%; width:100%;"></div>
@@ -25,6 +41,21 @@
 
     let COLORS = {};
 
+    var taxConfig = {
+        enabled: false,
+        value: 21
+    };
+
+    const offers = [{{pvpc_data | safe}}];
+
+    function applyTax(value) {
+        if (taxConfig.enabled) {
+            return value * (1 + taxConfig.value / 100);
+        }
+
+        return value;
+    }
+
     function getColor(title) {
         let selectedColor = COLORS[title];
 
@@ -37,6 +68,8 @@
     }
 
     function get_cost_figure_data(title, values) {
+        let valuesWithTax = values.map(applyTax.bind(this));
+
         return {
             'hovertemplate': `Oferta=${title}<br>Mes/A\u00f1o=%{x}<br>Coste (\u20ac)=%{y}<extra></extra>`,
             'legendgroup': title,
@@ -53,13 +86,15 @@
             'showlegend': true,
             'x': {{month_year_list | safe}},
             'xaxis': 'x',
-            'y': values,
+            'y': valuesWithTax,
             'yaxis': 'y',
             'type': 'scatter'
         }
     }
 
     function get_cost_total_figure_data(title, values) {
+        let valuesWithTax = values.map(applyTax.bind(this));
+
         return {
             'alignmentgroup': 'True',
             'hovertemplate': 'Oferta=%{x}<br>Coste (\u20ac)=%{y}<extra></extra>',
@@ -75,7 +110,7 @@
             'textposition': 'auto',
             'x': [title],
             'xaxis': 'x',
-            'y': [values.reduce((a, b) => a + b, 0)],
+            'y': [valuesWithTax.reduce((a, b) => a + b, 0)],
             'yaxis': 'y',
             'type': 'bar'
         };
@@ -177,8 +212,96 @@
         "margin":{"t":60}
     };
 
+    function isNumeric(str) {
+        if (typeof str != "string") {
+            return false
+        }
+
+        return !isNaN(str) && !isNaN(parseFloat(str))
+    }
+
+    function persistTaxConfiguration() {
+        sessionStorage.setItem('cost_tax_config', JSON.stringify(taxConfig));
+    }
+
+    function refreshFigures() {
+        $('#loading').show();
+
+        var cost_figure_data = [];
+        var cost_total_figure_data = [];
+
+        offers.forEach(offer => {
+            cost_figure_data.push(get_cost_figure_data(offer.title, offer.values));
+            cost_total_figure_data.push(get_cost_total_figure_data(offer.title, offer.values));
+        });
+
+        // Cost figure
+        var cost_figure_layout = Object.assign({}, plotly_figure_layout_template);
+        cost_figure_layout.legend['title'] = { 'text': 'Oferta'}
+
+        Plotly.newPlot("cost_figure", cost_figure_data, cost_figure_layout, plotly_figure_config);
+
+        // Cost total figure
+        var cost_total_figure_layout = Object.assign({}, plotly_figure_layout_template);
+        cost_total_figure_layout['barmode'] = 'relative';
+
+        Plotly.newPlot("cost_total_figure", cost_total_figure_data.sort((a, b) => a.y[0] - b.y[0]), cost_total_figure_layout, plotly_figure_config);
+
+        $('#loading').hide();
+    }
+
     $(document).ready(function() {
-        const offers = [{{pvpc_data | safe}}];
+        let rawTaxConfig = sessionStorage.getItem('cost_tax_config');
+
+        if (rawTaxConfig) {
+            taxConfig = JSON.parse(rawTaxConfig);
+        }
+
+        if (taxConfig.enabled) {
+            $('input[name="include_tax"]').attr('checked', 'checked');
+        }
+
+        $('.checkbox-comp').checkbox({
+            uncheckable: true,
+            beforeChecked: function() {
+                let $taxFieldElement = $(this).parents('.fields').find('input[name="tax"]')
+                let tax = $taxFieldElement.val();
+
+                if (!isNumeric(tax) || parseInt(tax) === 0) {
+                    $taxFieldElement.effect('shake', { times: 4, distance: 8 }, 750);
+                    return false;
+                }
+
+                return true;
+            },
+            onChecked: function() {
+                taxConfig.enabled = true;
+                taxConfig.value = $(this).parents('.fields').find('input[name="tax"]').val();
+
+                persistTaxConfiguration();
+                refreshFigures();
+            },
+            onUnchecked: function() {
+                taxConfig.enabled = false;
+
+                persistTaxConfiguration();
+                refreshFigures();
+            }
+        });
+
+        $('input[name="tax"]').on('change', handler => {
+            let taxValue = $(handler.currentTarget).val();
+
+            if (taxConfig.value !== taxValue) {
+                taxConfig.value = taxValue
+
+                persistTaxConfiguration();
+
+                if (taxConfig.enabled) {
+                    refreshFigures();
+                }
+            }
+        });
 
         var DataFrame = dfjs.DataFrame;
 
@@ -212,27 +335,7 @@
                 });
             });
 
-            var cost_figure_data = [];
-            var cost_total_figure_data = [];
-
-            offers.forEach(offer => {
-                cost_figure_data.push(get_cost_figure_data(offer.title, offer.values));
-                cost_total_figure_data.push(get_cost_total_figure_data(offer.title, offer.values));
-            });
-
-            // Cost figure
-            var cost_figure_layout = Object.assign({}, plotly_figure_layout_template);
-            cost_figure_layout.legend['title'] = { 'text': 'Oferta'}
-
-            Plotly.newPlot("cost_figure", cost_figure_data, cost_figure_layout, plotly_figure_config);
-
-            // Cost total figure
-            var cost_total_figure_layout = Object.assign({}, plotly_figure_layout_template);
-            cost_total_figure_layout['barmode'] = 'relative';
-
-            Plotly.newPlot("cost_total_figure", cost_total_figure_data.sort((a, b) => a.y[0] - b.y[0]), cost_total_figure_layout, plotly_figure_config);
-
-            $('#loading').remove();
+            refreshFigures();
         });
     });
 </script>

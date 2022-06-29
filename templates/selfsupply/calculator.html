@@ -10,6 +10,8 @@
     <div id="production-estimation-monthly" style="margin-top: 2em;"></div>
 
     <div id="production-estimation-yearly" style="margin-top: 2em;"></div>
+
+    <div id="cost-estimation" style="margin-top: 2em;"></div>
 </div>
 {% endblock %}
 
@@ -19,6 +21,13 @@ $(document).ready(function() {
     let productionEstimationMonthly = $('#production-estimation-monthly').productionestimationmonthly();
 
     let productionEstimationYearly = $('#production-estimation-yearly').productionestimationyearly();
+
+    let costEstimation = $('#cost-estimation').costestimation({
+        showAmortization: function(event, data) {
+            console.log(`Show amortization event with data: ${JSON.stringify(data)}`);
+            alert('Próximamente');
+        }
+    });
 
     let productionEstimationConfigurationSelector = $('#production-estimation-configuration-selector').productionestimationconfigurationselector({
         loadingContainerSelector: '#main-container',
@@ -30,14 +39,17 @@ $(document).ready(function() {
         configurationAdded: function(event, configuration) {
             productionEstimationMonthly.productionestimationmonthly('addConfiguration', configuration);
             productionEstimationYearly.productionestimationyearly('addConfiguration', configuration);
+            costEstimation.costestimation('addConfiguration', configuration);
         },
         configurationRemoved: function(event, configurationId) {
             productionEstimationMonthly.productionestimationmonthly('removeConfiguration', configurationId);
             productionEstimationYearly.productionestimationyearly('removeConfiguration', configurationId);
+            costEstimation.costestimation('removeConfiguration', configurationId);
         },
         initialized: function(event, configurations) {
             productionEstimationMonthly.productionestimationmonthly('addConfiguration', configurations);
             productionEstimationYearly.productionestimationyearly('addConfiguration', configurations);
+            costEstimation.costestimation('addConfiguration', configurations);
         }
     });
 });

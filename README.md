@@ -359,11 +359,12 @@ En estas gráficas se muestra tanto el precio medio (línea) como la desviación
 - [x] Añadir en la pantalla de configuración la posibilidad de añadir ofertas de compra de electricidad
 - [x] En la pantalla *Precio PVPC > Compra* mostrar la oferta de compra en uso
 
-:construction: versión 1.0.0.beta1 :arrow_left:
+:checkered_flag: versión 1.0.0.beta1
 
-- [ ] Visualización del coste con autoconsumo y comparación sin él
+- [x] Visualización del coste con autoconsumo y comparación sin él
+- [x] En la pantalla *Coste* se añade opción para ver el coste con/sin IVA
 
-:rocket: versión 1.0.0.beta2
+:construction: versión 1.0.0.beta2 :arrow_left:
 
 - [ ] Visualización del plan de amortización
 
