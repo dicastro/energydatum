@@ -19,7 +19,7 @@ $.widget('ed.costestimation', {
         }, {
             data: 'configurationId',
             render: function(data, type, row) {
-                return `<button class="mini ui icon blue button show-amortization" title="Ver amortización" data-configuration-id="${data}"><i class="signal icon"></i></button>`;
+                return '<button class="mini ui icon blue button show-amortization" title="Ver amortización"><i class="signal icon"></i></button>';
             }
         }],
         columnDefs: [{

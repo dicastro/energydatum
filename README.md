@@ -364,12 +364,18 @@ En estas gráficas se muestra tanto el precio medio (línea) como la desviación
 - [x] Visualización del coste con autoconsumo y comparación sin él
 - [x] En la pantalla *Coste* se añade opción para ver el coste con/sin IVA
 
-:construction: versión 1.0.0.beta2 :arrow_left:
+:checkered_flag: versión 1.0.0.beta2
 
-- [ ] Visualización del plan de amortización
+- [x] Visualización del plan de amortización
+
+:construction: versión 1.0.0.beta3 :arrow_left:
+
+- [ ] En la sección de *Autoconsumo > Calculadora* cambiar la configuración de *descuento ibi* a nivel general
+- [ ] En la sección de *Autoconsumo > Calculadora* añadir visualización con las cantidades pagadas con/sin autoconsumo a lo largo de la vida de la instalación
 
 :rocket: versión 1.0.0 :rainbow:
 
+- [ ] Añadir documentación de la sección *Autoconsumo*
 - [ ] Añadir sección de consejos sobre la instalación de paneles solares [video](https://www.youtube.com/watch?v=r7jrPXTYED4). Listado de marcas de *TIER 1*. Listado de marcas de inversores.
 - [ ] Validar los precios con facturas reales
 

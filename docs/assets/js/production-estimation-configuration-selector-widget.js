@@ -122,7 +122,7 @@ $.widget('ed.productionestimationconfigurationselector', {
 
                         self._addSelectedConfiguration(selectedConfiguration);
 
-                        self._trigger('configurationAdded', null, selectedConfiguration);
+                        self._trigger('configurationAdded', null, [selectedConfiguration, self._configurations.length === 1]);
 
                         $('#configuration-estimation-loading').remove();
                     });
@@ -143,7 +143,7 @@ $.widget('ed.productionestimationconfigurationselector', {
 
             self._removeConfiguration(configurationId);
 
-            self._trigger('configurationRemoved', null, configurationId);
+            self._trigger('configurationRemoved', null, [configurationId, self._hasConfigurations()]);
 
             if (!self._hasConfigurations()) {
                 self.element.find('#selected-configurations').append($('<p class="nocontent">').text('No se ha seleccionado ninguna configuración'));

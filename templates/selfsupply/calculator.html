@@ -12,6 +12,8 @@
     <div id="production-estimation-yearly" style="margin-top: 2em;"></div>
 
     <div id="cost-estimation" style="margin-top: 2em;"></div>
+
+    <div id="installation-amortization" style="margin-top: 2em;"></div>
 </div>
 {% endblock %}
 
@@ -22,10 +24,11 @@ $(document).ready(function() {
 
     let productionEstimationYearly = $('#production-estimation-yearly').productionestimationyearly();
 
+    let installationAmortization = $('#installation-amortization').installationamortization();
+
     let costEstimation = $('#cost-estimation').costestimation({
         showAmortization: function(event, data) {
-            console.log(`Show amortization event with data: ${JSON.stringify(data)}`);
-            alert('Próximamente');
+            installationAmortization.installationamortization('addConfiguration', data);
         }
     });
 
@@ -36,20 +39,29 @@ $(document).ready(function() {
             dateScope: '{{production_estimation_date_scope}}',
         },
         configurationList: {{production_estimation_configurations | safe}},
-        configurationAdded: function(event, configuration) {
+        configurationAdded: function(event, configuration, firstConfiguration) {
             productionEstimationMonthly.productionestimationmonthly('addConfiguration', configuration);
             productionEstimationYearly.productionestimationyearly('addConfiguration', configuration);
             costEstimation.costestimation('addConfiguration', configuration);
+
+            if (firstConfiguration) {
+                installationAmortization.installationamortization('init');
+            }
         },
-        configurationRemoved: function(event, configurationId) {
+        configurationRemoved: function(event, configurationId, configurationsRemaining) {
             productionEstimationMonthly.productionestimationmonthly('removeConfiguration', configurationId);
             productionEstimationYearly.productionestimationyearly('removeConfiguration', configurationId);
             costEstimation.costestimation('removeConfiguration', configurationId);
+
+            if (configurationsRemaining === false) {
+                installationAmortization.installationamortization('destroy');
+            }
         },
         initialized: function(event, configurations) {
             productionEstimationMonthly.productionestimationmonthly('addConfiguration', configurations);
             productionEstimationYearly.productionestimationyearly('addConfiguration', configurations);
             costEstimation.costestimation('addConfiguration', configurations);
+            installationAmortization.installationamortization('init');
         }
     });
 });
