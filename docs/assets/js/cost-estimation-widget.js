@@ -142,7 +142,7 @@ $.widget('ed.costestimation', {
                         `<input name="tax" type="text" value="${this._taxConfig.value}" maxlength="2">` +
                     '</div>' +
                     '<div class="one wide field">' +
-                        '<label>Con IVA</label>' +
+                        '<label>IVA ?</label>' +
                         '<div class="ui slider checkbox checkbox-comp">' +
                             '<input type="radio" name="include_tax">' +
                             '<label>&nbsp;</label>' +

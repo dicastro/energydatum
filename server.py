@@ -13,9 +13,11 @@ class FakeRedirect(SimpleHTTPRequestHandler):
     def do_GET(self):
         print(self.path)
 
+        host = self.headers.get('Host')
+
         if self.path.startswith(constants.CONTEXT_PATH):
             self.send_response(302)
-            new_path = f'http://localhost:{PORT}{self.path.replace(constants.CONTEXT_PATH, "")}'
+            new_path = f'http://{host}{self.path.replace(constants.CONTEXT_PATH, "")}'
             self.send_header('Location', new_path)
             self.end_headers()
         else:

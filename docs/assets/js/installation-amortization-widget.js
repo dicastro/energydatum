@@ -7,7 +7,9 @@ $.widget('ed.installationamortization', {
 
     _config: {
         installationLifeYears: 20,
-        energyPriceYearInflation: 0
+        energyPriceYearInflation: 0,
+        ibiDto: 0,
+        ibiYears: 0
     },
 
     _plotlyFigureConfig: {"responsive": true},
@@ -110,7 +112,7 @@ $.widget('ed.installationamortization', {
             "anchor": "x",
             "domain": [0.0, 1.0],
             "title": {
-                "text": "Beneficio (€)"
+                "text": ""
             }
         },
         "legend": {
@@ -121,9 +123,16 @@ $.widget('ed.installationamortization', {
         },
         "margin":{"t":60}
     },
-    _getPlotlyFigureData(amortizationPlan) {
+    _getPlotlyFigureLayout: function(yTitle) {
+        let layout = JSON.parse(JSON.stringify(this._plotlyFigureLayout));
+
+        layout.yaxis.title.text = yTitle;
+
+        return layout;
+    },
+    _getAmortizationPlanPlotlyFigureData(amortizationPlan) {
         return {
-            'hovertemplate': `Instalación<br>${amortizationPlan.title}<br>Año=%{x}<br>Beneficio=%{y}<br>Ahorro año=%{customdata[0]}<extra></extra>`,
+            'hovertemplate': `Instalación<br>${amortizationPlan.title}<br>Año=%{x}<br>Beneficio=%{y:,.2f}<br>Ahorro año=%{customdata[0]}<extra></extra>`,
             'legendgroup': amortizationPlan.title,
             'line': {
                 'color': amortizationPlan.color,
@@ -144,10 +153,54 @@ $.widget('ed.installationamortization', {
             'type': 'scatter'
         }
     },
+    _getExpensePlanPlotlyFigureData(expensePlan) {
+        return [{
+            'hovertemplate': `Instalación<br>${expensePlan.withSelfsupplyTitle}<br>Año=%{x}<br>Gasto acumulado=%{y:,.2f}<br>Gasto año=%{customdata[0]}<extra></extra>`,
+            'legendgroup': expensePlan.withSelfsupplyTitle,
+            'line': {
+                'color': expensePlan.color,
+                'dash': 'solid'
+            },
+            'marker': {
+                'symbol': 'circle'
+            },
+            'mode': 'lines',
+            'name': expensePlan.withSelfsupplyTitle,
+            'customdata': expensePlan.withSelfsupplyExtra,
+            'orientation': 'v',
+            'showlegend': true,
+            'x': expensePlan.x,
+            'xaxis': 'x',
+            'y': expensePlan.withSelfsupplyY,
+            'yaxis': 'y',
+            'type': 'scatter'
+        }, {
+            'hovertemplate': `Instalación<br>${expensePlan.withoutSelfsupplyTitle}<br>Año=%{x}<br>Gasto acumulado=%{y:,.2f}<br>Gasto año=%{customdata[0]}<extra></extra>`,
+            'legendgroup': expensePlan.withoutSelfsupplyTitle,
+            'line': {
+                'color': expensePlan.color,
+                'dash': 'dot'
+            },
+            'marker': {
+                'symbol': 'circle'
+            },
+            'mode': 'lines',
+            'name': expensePlan.withoutSelfsupplyTitle,
+            'customdata': expensePlan.withoutSelfsupplyExtra,
+            'orientation': 'v',
+            'showlegend': true,
+            'x': expensePlan.x,
+            'xaxis': 'x',
+            'y': expensePlan.withoutSelfsupplyY,
+            'yaxis': 'y',
+            'type': 'scatter'
+        }]
+    },
 
     _components: [],
     _configurations: [],
     _amortizationPlans: [],
+    _expensePlans: [],
 
     _create: function () {
         console.log(`created widget installationAmortization on ${this.element.attr('id')}`);
@@ -157,6 +210,7 @@ $.widget('ed.installationamortization', {
         this._components = [];
         this._configurations = [];
         this._amortizationPlans = [];
+        this._expensePlans = [];
 
         this.element.empty();
     },
@@ -173,14 +227,33 @@ $.widget('ed.installationamortization', {
             return event.charCode >= 48 && event.charCode <= 57
         });
 
-        this._components['config'].on('change', 'input', event => {
+        this._components['config'].on('change', 'input[type="hidden"]', event => {
             let $input = $(event.currentTarget);
             let fieldName = $input.attr('name');
             let fieldValue = $input.val();
 
             this._config[fieldName] = parseInt(fieldValue);
 
-            this._updateAmortizationPlans();
+            this._updateAllFiguresData();
+            this._refreshFigure();
+        });
+
+        this._components['config'].on('change', 'input.editable-number', event => {
+            let $input = $(event.currentTarget);
+            let fieldName = $input.attr('name');
+            let fieldValue = $input.val();
+
+            if (this._isInteger(fieldValue)) {
+                this._config[fieldName] = parseInt(fieldValue);
+
+                $input.parents('.field').removeClass('error');
+            } else {
+                delete this._config[fieldName];
+
+                $input.parents('.field').addClass('error');
+            }
+
+            this._updateAllFiguresData();
             this._refreshFigure();
         });
 
@@ -192,8 +265,8 @@ $.widget('ed.installationamortization', {
 
             let configuration = this._configurations.find(configuration => configuration.id == configurationId);
 
-            if (this._isInteger(fieldValue) && parseFloat(fieldValue) > 0) {
-                configuration[fieldName] = parseFloat(fieldValue);
+            if (this._isInteger(fieldValue) && parseInt(fieldValue) > 0) {
+                configuration[fieldName] = parseInt(fieldValue);
 
                 $input.parents('.field').removeClass('error');
             } else {
@@ -203,9 +276,9 @@ $.widget('ed.installationamortization', {
             }
 
             if (this._isValidConfiguration(configuration)) {
-                this._updateAmortizationPlan(configuration);
+                this._updateFiguresData(configuration);
             } else {
-                this._removeAmortizationPlan(configuration.id);
+                this._removeFiguresData(configuration.id);
             }
 
             this._refreshFigure();
@@ -217,7 +290,7 @@ $.widget('ed.installationamortization', {
             let configurationId = $element.data('configuration-id');
 
             this._removeConfiguration(configurationId);
-            let removedAmortizationPlan = this._removeAmortizationPlan(configurationId);
+            let removedAmortizationPlan = this._removeFiguresData(configurationId);
 
             if (removedAmortizationPlan) {
                 this._refreshFigure();
@@ -268,8 +341,11 @@ $.widget('ed.installationamortization', {
             this._configurations.splice(index, 1);
         }
     },
+    _isValidMainConfig: function() {
+        return this._config.ibiDto !== undefined;
+    },
     _isValidConfiguration: function(configuration) {
-        return configuration.price !== undefined && configuration.price > 0 && configuration.ibidto !== undefined;
+        return configuration.price !== undefined && configuration.price > 0;
     },
     _getValidConfigurations: function() {
         return this._configurations.filter(configuration => this._isValidConfiguration(configuration));
@@ -283,19 +359,19 @@ $.widget('ed.installationamortization', {
             });
         }
     },
-    _getIbiDtoYears: function(preselectedOption) {
+    _getIbiDtoYearsValues: function(preselectedOption) {
         let options = [
-            { name: '0', value: 0 },
-            { name: '1', value: 1 },
-            { name: '2', value: 2 },
-            { name: '3', value: 3 },
-            { name: '4', value: 4 },
-            { name: '5', value: 5 },
-            { name: '6', value: 6 },
-            { name: '7', value: 7 },
-            { name: '8', value: 8 },
-            { name: '9', value: 9 },
-            { name: '10', value: 10 }
+            { name: '0 años', value: 0 },
+            { name: '1 años', value: 1 },
+            { name: '2 años', value: 2 },
+            { name: '3 años', value: 3 },
+            { name: '4 años', value: 4 },
+            { name: '5 años', value: 5 },
+            { name: '6 años', value: 6 },
+            { name: '7 años', value: 7 },
+            { name: '8 años', value: 8 },
+            { name: '9 años', value: 9 },
+            { name: '10 años', value: 10 }
         ];
 
         this._preselectOption(options, preselectedOption);
@@ -304,9 +380,9 @@ $.widget('ed.installationamortization', {
     },
     _getInstallationLifeYearsValues: function(preselectedOption) {
         let options = [
-            { name: '20', value: 20 },
-            { name: '25', value: 25 },
-            { name: '30', value: 30 }
+            { name: '20 años', value: 20 },
+            { name: '25 años', value: 25 },
+            { name: '30 años', value: 30 }
         ];
 
         this._preselectOption(options, preselectedOption);
@@ -315,22 +391,53 @@ $.widget('ed.installationamortization', {
     },
     _getEnergyPriceYearInflationValues: function(preselectedOption) {
         let options = [
-            { name: '0', value: 0 },
-            { name: '1', value: 1 },
-            { name: '2', value: 2 },
-            { name: '3', value: 3 },
-            { name: '4', value: 4 },
-            { name: '5', value: 5 },
-            { name: '6', value: 6 },
-            { name: '7', value: 7 },
-            { name: '8', value: 8 },
-            { name: '9', value: 9 },
-            { name: '10', value: 10 }
+            { name: '0 %', value: 0 },
+            { name: '1 %', value: 1 },
+            { name: '2 %', value: 2 },
+            { name: '3 %', value: 3 },
+            { name: '4 %', value: 4 },
+            { name: '5 %', value: 5 },
+            { name: '6 %', value: 6 },
+            { name: '7 %', value: 7 },
+            { name: '8 %', value: 8 },
+            { name: '9 %', value: 9 },
+            { name: '10 %', value: 10 }
         ];
 
         this._preselectOption(options, preselectedOption);
 
         return options;
+    },
+    _updateFiguresData: function(configuration) {
+        if (this._isValidMainConfig()) {
+            let color = this._updateAmortizationPlan(configuration);
+            this._updateExpensePlan(configuration, color);
+        }
+    },
+    _updateAllFiguresData: function() {
+        let self = this;
+
+        this._configurations
+            .filter(configuration => self._isValidConfiguration(configuration))
+            .forEach(configuration => {
+                let color = this._updateAmortizationPlan(configuration);
+                this._updateExpensePlan(configuration, color);
+            });
+    },
+    _removeFiguresData: function(planId) {
+        let removed = false;
+
+        if (this._amortizationPlans[planId]) {
+            delete this._amortizationPlans[planId];
+            removed = true;
+        }
+
+        if (this._expensePlans[planId]) {
+            delete this._expensePlans[planId];
+            removed = true;
+        }
+
+        return removed;
     },
     _updateAmortizationPlan: function(configuration) {
         let color;
@@ -348,25 +455,23 @@ $.widget('ed.installationamortization', {
         let yaxis = [];
         let extra = [];
 
-        let extraValue = '0';
+        for (let y = 1; y <= this._config.installationLifeYears; y++) {
+            let yearSaved = yearSaving;
+            let extraValue = `${Math.round(yearSaving * 100) / 100}`;
 
-        for (let y = 0; y <= this._config.installationLifeYears; y++) {
+            if (this._config.ibiDto > 0 && this._config.ibiYears > 0 && y <= this._config.ibiYears) {
+                yearSaved += this._config.ibiDto;
+
+                extraValue += ` + ${this._config.ibiDto} = ${Math.round(yearSaved * 100) / 100}`;
+            }
+
+            start += yearSaved;
+
             xaxis.push(y.toString());
-            yaxis.push(Math.round(start * 100) / 100);
+            yaxis.push(start);
             extra.push([extraValue]);
 
-            extraValue = `${yearSaving}`;
-            let yearSaved = yearSaving;
-
-            start += yearSaving;
-            yearSaving = Math.round(yearSaving * (1 + (this._config.energyPriceYearInflation / 100)) * 100) / 100;
-
-            if (configuration.ibidto > 0 && configuration.ibiyears > 0 && y < configuration.ibiyears) {
-                start += configuration.ibidto;
-                yearSaved += configuration.ibidto;
-
-                extraValue += ` + ${configuration.ibidto} = ${Math.round(yearSaved * 100) / 100}`;
-            }
+            yearSaving = yearSaving * (1 + (this._config.energyPriceYearInflation / 100));
         }
 
         this._amortizationPlans[configuration.id] = {
@@ -376,25 +481,56 @@ $.widget('ed.installationamortization', {
             title: `  ${configuration.name}<br>  C: ${configuration.buy}<br>  V: ${configuration.sell}<br>  (IVA: ${configuration.tax})`,
             extra: extra
         }
-    },
-    _updateAmortizationPlans: function(configuration) {
-        let self = this;
 
-        this._configurations
-            .filter(configuration => self._isValidConfiguration(configuration))
-            .forEach(configuration => {
-                this._updateAmortizationPlan(configuration);
-            });
+        return color;
     },
-    _removeAmortizationPlan: function(planId) {
-        let removed = false;
+    _updateExpensePlan: function(configuration, color) {
+        let withSelfsupplyStart = configuration.price;
+        let withoutSelfsupplyStart = 0;
 
-        if (this._amortizationPlans[planId]) {
-            delete this._amortizationPlans[planId];
-            removed = true;
+        let withSelfsupplyYearPaid = configuration.yearFinalConsumption;
+        let withoutSelfsupplyYearPaid = configuration.yearConsumption;
+
+        let xaxis = [];
+        let withSelfsupplyYaxis = [];
+        let withoutSelfsupplyYaxis = [];
+        let withSelfsupplyExtra = [];
+        let withoutSelfsupplyExtra = [];
+
+        for (let y = 1; y <= this._config.installationLifeYears; y++) {
+            xaxis.push(y.toString());
+
+            let withoutPaid = withoutSelfsupplyYearPaid;
+            let withoutSelfsupplyExtraValue = `${Math.round(withoutPaid * 100) / 100}`;
+
+            if (this._config.ibiDto > 0 && this._config.ibiYears > 0 && y <= this._config.ibiYears) {
+                withoutPaid += this._config.ibiDto;
+
+                withoutSelfsupplyExtraValue += ` + ${this._config.ibiDto} = ${Math.round(withoutPaid * 100) / 100}`;
+            }
+
+            withSelfsupplyStart += withSelfsupplyYearPaid;
+            withoutSelfsupplyStart += withoutPaid;
+
+            withSelfsupplyYaxis.push(withSelfsupplyStart);
+            withoutSelfsupplyYaxis.push(withoutSelfsupplyStart);
+            withSelfsupplyExtra.push([Math.round(withSelfsupplyYearPaid * 100) / 100]);
+            withoutSelfsupplyExtra.push([withoutSelfsupplyExtraValue]);
+
+            withSelfsupplyYearPaid = withSelfsupplyYearPaid * (1 + (this._config.energyPriceYearInflation / 100));
+            withoutSelfsupplyYearPaid = withoutSelfsupplyYearPaid * (1 + (this._config.energyPriceYearInflation / 100));
         }
 
-        return removed;
+        this._expensePlans[configuration.id] = {
+            x: xaxis,
+            withSelfsupplyY: withSelfsupplyYaxis,
+            withoutSelfsupplyY: withoutSelfsupplyYaxis,
+            color: color,
+            withSelfsupplyTitle: `  ${configuration.name}<br>  C: ${configuration.buy}<br>  V: ${configuration.sell}<br>  (IVA: ${configuration.tax})`,
+            withoutSelfsupplyTitle: `  C: ${configuration.buy}<br>  V: ${configuration.sell}<br>  (IVA: ${configuration.tax})`,
+            withSelfsupplyExtra: withSelfsupplyExtra,
+            withoutSelfsupplyExtra: withoutSelfsupplyExtra
+        }
     },
 
     _getFormRow: function(configuration) {
@@ -424,28 +560,12 @@ $.widget('ed.installationamortization', {
                 `<input name="price" type="text" class="onlynumbers editable-number" placeholder="Coste instalación" maxlength="5" data-configuration-id="${configuration.id}">` +
             '</div>' +
             '<div class="one wide field">' +
-                '<label>Dto IBI (€)</label>' +
-                `<input name="ibidto" type="text" class="onlynumbers editable-number" placeholder="Dto IBI" value="0" maxlength="4" data-configuration-id="${configuration.id}">` +
-            '</div>' +
-            '<div class="one wide field">' +
-                '<label>Años dto</label>' +
-                '<div class="ui mini selection dropdown">' +
-                    `<input type="hidden" name="ibiyears" class="editable-number" data-configuration-id="${configuration.id}">` +
-                    '<i class="dropdown icon"></i>' +
-                    '<div class="text"></div>' +
-                '</div>' +
-            '</div>' +
-            '<div class="one wide field">' +
                 '<label>&nbsp;</label>' +
                 `<button class="mini ui icon red button remove-configuration" data-configuration-id="${configuration.id}">` +
                     '<i class="trash icon"></i>' +
                 '</button>' +
             '</div>' +
         '</div>');
-
-        $formRow.find('.ui.dropdown').dropdown({
-            values: this._getIbiDtoYears(0)
-        });
 
         return $formRow;
     },
@@ -469,10 +589,13 @@ $.widget('ed.installationamortization', {
         let self = this;
 
         if (Object.keys(this._amortizationPlans).length === 0) {
-            this._components['figure'].empty();
+            this._components['amortizationFigure'].empty();
         } else {
-            let data = Object.values(this._amortizationPlans).map(plan => self._getPlotlyFigureData(plan));
-            Plotly.newPlot(this._config['figureId'], data, this._plotlyFigureLayout, this._plotlyFigureConfig)
+            let amortizationPlanFigureData = Object.values(this._amortizationPlans).map(plan => self._getAmortizationPlanPlotlyFigureData(plan));
+            Plotly.newPlot(this._config['amortizationFigureId'], amortizationPlanFigureData, this._getPlotlyFigureLayout('Beneficio (€)'), this._plotlyFigureConfig);
+
+            let expensePlanFigureData = Object.values(this._expensePlans).flatMap(plan => self._getExpensePlanPlotlyFigureData(plan));
+            Plotly.newPlot(this._config['expenseFigureId'], expensePlanFigureData, this._getPlotlyFigureLayout('Gasto (€)'), this._plotlyFigureConfig);
         }
     },
 
@@ -497,13 +620,13 @@ $.widget('ed.installationamortization', {
 
         if (!this._components['config']) {
             let configId = `${elementId}-config`
-            let $configElement = $(`<div id="${configId}" class="ui form">`  +
+            let $configElement = $(`<div id="${configId}" class="ui mini form">`  +
                 '<div class="fields">' +
-                    '<div class="fourteen wide field">' +
+                    '<div class="four wide field">' +
                         '<label>&nbsp;</label>' +
                     '</div>' +
                     '<div class="three wide field">' +
-                        '<label>Vida instalación (Años)</label>' +
+                        '<label>Vida instalación</label>' +
                         '<div id="installationLifeYears" class="ui selection dropdown">' +
                             '<input type="hidden" name="installationLifeYears">' +
                             '<i class="dropdown icon"></i>' +
@@ -511,9 +634,21 @@ $.widget('ed.installationamortization', {
                         '</div>' +
                     '</div>' +
                     '<div class="three wide field">' +
-                        '<label>Inflación anual energía (%)</label>' +
+                        '<label>Inflación anual energía</label>' +
                         '<div id="energyPriceYearInflation" class="ui mini selection dropdown">' +
                             '<input type="hidden" name="energyPriceYearInflation">' +
+                            '<i class="dropdown icon"></i>' +
+                            '<div class="text"></div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="three wide field">' +
+                        '<label>Descuento IBI (€)</label>' +
+                        `<input name="ibiDto" type="text" class="onlynumbers editable-number" placeholder="Descuento IBI" value="${this._config.ibiDto}" maxlength="4">` +
+                    '</div>' +
+                    '<div class="three wide field">' +
+                        '<label>Duración descuento IBI</label>' +
+                        '<div id="ibiYears" class="ui mini selection dropdown">' +
+                            '<input type="hidden" name="ibiYears">' +
                             '<i class="dropdown icon"></i>' +
                             '<div class="text"></div>' +
                         '</div>' +
@@ -531,6 +666,10 @@ $.widget('ed.installationamortization', {
             $configElement.find('#energyPriceYearInflation').dropdown({
                 values: this._getEnergyPriceYearInflationValues(this._config.energyPriceYearInflation)
             });
+            
+            $configElement.find('#ibiYears').dropdown({
+                values: this._getIbiDtoYearsValues(this._config.ibiYears)
+            });
         }
 
         if (!this._components['form']) {
@@ -541,12 +680,21 @@ $.widget('ed.installationamortization', {
             this._components['container'].append($formElement);
         }
 
-        if (!this._components['figure']) {
-            let figureId = `${elementId}-figure`
+        if (!this._components['amortizationFigure']) {
+            let figureId = `${elementId}-amortizationFigure`
             let $figureElement = $('<div>', {id: figureId});
 
-            this._config['figureId'] = figureId;
-            this._components['figure'] = $figureElement;
+            this._config['amortizationFigureId'] = figureId;
+            this._components['amortizationFigure'] = $figureElement;
+            this._components['container'].append($figureElement);
+        }
+
+        if (!this._components['expenseFigure']) {
+            let figureId = `${elementId}-expenseFigure`
+            let $figureElement = $('<div>', {id: figureId});
+
+            this._config['expenseFigureId'] = figureId;
+            this._components['expenseFigure'] = $figureElement;
             this._components['container'].append($figureElement);
         }
 
@@ -570,8 +718,8 @@ $.widget('ed.installationamortization', {
                 sell: inputConfiguration.sell,
                 tax: this._getTaxLabel(inputConfiguration),
                 yearSaving: parseFloat(inputConfiguration.year_savings_eur),
-                ibidto: 0,
-                ibiyears: 0
+                yearConsumption: parseFloat(inputConfiguration.year_consumption_eur),
+                yearFinalConsumption: parseFloat(inputConfiguration.year_final_eur)
             };
 
             this._configurations.push(configuration);

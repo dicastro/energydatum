@@ -16,7 +16,7 @@
             <input name="tax" type="text" value="21" maxlength="2">
         </div>
         <div class="one wide field">
-            <label>Con IVA</label>
+            <label>IVA ?</label>
             <div class="ui slider checkbox checkbox-comp">
                 <input type="radio" name="include_tax">
                 <label>&nbsp;</label>
@@ -310,7 +310,7 @@
         var periods = {};
 
         offerdb.getBuyOfferRateTypes().forEach(rateType => {
-            request = $.get(`{{contextpath}}/data/consumption/rate_${rateType}_m_periods.json`).done(function(response) {
+            request = $.get(`{{contextpath}}/data/consumption/rate_${rateType}_m_periods.json?_ts={{ts}}`).done(function(response) {
                 periods[rateType] = response;
             });
             period_requests.push(request);
