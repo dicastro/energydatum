@@ -1126,6 +1126,12 @@ jinja_env.get_template('selfsupply/calculator.html')\
         **jinja_common_context
     ).dump(os.path.join('docs', 'selfsupply', 'calculator.html'))
 
+jinja_env.get_template('selfsupply/info.html')\
+    .stream(
+        selfsupply_info_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
+        **jinja_common_context
+    ).dump(os.path.join('docs', 'selfsupply', 'info.html'))
+
 jinja_env.get_template('configuration.html')\
     .stream(
         configuration_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
@@ -1170,3 +1176,4 @@ jinja_env.get_template('weather.html')\
         weather_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
         **jinja_common_context
     ).dump(os.path.join('docs', 'weather.html'))
+

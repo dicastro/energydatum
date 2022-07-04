@@ -284,7 +284,7 @@ No lo he mencionado hasta ahora, pero todos los gráficos son interactivos: al p
 
 En esta opción de menú se puede acceder a diversos datos utilizados en múltiples partes del sitio:
 
-![Menu Consumo](./README_RESOURCES/energy_datum_menu_datos.png)
+![Menu Datos](./README_RESOURCES/energy_datum_menu_datos.png)
 
 - Se puede consultar el listado de días festivos nacionales, utilizados para los cálculos de consumos por periodos
 - Se puede consultar la lista de indicadores de E-SIOS, el API de REE, utilizado para obtener los precios de PVPC
@@ -299,6 +299,72 @@ En estas gráficas se muestra tanto el precio medio (línea) como la desviación
 
 ![Evolucion precios PVPC - Tarifa fin de semana](./README_RESOURCES/energy_datum_datos_precios_pvpc_wk_zoom.png)
 
+### Autoconsumo
+
+En la opción de menú *Autoconsumo* se disponen de varios apartados relacionados con el autoconsumo, y más esecíficamente con la instalación de paneles solares:
+
+![Menu Autoconsumo](./README_RESOURCES/energy_datum_menu_autoconsumo.png)
+
+Gracias a estas seccionees se puede respoder a las preguntas que dieron origen a esta proyecto.
+
+En el subapartado de *Calibrado* se puede ver cuál es la mejor configuración para la instalación de paneles solares. Este apartado es útil si tienes un tejado plano (como es mi caso) y puedes jugar con la inclinación y orientación de los paneles. Si tienes un tejado inclinado y la inclinación y orientación son fijas, en el fichero de configuración (`config.yml`) deberías indicar los valores de dichos parámetros (`angle` y `aspect`, respectivamente), así como desactivar el calibrado mediante el atributo `calibrate_angle_and_aspect = false`.
+
+#### ¿Cómo funciona el calibrado?
+
+- En primer lugar se determina el mejor ángulo de inclinación de los paneles. Para ello se hacen simulaciones de una instalación con 1 kWhp y orientada al sur, y se va variando la inclinación de los  paneles, desde los 25º hasta los 50º. Con cada inclinación se hace una estimación de la producción anual de energía y se compara con el consumo real del último año. Se establece una puntuación para cada configuración, tratando de maximizar el autoconsumo y los excedentes.
+- A continuación se hace el mismo proceso, pero para la orientación. En este caso se simula una instalación de 1kWhp y con 30º de inclinación, y se hacen simulaciones variando la orientación entre loas 15º oeste y 15º este (con respecto al sur). Se establece una puntuación siguiendo los mismos criteros que antes.
+- En último lugar se cogen las 5 mejores configuraciones de cada uno de los dos apartados anteriores, se combinan entre ellas y se vuelven a hacer simulaciones y a puntuarlas.
+- Las 10 mejores configuraciones de este último paso, son las que se consideran como las mejores configuraciones, teniendo siempre en cuenta los hábitos de consumo.
+
+Tanto si se han fijado unos  parámetros de inclinación y orientación, como si han sido obtenidos mediante calibrado, se hacen simulaciones del comportamiento de la instalación con varias potencias instaladas. Esto se hace indicando en el fichero de configuración una lista de potencias con las que hacer la simulación (ej: `peakpower = [ 1.8, 2.25, 2.7, 3.15, 3.6 ]`).
+
+En el subapartado *Calculadora* se puede ver el comportamiento de la instalación con las diferentes potencias instaladas y los diferentes parámetros de inclinación y orientación (si procede).
+
+![Calculadora - Lista configuraciones](./README_RESOURCES/energy_datum_autoconsumo_calculadora_listaconfiguraciones.png)
+
+Al seleccionar una configuración y pulsar sobre el botón de añadir:
+
+![Calculadora - Seleccionar configuración](./README_RESOURCES/energy_datum_autoconsumo_calculadora_anyadirconfiguracion.png)
+
+Podremos ver varias gráficas:
+
+Una estimación del autoconsumo mes a mes (con los excedentes generados, susceptibles de ser vendidos)
+
+![Calculadora - Consumo estimado mensual](./README_RESOURCES/energy_datum_autoconsumo_calculadora_consumomes.png)
+
+Un agregado anual de esta información:
+
+![Calculadora - Consumo estimado anual](./README_RESOURCES/energy_datum_autoconsumo_calculadora_consumoanyo.png)
+
+Es muy fácil hacer comparativas entre las diferentes configuraciones, basta con seleccionar varias:
+
+![Calculadora - Comparar configuraciones](./README_RESOURCES/energy_datum_autoconsumo_calculadora_multiplesconfiguraciones.png)
+
+Las gráficas anteriores se actualizan en consecuencia:
+
+![Calculadora - Consumo estimado mensual](./README_RESOURCES/energy_datum_autoconsumo_calculadora_consumomes_comparar.png)
+
+![Calculadora - Consumo estimado anual](./README_RESOURCES/energy_datum_autoconsumo_calculadora_consumoanyo_comparar.png)
+
+Para cada una de las configuraciones seleccionadas y para cada una de las ofertas configuradas en la sección de *Configuración* (sólo se tienen en cuenta las ofertas configuradas con algún precio de compra y un precio de venta), se hace un cálculo del coste del consumo sin paneles y con paneles, y por tanto del ahorro conseguido:
+
+![Calculadora - Coste/Ahorro estimado](./README_RESOURCES/energy_datum_autoconsumo_calculadora_coste.png)
+
+También se puede ver el plazo de amortización de las combinaciones anteriores:
+
+![Calculadora - Ver amortización](./README_RESOURCES/energy_datum_autoconsumo_calculadora_veramortizacion.png)
+
+Se establece el precio de la instalación (y se configura: vida útil, inflación, descuento ibi):
+
+![Calculadora - Configurar amortización](./README_RESOURCES/energy_datum_autoconsumo_calculadora_amortizacion_configurar.png)
+
+Cuando la configuración es válida se ven las siguientes gráficas:
+
+![Calculadora - Amortización](./README_RESOURCES/energy_datum_autoconsumo_calculadora_amortizacion.png)
+
+En la primera gráfica se ve cómo se va amortizando la inversión a lo largo de la vida útil de la instalación.
+
+En la segunda gráfica se ve el coste en energía sin la instación (línea discontínua), comparado con el coste con la instalación (línea contínua).
 
 # Roadmap
 
@@ -373,26 +439,30 @@ En estas gráficas se muestra tanto el precio medio (línea) como la desviación
 - [x] En la sección de *Autoconsumo > Calculadora* cambiar la configuración de *descuento ibi* a nivel general
 - [x] En la sección de *Autoconsumo > Calculadora* añadir visualización con las cantidades pagadas con/sin autoconsumo a lo largo de la vida de la instalación
 
-:construction: versión 1.0.0 :rainbow: :arrow_left:
+:checkered_flag: versión 1.0.0 :rainbow:
 
-- [ ] Añadir documentación de la sección *Autoconsumo*
-- [ ] Añadir sección de consejos sobre la instalación de paneles solares [video](https://www.youtube.com/watch?v=r7jrPXTYED4). Listado de marcas de *TIER 1*. Listado de marcas de inversores.
-- [ ] Validar los precios con facturas reales
+- [x] Añadir documentación de la sección *Autoconsumo*
+- [x] Añadir sección de consejos sobre la instalación de paneles solares [video](https://www.youtube.com/watch?v=r7jrPXTYED4). Listado de marcas de *TIER 1*. Listado de marcas de inversores.
+
 
 # Backlog
 
 Algunas ideas que se me van ocurriendo y que todavía no he planificado (ni sé si algún día se planificarán)
 
-- Añadir la opción de incluir posibles consumos
-  - Ejemplo: añadir al consumo real, el hipotético consumo de un A/C encendido por las noches entre junio y agosto
 - Añadir *simulador* de facturación
   - Se puede seleccionar un rango de fechas para simular la facturación
+- He hecho algunas comparativas con facturas reales y hay cosas que no me cuadran (por poco, y a mi favor)
+  - Estaría bien añadir alguna sección donde documentar esto
+- Añadir visualización de la evolución del precio de compra/venta de PVPC en cada hora del día
+- Añadir visualización de la evolución de la media móvil del precio de compra/venta de PVPC en cada hora del día
+- Registro en Datadis y probar que funciona
+  - Es un servicio transversal a todas las distribuidoras eléctricas que permite recuperar el consumo eléctrico (de esta forma no habría que descargar los consumos manualmente)
+- Añadir la opción de incluir posibles consumos
+  - Ejemplo: añadir al consumo real, el hipotético consumo de un A/C encendido por las noches entre junio y agosto
 - Mejorar logs
   - Cambiar `print` por el sistema de logging de python
   - Añadir más logs
 - Añadir filtro por columnas a las tablas
-- Registro en Datadis y probar que funciona
-  - Es un servicio transversal a todas las distribuidoras eléctricas que permite recuperar el consumo eléctrico (de esta forma no habría que descargar los consumos manualmente)
 - Añadir una sección al menú de *Datos* con el histórico del clima
     - Probar: https://worldweatheronline.com/developer/api/docs/historical-weather-api.aspx
 - Añadir al fichero de configuración
@@ -401,8 +471,6 @@ Algunas ideas que se me van ocurriendo y que todavía no he planificado (ni sé 
   - propiedad para deshabilitar la recuperación del histórico del clima
 - Migrar código Spark (PySpark) a Pandas
 - Traducir tablas de datatables a español
-- Añadir visualización de la evolución del precio de compra/venta de PVPC en cada hora del día
-- Añadir visualización de la evolución de la media móvil del precio de compra/venta de PVPC en cada hora del día
 
 # Otros Links
 

@@ -7,6 +7,6 @@ calibrate_angle_and_aspect = true
 
 [pvgis.params]
 loss = 14
-peakpower = [ 1.8, 2.25, 2.7, 3.15, 3.6,]
+peakpower = [ 1.8, 2.25, 2.7, 3.15, 3.6 ]
 angle = 39
 aspect = -6
