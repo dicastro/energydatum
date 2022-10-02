@@ -4,7 +4,7 @@ import itertools
 import json
 import os
 from decimal import Decimal
-from typing import List, Dict, Any, Tuple, Union
+from typing import List, Dict, Any, Tuple, Union, Optional
 
 import plotly.colors
 import plotly.express as px
@@ -710,30 +710,31 @@ class Pvgis:
     def _get_params_to_estimate_production(self):
         print('DEBUG: determinig params to estimate production ...')
 
-        _, calibration = self._get_current_calibration()
-
         params_to_combine = [self._get_param('peakpower')]
 
-        if 'angle+aspect' in calibration:
-            angles_aspects = [(c['params']['angle'], c['params']['aspect']) for c in calibration['angle+aspect'][0:10]]
+        if self.has_calibrations():
+            _, calibration = self._get_current_calibration()
 
-            print(f'DEBUG: "angle" and "aspect" params were calibrated, using {len(angles_aspects)} best combinations of them: {angles_aspects}')
+            if 'angle+aspect' in calibration:
+                angles_aspects = [(c['params']['angle'], c['params']['aspect']) for c in calibration['angle+aspect'][0:10]]
 
-            params_to_combine.append(angles_aspects)
-        elif 'angle' in calibration:
-            angles = [c['params']['angle'] for c in calibration['angle'][0:5]]
+                print(f'DEBUG: "angle" and "aspect" params were calibrated, using {len(angles_aspects)} best combinations of them: {angles_aspects}')
 
-            print(f'DEBUG: "angle" param was calibrated, using {len(angles)} best values of it: {angles}')
+                params_to_combine.append(angles_aspects)
+            elif 'angle' in calibration:
+                angles = [c['params']['angle'] for c in calibration['angle'][0:5]]
 
-            params_to_combine.append(angles)
-            params_to_combine.append(self._get_param('aspect'))
-        elif 'aspect' in calibration:
-            aspects = [c['params']['aspect'] for c in calibration['aspect'][0:5]]
+                print(f'DEBUG: "angle" param was calibrated, using {len(angles)} best values of it: {angles}')
 
-            print(f'DEBUG: "aspect" param was calibrated, using {len(aspects)} best values of it: {aspects}')
+                params_to_combine.append(angles)
+                params_to_combine.append(self._get_param('aspect'))
+            elif 'aspect' in calibration:
+                aspects = [c['params']['aspect'] for c in calibration['aspect'][0:5]]
 
-            params_to_combine.append(self._get_param('angle'))
-            params_to_combine.append(aspects)
+                print(f'DEBUG: "aspect" param was calibrated, using {len(aspects)} best values of it: {aspects}')
+
+                params_to_combine.append(self._get_param('angle'))
+                params_to_combine.append(aspects)
         else:
             print('DEBUG: no params were calibrated')
 

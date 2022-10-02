@@ -3,10 +3,10 @@ username = "dicastro"
 configuration_backup_filename = "site_configuration_backup.json"
 
 [pvgis]
-calibrate_angle_and_aspect = true
+calibrate_angle_and_aspect = false
 
 [pvgis.params]
 loss = 14
-peakpower = [ 1.8, 2.25, 2.7, 3.15, 3.6 ]
-angle = 39
-aspect = -6
+peakpower = [ 2.46, 3.28, 4.1, 4.92,]
+angle = [ 0, 10, 20, 36, 39,]
+aspect = [ -6, 0,]

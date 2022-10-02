@@ -711,24 +711,26 @@ consumption_with_price_and_bankdays_sdf = consumption_with_price_sdf\
 
 pvgis = Pvgis(config['pvgis'], spark, consumption_with_price_and_bankdays_sdf, consumption_date_min, consumption_date_max, [rate_20td_info, rate_wk_info, rate_fix_info])
 
-jinja_common_context['has_calibrations'] = pvgis.has_calibrations()
+has_calibrations = pvgis.has_calibrations()
+jinja_common_context['has_calibrations'] = has_calibrations
 
-# angle calibration
-print('DEBUG:   angle calibration')
+if has_calibrations:
+    # angle calibration
+    print('DEBUG:   angle calibration')
 
-angle_calibration_m_fig_html = pvgis.get_monthly_calibration_figure_html('angle')
-angle_calibration_y_fig_html = pvgis.get_yearly_calibration_figure_html('angle')
+    angle_calibration_m_fig_html = pvgis.get_monthly_calibration_figure_html('angle')
+    angle_calibration_y_fig_html = pvgis.get_yearly_calibration_figure_html('angle')
 
-# aspect calibration
-print('DEBUG:   aspect calibration')
+    # aspect calibration
+    print('DEBUG:   aspect calibration')
 
-aspect_calibration_m_fig_html = pvgis.get_monthly_calibration_figure_html('aspect')
-aspect_calibration_y_fig_html = pvgis.get_yearly_calibration_figure_html('aspect')
+    aspect_calibration_m_fig_html = pvgis.get_monthly_calibration_figure_html('aspect')
+    aspect_calibration_y_fig_html = pvgis.get_yearly_calibration_figure_html('aspect')
 
-# angle+aspect calibration
-print('DEBUG:   angle+aspect calibration')
+    # angle+aspect calibration
+    print('DEBUG:   angle+aspect calibration')
 
-angle_aspect_calibration_y_fig_html = pvgis.get_yearly_calibration_figure_html('angle+aspect')
+    angle_aspect_calibration_y_fig_html = pvgis.get_yearly_calibration_figure_html('angle+aspect')
 
 with open('config.toml', 'w', encoding='utf-8') as config_file:
     toml.dump(config, config_file)
@@ -1107,16 +1109,17 @@ jinja_env.get_template('cost.html')\
         **jinja_common_context
     ).dump(os.path.join('docs', 'cost.html'))
 
-jinja_env.get_template('selfsupply/calibrations.html')\
-    .stream(
-        calibrations_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
-        angle_calibration_m_fig=angle_calibration_m_fig_html,
-        angle_calibration_y_fig=angle_calibration_y_fig_html,
-        aspect_calibration_m_fig=aspect_calibration_m_fig_html,
-        aspect_calibration_y_fig=aspect_calibration_y_fig_html,
-        angle_aspect_calibration_y_fig=angle_aspect_calibration_y_fig_html,
-        **jinja_common_context
-    ).dump(os.path.join('docs', 'selfsupply', 'calibrations.html'))
+if has_calibrations:
+    jinja_env.get_template('selfsupply/calibrations.html')\
+        .stream(
+            calibrations_menu_item_active=constants.MENU_ITEM_ACTIVE_CLASS,
+            angle_calibration_m_fig=angle_calibration_m_fig_html,
+            angle_calibration_y_fig=angle_calibration_y_fig_html,
+            aspect_calibration_m_fig=aspect_calibration_m_fig_html,
+            aspect_calibration_y_fig=aspect_calibration_y_fig_html,
+            angle_aspect_calibration_y_fig=angle_aspect_calibration_y_fig_html,
+            **jinja_common_context
+        ).dump(os.path.join('docs', 'selfsupply', 'calibrations.html'))
 
 jinja_env.get_template('selfsupply/calculator.html')\
     .stream(

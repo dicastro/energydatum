@@ -444,6 +444,9 @@ En la segunda gráfica se ve el coste en energía sin la instación (línea disc
 - [x] Añadir documentación de la sección *Autoconsumo*
 - [x] Añadir sección de consejos sobre la instalación de paneles solares [video](https://www.youtube.com/watch?v=r7jrPXTYED4). Listado de marcas de *TIER 1*. Listado de marcas de inversores.
 
+:checkered_flag: versión 1.0.0
+
+- [x] Corregido error cuando no hay calibraciones previas porque no se han realizado nunca y la calibración está deshabilitada
 
 # Backlog
 

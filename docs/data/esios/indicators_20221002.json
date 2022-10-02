@@ -1,8 +1,128 @@
 {
     "indicators": [
         {
-            "name": "Precio medio horario componente RD-L 10/2022 mercado diario e intradiario - diferencia por liquidación con medidas ",
-            "description": "<p>Precio medio horario componente RD-L 10/2022 mercado diario e intradiario - diferencia por liquidación con medidas </p>",
+            "name": "RD-L 10/2022 mercado diario e intradiario - Anual",
+            "description": "<p>RD-L 10/2022 mercado diario e intradiario - Anual</p>",
+            "id": 10409
+        },
+        {
+            "name": "RD-L 10/2022 restricciones tÃ©cnicas y mercados de balance - Anual",
+            "description": "<p>RD-L 10/2022 restricciones tÃ©cnicas y mercados de balance - Anual</p>",
+            "id": 10411
+        },
+        {
+            "name": "RD-L 10/2022 mercado diario e intradiario - diferencia por liquidaciÃ³n con medidas - Anual",
+            "description": "<p>RD-L 10/2022 mercado diario e intradiario - diferencia por liquidaciÃ³n con medidas - Anual</p>",
+            "id": 10410
+        },
+        {
+            "name": "RD-L 10/2022 mercado diario e intradiario - Mensual",
+            "description": "<p>RD-L 10/2022 mercado diario e intradiario - Mensual</p>",
+            "id": 10406
+        },
+        {
+            "name": "RD-L 10/2022 restricciones tÃ©cnicas y mercados de balance - Mensual",
+            "description": "<p>RD-L 10/2022 restricciones tÃ©cnicas y mercados de balance - Mensual</p>",
+            "id": 10408
+        },
+        {
+            "name": "RD-L 10/2022 mercado diario e intradiario - diferencia por liquidaciÃ³n con medidas - Mensual",
+            "description": "<p>RD-L 10/2022 mercado diario e intradiario - diferencia por liquidaciÃ³n con medidas - Mensual</p>",
+            "id": 10407
+        },
+        {
+            "name": "Precio medio mensual componente RD-L 10/2022 restricciones técnicas y mercados de balance",
+            "description": "<p>Precio medio mensual componente RD-L 10/2022 restricciones t&eacute;cnicas y mercados de balance</p>\r\n",
+            "id": 1910
+        },
+        {
+            "name": "Precio medio anual componente RD-L 10/2022 mercado diario e intradiario comercializaciÃ³n de referencia",
+            "description": "<p>Precio medio anual componente RD-L 10/2022 mercado diario e intradiario comercializaciÃ³n de referencia</p>",
+            "id": 1927
+        },
+        {
+            "name": "Precio medio anual componente RD-L 10/2022 mercado diario e intradiario contrataciÃ³n libre",
+            "description": "<p>Precio medio anual componente RD-L 10/2022 mercado diario e intradiario contrataciÃ³n libre</p>",
+            "id": 1926
+        },
+        {
+            "name": "Precio medio anual componente RD-L 10/2022 mercado diario e intradiario",
+            "description": "<p>Precio medio anual componente RD-L 10/2022 mercado diario e intradiario</p>",
+            "id": 1925
+        },
+        {
+            "name": "Precio medio anual componente RD-L 10/2022 mercado diario e intradiario - diferencia por liquidaciÃ³n con medidas comercializaciÃ³n de referencia",
+            "description": "<p>Precio medio anual componente RD-L 10/2022 mercado diario e intradiario - diferencia por liquidaciÃ³n con medidas comercializaciÃ³n de referencia</p>",
+            "id": 1924
+        },
+        {
+            "name": "Precio medio anual componente RD-L 10/2022 mercado diario e intradiario - diferencia por liquidaciÃ³n con medidas contrataciÃ³n libre",
+            "description": "<p>Precio medio anual componente RD-L 10/2022 mercado diario e intradiario - diferencia por liquidaciÃ³n con medidas contrataciÃ³n libre</p>",
+            "id": 1923
+        },
+        {
+            "name": "Precio medio anual componente RD-L 10/2022 mercado diario e intradiario - diferencia por liquidación con medidas",
+            "description": "<p>Precio medio anual componente RD-L 10/2022 mercado diario e intradiario - diferencia por liquidaci&oacute;n con medidas</p>\r\n",
+            "id": 1922
+        },
+        {
+            "name": "Precio medio anual componente RD-L 10/2022 restricciones tÃ©cnicas y mercados de balance comercializaciÃ³n de referencia",
+            "description": "<p>Precio medio anual componente RD-L 10/2022 restricciones tÃ©cnicas y mercados de balance comercializaciÃ³n de referencia</p>",
+            "id": 1921
+        },
+        {
+            "name": "Precio medio anual componente RD-L 10/2022 restricciones tÃ©cnicas y mercados de balance contrataciÃ³n libre",
+            "description": "<p>Precio medio anual componente RD-L 10/2022 restricciones tÃ©cnicas y mercados de balance contrataciÃ³n libre</p>",
+            "id": 1920
+        },
+        {
+            "name": "Precio medio anual componente RD-L 10/2022 restricciones técnicas y mercados de balance",
+            "description": "<p>Precio medio anual componente RD-L 10/2022 restricciones t&eacute;cnicas y mercados de balance</p>\r\n",
+            "id": 1919
+        },
+        {
+            "name": "Precio medio mensual componente RD-L 10/2022 mercado diario e intradiario comercializaciÃ³n de referencia",
+            "description": "<p>Precio medio mensual componente RD-L 10/2022 mercado diario e intradiario comercializaciÃ³n de referencia</p>",
+            "id": 1918
+        },
+        {
+            "name": "Precio medio mensual componente RD-L 10/2022 mercado diario e intradiario contrataciÃ³n libre",
+            "description": "<p>Precio medio mensual componente RD-L 10/2022 mercado diario e intradiario contrataciÃ³n libre</p>",
+            "id": 1917
+        },
+        {
+            "name": "Precio medio mensual componente RD-L 10/2022 mercado diario e intradiario",
+            "description": "<p>Precio medio mensual componente RD-L 10/2022 mercado diario e intradiario</p>",
+            "id": 1916
+        },
+        {
+            "name": "Precio medio mensual componente RD-L 10/2022 mercado diario e intradiario - diferencia por liquidaciÃ³n con medidas comercializaciÃ³n de referencia",
+            "description": "<p>Precio medio mensual componente RD-L 10/2022 mercado diario e intradiario - diferencia por liquidaciÃ³n con medidas comercializaciÃ³n de referencia</p>",
+            "id": 1915
+        },
+        {
+            "name": "Precio medio mensual componente RD-L 10/2022 mercado diario e intradiario - diferencia por liquidaciÃ³n con medidas contrataciÃ³n libre",
+            "description": "<p>Precio medio mensual componente RD-L 10/2022 mercado diario e intradiario - diferencia por liquidaciÃ³n con medidas contrataciÃ³n libre</p>",
+            "id": 1914
+        },
+        {
+            "name": "Precio medio mensual componente RD-L 10/2022 mercado diario e intradiario - diferencia por liquidación con medidas",
+            "description": "<p>Precio medio mensual componente RD-L 10/2022 mercado diario e intradiario - diferencia por liquidaci&oacute;n con medidas</p>\r\n",
+            "id": 1913
+        },
+        {
+            "name": "Precio medio mensual componente RD-L 10/2022 restricciones tÃ©cnicas y mercados de balance comercializaciÃ³n de referencia",
+            "description": "<p>Precio medio mensual componente RD-L 10/2022 restricciones tÃ©cnicas y mercados de balance comercializaciÃ³n de referencia</p>",
+            "id": 1912
+        },
+        {
+            "name": "Precio medio mensual componente RD-L 10/2022 restricciones tÃ©cnicas y mercados de balance contrataciÃ³n libre",
+            "description": "<p> Precio medio mensual componente RD-L 10/2022 restricciones tÃ©cnicas y mercados de balance contrataciÃ³n libre</p>",
+            "id": 1911
+        },
+        {
+            "name": "Precio medio horario componente RD-L 10/2022 restricciones técnicas y mercados de balance ",
+            "description": "<p>Precio medio horario componente RD-L 10/2022 restricciones t&eacute;cnicas y mercados de balance</p>\r\n",
             "id": 1901
         },
         {
@@ -36,28 +156,28 @@
             "id": 1907
         },
         {
-            "name": "Precio medio horario componente RD-L 10/2022 restricciones técnicas y mercados de balance comercializadores de referencia",
-            "description": "<p>Precio medio horario componente RD-L 10/2022 restricciones técnicas y mercados de balance comercializadores de referencia</p>",
+            "name": "Precio medio horario componente RD-L 10/2022 mercado diario e intradiario - dif. por liq. con med. comerc. referencia",
+            "description": "<p>Precio medio horario componente RD-L 10/2022 mercado diario e intradiario - dif. por liq. con med. comerc. referencia</p>\r\n",
             "id": 1906
         },
         {
-            "name": "Mecanismo de ajuste contratacion libre",
-            "description": "<p>Mecanismo de ajuste contratacion libre</p>",
+            "name": "Precio medio horario componente RD-L 10/2022 mercado diario e intradiario - dif. por liq. con medidas contratación libre",
+            "description": "<p>Precio medio horario componente RD-L 10/2022 mercado diario e intradiario - dif. por liq. con medidas contrataci&oacute;n libre</p>\r\n",
             "id": 1905
         },
         {
-            "name": "Precio medio horario componente RD-L 10/2022 restricciones técnicas y mercados de balance contratación libre",
-            "description": "<p>Precio medio horario componente RD-L 10/2022 restricciones técnicas y mercados de balance contratación libre</p>",
+            "name": "Precio medio horario componente RD-L 10/2022 mercado diario e intradiario - diferencia por liquidación con medidas",
+            "description": "<p>Precio medio horario componente RD-L 10/2022 mercado diario e intradiario - diferencia por liquidaci&oacute;n con medidas</p>\r\n",
             "id": 1904
         },
         {
-            "name": "Precio medio horario componente RD-L 10/2022 mercado diario e intradiario - diferencia por liquidación con medidas comercializadores de referencia",
-            "description": "<p>Precio medio horario componente RD-L 10/2022 mercado diario e intradiario - diferencia por liquidación con medidas comercializadores de referencia</p>",
+            "name": "Precio medio horario componente RD-L 10/2022 restricciones técnicas y mercados de balance comercializadores de referencia",
+            "description": "<p>Precio medio horario componente RD-L 10/2022 restricciones t&eacute;cnicas y mercados de balance comercializadores de referencia</p>\r\n",
             "id": 1903
         },
         {
-            "name": "Precio medio horario componenSte RD-L 10/2022 mercado diario e intradiario - diferencia por liquidación con medidas contratación libre",
-            "description": "<p>Precio medio horario componenSte RD-L 10/2022 mercado diario e intradiario - diferencia por liquidación con medidas contratación libre</p>",
+            "name": "Precio medio horario componente RD-L 10/2022 restricciones técnicas y mercados de balance contratación libre",
+            "description": "<p>Precio medio horario componente RD-L 10/2022 restricciones t&eacute;cnicas y mercados de balance contrataci&oacute;n libre</p>\r\n",
             "id": 1902
         },
         {
@@ -486,16 +606,6 @@
             "id": 1834
         },
         {
-            "name": "Asignación a bajar de energías de balance RR por IC SEE",
-            "description": "<p>El mecanismo de asignaci&oacute;n de energ&iacute;as de balance RR es un servicio que tiene por objeto restablecer o mantener el nivel de energ&iacute;as de recuperaci&oacute;n de la frecuencia con activaci&oacute;n manual y autom&aacute;tica (energ&iacute;as de regulaci&oacute;n secundaria y terciaria) requerido al objeto de prepararse para desequilibrios adicionales del sistema.</p>\r\n\r\n<p>La asignaci&oacute;n de energ&iacute;a de balance RR se realiza a trav&eacute;s de una plataforma de balance europea (LIBRA) en aplicaci&oacute;n del art&iacute;culo 19 del Reglamento EB.</p>\r\n\r\n<p>Este servicio se encuentra regulado en el P.O.-3.3.</p>\r\n\r\n<p>En concreto este indicador se refiere a las asignaciones de energ&iacute;a de balance de tipo RR a bajar activada por solicitudes de Interconnection Controllability por la plataforma europea de RR en el Sistema El&eacute;ctrico Espa&ntilde;ol.</p>\r\n\r\n<p><b>Publicaci&oacute;n:</b>&nbsp;diariamente con la informaci&oacute;n del d&iacute;a D-1 sobre las 5:00 horas.</p>\r\n",
-            "id": 1838
-        },
-        {
-            "name": "Asignación a subir de energías de balance RR por IC SEE",
-            "description": "<p>El mecanismo de asignaci&oacute;n de energ&iacute;as de balance RR es un servicio que tiene por objeto restablecer o mantener el nivel de energ&iacute;as de recuperaci&oacute;n de la frecuencia con activaci&oacute;n manual y autom&aacute;tica (energ&iacute;as de regulaci&oacute;n secundaria y terciaria) requerido al objeto de prepararse para desequilibrios adicionales del sistema.</p>\r\n\r\n<p>La asignaci&oacute;n de energ&iacute;a de balance RR se realiza a trav&eacute;s de una plataforma de balance europea (LIBRA) en aplicaci&oacute;n del art&iacute;culo 19 del Reglamento EB.</p>\r\n\r\n<p>Este servicio se encuentra regulado en el P.O.-3.3.</p>\r\n\r\n<p>En concreto este indicador se refiere a las asignaciones de energ&iacute;a de balance de tipo RR a subir activada por solicitudes de Interconnection Controllability por la plataforma europea de RR en el Sistema El&eacute;ctrico Espa&ntilde;ol.</p>\r\n\r\n<p><b>Publicaci&oacute;n:</b>&nbsp;diariamente con la informaci&oacute;n del d&iacute;a D-1 sobre las 5:00 horas.</p>\r\n",
-            "id": 1837
-        },
-        {
             "name": "Renta de congestión energías de balance RR Francia importación",
             "description": "<p>El mecanismo de asignaci&oacute;n de energ&iacute;as de balance RR es un servicio que tiene por objeto restablecer o mantener el nivel de energ&iacute;as de recuperaci&oacute;n de la frecuencia con activaci&oacute;n manual y autom&aacute;tica (energ&iacute;as de regulaci&oacute;n secundaria y terciaria) requerido al objeto de prepararse para desequilibrios adicionales del sistema.</p>\r\n\r\n<p>La asignaci&oacute;n de energ&iacute;a de balance RR se realiza a trav&eacute;s de una plataforma de balance europea (LIBRA) en aplicaci&oacute;n del art&iacute;culo 19 del Reglamento EB.</p>\r\n\r\n<p>Este servicio se encuentra regulado en el P.O.-3.3</p>\r\n\r\n<p>Las rentas de congesti&oacute;n representan los ingresos brutos diarios derivados del mecanismo de gesti&oacute;n de las interconexiones internacionales por la asignaci&oacute;n de energ&iacute;as de balance de tipo RR.</p>\r\n\r\n<p>En concreto este indicador se refiere a las rentas de importaci&oacute;n&nbsp;derivadas de las energ&iacute;as de balance de tipo RR intercambiadas a trav&eacute;s de la interconexi&oacute;n FR-ES.</p>\r\n\r\n<p><b>Publicaci&oacute;n:</b>&nbsp;diariamente con la informaci&oacute;n del d&iacute;a D-1 sobre las 5:00 horas.</p>\r\n",
             "id": 1836
@@ -509,11 +619,6 @@
             "name": "Renta de congestión energías de balance RR Portugal exportación",
             "description": "<p>El mecanismo de asignaci&oacute;n de energ&iacute;as de balance RR es un servicio que tiene por objeto restablecer o mantener el nivel de energ&iacute;as de recuperaci&oacute;n de la frecuencia con activaci&oacute;n manual y autom&aacute;tica (energ&iacute;as de regulaci&oacute;n secundaria y terciaria) requerido al objeto de prepararse para desequilibrios adicionales del sistema.</p>\r\n\r\n<p>La asignaci&oacute;n de energ&iacute;a de balance RR se realiza a trav&eacute;s de una plataforma de balance europea (LIBRA) en aplicaci&oacute;n del art&iacute;culo 19 del Reglamento EB.</p>\r\n\r\n<p>Este servicio se encuentra regulado en el P.O.-3.3</p>\r\n\r\n<p>Las rentas de congesti&oacute;n representan los ingresos brutos diarios derivados del mecanismo de gesti&oacute;n de las interconexiones internacionales por la asignaci&oacute;n de energ&iacute;as de balance de tipo RR.</p>\r\n\r\n<p>En concreto este indicador se refiere a las rentas de exportaci&oacute;n derivadas de las energ&iacute;as de balance de tipo RR intercambiadas a trav&eacute;s de la interconexi&oacute;n PT-ES.</p>\r\n\r\n<p><b>Publicaci&oacute;n:</b>&nbsp;diariamente con la informaci&oacute;n del d&iacute;a D-1 sobre las 5:00 horas.</p>\r\n",
             "id": 1833
-        },
-        {
-            "name": "Liquidación del SEE por requisitos de control de flujo",
-            "description": "<p>El mecanismo de asignaci&oacute;n de energ&iacute;as de balance RR es un servicio que tiene por objeto restablecer o mantener el nivel de energ&iacute;as de recuperaci&oacute;n de la frecuencia con activaci&oacute;n manual y autom&aacute;tica (energ&iacute;as de regulaci&oacute;n secundaria y terciaria) requerido al objeto de prepararse para desequilibrios adicionales del sistema.</p>\r\n\r\n<p>Este servicio se encuentra regulado en el P.O.-3.3</p>\r\n\r\n<p>En concreto este indicador se refiere a liquidaci&oacute;n del sistema el&eacute;ctrico espa&ntilde;ol derivada de la consideraci&oacute;n de los requisitos de control de flujo en las interconexiones internacionales solicitadas por el SEE.</p>\r\n\r\n<p><b>Publicaci&oacute;n:</b>&nbsp;mensualmente, antes del &uacute;ltimo d&iacute;a del mes siguiente al periodo de programaci&oacute;n.</p>\r\n",
-            "id": 1832
         },
         {
             "name": "Requisito máximo de control de flujo en España-Francia en sentido importador",
@@ -1037,7 +1142,7 @@
         },
         {
             "name": "Demanda prevista SNP",
-            "description": "<p>Es la previsión de consumo de los sistemas no peninsulares que REE elabora teniendo en cuenta los valores de consumo registrados en periodos precedentes similares, así como otros factores con influencia en el consumo eléctrico como la laboralidad, la climatológica y la actividad económica. Los valores diezminutales son representandos en forma de curva aplicando unos parámetros que parabolizan el valor constante horario.</p>\n<p><b>Publicación:</b> diariamente a las 0:00 horas con la información del día D y a las 13:30 horas con las tres primeras horas del día D+1. Un valor cada diez minutos.</p>",
+            "description": "<p>Es la previsi&oacute;n de consumo de los sistemas no peninsulares que REE elabora teniendo en cuenta los valores de consumo registrados en periodos precedentes similares, as&iacute; como otros factores con influencia en el consumo el&eacute;ctrico como la laboralidad, la climatol&oacute;gica y la actividad econ&oacute;mica. Los valores diezminutales son representandos en forma de curva aplicando unos par&aacute;metros que parabolizan el valor constante horario.</p>\r\n\r\n<p><b>Publicaci&oacute;n:</b> diariamente a las 0:00 horas con la informaci&oacute;n del d&iacute;a D y a las 13:30 horas con las tres primeras horas del d&iacute;a D+1. Un valor cada cinco&nbsp;minutos.</p>\r\n",
             "id": 1742
         },
         {
@@ -9392,6 +9497,6 @@
         }
     ],
     "meta": {
-        "size": 1878
+        "size": 1899
     }
 }
