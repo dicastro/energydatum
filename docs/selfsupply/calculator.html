@@ -13,7 +13,7 @@
     <link rel="stylesheet" type="text/css" href="/energydatum/assets/jqueryui/1.13.1/css/jquery-ui.min.css">
     <link rel="stylesheet" type="text/css" href="/energydatum/assets/fomanticui/2.8.8/css/semantic.min.css">
     <link rel="stylesheet" type="text/css" href="/energydatum/assets/datatables/1.11.5/css/dataTables.semanticui.min.css">
-    <link rel="stylesheet" type="text/css" href="/energydatum/assets/css/style.css?_ts=20221002151658">
+    <link rel="stylesheet" type="text/css" href="/energydatum/assets/css/style.css?_ts=20230312125720">
 </head>
 <body>
 <script type="text/javascript" charset="utf8" src="/energydatum/assets/plotly/2.12.1/js/plotly.min.js"></script>
@@ -143,8 +143,8 @@
         <img src="/energydatum/assets/img/logo_40x40.png" class="ui centered mini image">
         <div class="ui horizontal inverted small divided link list">
             <a class="item" href="https://diegocastroviadero.com/#contact" target="_blank">Contáctame</a>
-            <p class="item">1.0.1</p>
-            <p class="item">Generado el 02/10/2022 con datos entre 01/06/2020 y 30/09/2022</p>
+            <p class="item">1.0.2</p>
+            <p class="item">Generado el 12/03/2023 con datos entre 01/06/2020 y 28/02/2023</p>
         </div>
     </div>
 </div>
@@ -155,16 +155,16 @@
 <script type="text/javascript" charset="utf8" src="/energydatum/assets/datatables/1.11.5/js/dataTables.semanticui.min.js"></script>
 <script type="text/javascript" charset="utf8" src="/energydatum/assets/fomanticui/2.8.8/js/semantic.min.js"></script>
 <script type="text/javascript" charset="utf8" src="/energydatum/assets/dataframejs/1.4.3/js/dataframe.min.js"></script>
-<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/menu.js?_ts=20221002151658"></script>
-<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/main.js?_ts=20221002151658"></script>
-<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/table.js?_ts=20221002151658"></script>
-<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/offer-db.js?_ts=20221002151658"></script>
-<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/electricity-offer-widget.js?_ts=20221002151658"></script>
-<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/production-estimation-monthly-widget.js?_ts=20221002151658"></script>
-<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/production-estimation-yearly-widget.js?_ts=20221002151658"></script>
-<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/production-estimation-configuration-selector-widget.js?_ts=20221002151658"></script>
-<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/cost-estimation-widget.js?_ts=20221002151658"></script>
-<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/installation-amortization-widget.js?_ts=20221002151658"></script>
+<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/menu.js?_ts=20230312125720"></script>
+<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/main.js?_ts=20230312125720"></script>
+<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/table.js?_ts=20230312125720"></script>
+<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/offer-db.js?_ts=20230312125720"></script>
+<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/electricity-offer-widget.js?_ts=20230312125720"></script>
+<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/production-estimation-monthly-widget.js?_ts=20230312125720"></script>
+<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/production-estimation-yearly-widget.js?_ts=20230312125720"></script>
+<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/production-estimation-configuration-selector-widget.js?_ts=20230312125720"></script>
+<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/cost-estimation-widget.js?_ts=20230312125720"></script>
+<script type="text/javascript" charset="utf8" src="/energydatum/assets/js/installation-amortization-widget.js?_ts=20230312125720"></script>
 
 <script type="text/javascript" charset="utf-8">
 $(document).ready(function() {
@@ -184,9 +184,9 @@ $(document).ready(function() {
         loadingContainerSelector: '#main-container',
         dataOrigin: {
             contextpath: '/energydatum',
-            dateScope: '20200601_20220930',
+            dateScope: '20200601_20230228',
         },
-        configurationList: [{'id': 'PP4P92_AN36_AS0', 'label': 'P: 4.92 kWhp | I: 36º | A:   0º'}, {'id': 'PP4P92_AN36_ASM6', 'label': 'P: 4.92 kWhp | I: 36º | A:  -6º'}, {'id': 'PP4P92_AN39_AS0', 'label': 'P: 4.92 kWhp | I: 39º | A:   0º'}, {'id': 'PP4P92_AN39_ASM6', 'label': 'P: 4.92 kWhp | I: 39º | A:  -6º'}, {'id': 'PP4P1_AN39_AS0', 'label': 'P: 4.10 kWhp | I: 39º | A:   0º'}, {'id': 'PP4P1_AN39_ASM6', 'label': 'P: 4.10 kWhp | I: 39º | A:  -6º'}, {'id': 'PP4P1_AN36_AS0', 'label': 'P: 4.10 kWhp | I: 36º | A:   0º'}, {'id': 'PP4P1_AN36_ASM6', 'label': 'P: 4.10 kWhp | I: 36º | A:  -6º'}, {'id': 'PP4P92_AN20_AS0', 'label': 'P: 4.92 kWhp | I: 20º | A:   0º'}, {'id': 'PP4P92_AN20_ASM6', 'label': 'P: 4.92 kWhp | I: 20º | A:  -6º'}, {'id': 'PP3P28_AN39_AS0', 'label': 'P: 3.28 kWhp | I: 39º | A:   0º'}, {'id': 'PP3P28_AN39_ASM6', 'label': 'P: 3.28 kWhp | I: 39º | A:  -6º'}, {'id': 'PP4P1_AN20_AS0', 'label': 'P: 4.10 kWhp | I: 20º | A:   0º'}, {'id': 'PP4P1_AN20_ASM6', 'label': 'P: 4.10 kWhp | I: 20º | A:  -6º'}, {'id': 'PP4P92_AN10_AS0', 'label': 'P: 4.92 kWhp | I: 10º | A:   0º'}, {'id': 'PP4P92_AN10_ASM6', 'label': 'P: 4.92 kWhp | I: 10º | A:  -6º'}, {'id': 'PP3P28_AN36_AS0', 'label': 'P: 3.28 kWhp | I: 36º | A:   0º'}, {'id': 'PP3P28_AN36_ASM6', 'label': 'P: 3.28 kWhp | I: 36º | A:  -6º'}, {'id': 'PP4P1_AN10_AS0', 'label': 'P: 4.10 kWhp | I: 10º | A:   0º'}, {'id': 'PP4P1_AN10_ASM6', 'label': 'P: 4.10 kWhp | I: 10º | A:  -6º'}, {'id': 'PP3P28_AN20_AS0', 'label': 'P: 3.28 kWhp | I: 20º | A:   0º'}, {'id': 'PP3P28_AN20_ASM6', 'label': 'P: 3.28 kWhp | I: 20º | A:  -6º'}, {'id': 'PP4P92_AN0_ASM6', 'label': 'P: 4.92 kWhp | I: 0º | A:  -6º'}, {'id': 'PP4P92_AN0_AS0', 'label': 'P: 4.92 kWhp | I: 0º | A:   0º'}, {'id': 'PP3P28_AN10_AS0', 'label': 'P: 3.28 kWhp | I: 10º | A:   0º'}, {'id': 'PP3P28_AN10_ASM6', 'label': 'P: 3.28 kWhp | I: 10º | A:  -6º'}, {'id': 'PP4P1_AN0_AS0', 'label': 'P: 4.10 kWhp | I: 0º | A:   0º'}, {'id': 'PP4P1_AN0_ASM6', 'label': 'P: 4.10 kWhp | I: 0º | A:  -6º'}, {'id': 'PP2P46_AN39_AS0', 'label': 'P: 2.46 kWhp | I: 39º | A:   0º'}, {'id': 'PP2P46_AN39_ASM6', 'label': 'P: 2.46 kWhp | I: 39º | A:  -6º'}, {'id': 'PP2P46_AN36_AS0', 'label': 'P: 2.46 kWhp | I: 36º | A:   0º'}, {'id': 'PP2P46_AN36_ASM6', 'label': 'P: 2.46 kWhp | I: 36º | A:  -6º'}, {'id': 'PP2P46_AN20_AS0', 'label': 'P: 2.46 kWhp | I: 20º | A:   0º'}, {'id': 'PP2P46_AN20_ASM6', 'label': 'P: 2.46 kWhp | I: 20º | A:  -6º'}, {'id': 'PP3P28_AN0_AS0', 'label': 'P: 3.28 kWhp | I: 0º | A:   0º'}, {'id': 'PP3P28_AN0_ASM6', 'label': 'P: 3.28 kWhp | I: 0º | A:  -6º'}, {'id': 'PP2P46_AN10_AS0', 'label': 'P: 2.46 kWhp | I: 10º | A:   0º'}, {'id': 'PP2P46_AN10_ASM6', 'label': 'P: 2.46 kWhp | I: 10º | A:  -6º'}, {'id': 'PP2P46_AN0_AS0', 'label': 'P: 2.46 kWhp | I: 0º | A:   0º'}, {'id': 'PP2P46_AN0_ASM6', 'label': 'P: 2.46 kWhp | I: 0º | A:  -6º'}],
+        configurationList: [{'id': 'PP4P92_AN39_AS0', 'label': 'P: 4.92 kWhp | I: 39º | A:   0º'}, {'id': 'PP4P92_AN39_ASM6', 'label': 'P: 4.92 kWhp | I: 39º | A:  -6º'}, {'id': 'PP4P92_AN36_AS0', 'label': 'P: 4.92 kWhp | I: 36º | A:   0º'}, {'id': 'PP4P92_AN36_ASM6', 'label': 'P: 4.92 kWhp | I: 36º | A:  -6º'}, {'id': 'PP4P1_AN39_AS0', 'label': 'P: 4.10 kWhp | I: 39º | A:   0º'}, {'id': 'PP4P1_AN39_ASM6', 'label': 'P: 4.10 kWhp | I: 39º | A:  -6º'}, {'id': 'PP4P92_AN20_AS0', 'label': 'P: 4.92 kWhp | I: 20º | A:   0º'}, {'id': 'PP4P92_AN20_ASM6', 'label': 'P: 4.92 kWhp | I: 20º | A:  -6º'}, {'id': 'PP4P1_AN36_AS0', 'label': 'P: 4.10 kWhp | I: 36º | A:   0º'}, {'id': 'PP4P1_AN36_ASM6', 'label': 'P: 4.10 kWhp | I: 36º | A:  -6º'}, {'id': 'PP4P92_AN10_AS0', 'label': 'P: 4.92 kWhp | I: 10º | A:   0º'}, {'id': 'PP4P92_AN10_ASM6', 'label': 'P: 4.92 kWhp | I: 10º | A:  -6º'}, {'id': 'PP4P1_AN20_AS0', 'label': 'P: 4.10 kWhp | I: 20º | A:   0º'}, {'id': 'PP4P1_AN20_ASM6', 'label': 'P: 4.10 kWhp | I: 20º | A:  -6º'}, {'id': 'PP3P28_AN39_AS0', 'label': 'P: 3.28 kWhp | I: 39º | A:   0º'}, {'id': 'PP3P28_AN39_ASM6', 'label': 'P: 3.28 kWhp | I: 39º | A:  -6º'}, {'id': 'PP3P28_AN36_AS0', 'label': 'P: 3.28 kWhp | I: 36º | A:   0º'}, {'id': 'PP3P28_AN36_ASM6', 'label': 'P: 3.28 kWhp | I: 36º | A:  -6º'}, {'id': 'PP4P1_AN10_AS0', 'label': 'P: 4.10 kWhp | I: 10º | A:   0º'}, {'id': 'PP4P1_AN10_ASM6', 'label': 'P: 4.10 kWhp | I: 10º | A:  -6º'}, {'id': 'PP4P92_AN0_AS0', 'label': 'P: 4.92 kWhp | I: 0º | A:   0º'}, {'id': 'PP4P92_AN0_ASM6', 'label': 'P: 4.92 kWhp | I: 0º | A:  -6º'}, {'id': 'PP3P28_AN20_AS0', 'label': 'P: 3.28 kWhp | I: 20º | A:   0º'}, {'id': 'PP3P28_AN20_ASM6', 'label': 'P: 3.28 kWhp | I: 20º | A:  -6º'}, {'id': 'PP4P1_AN0_AS0', 'label': 'P: 4.10 kWhp | I: 0º | A:   0º'}, {'id': 'PP4P1_AN0_ASM6', 'label': 'P: 4.10 kWhp | I: 0º | A:  -6º'}, {'id': 'PP3P28_AN10_AS0', 'label': 'P: 3.28 kWhp | I: 10º | A:   0º'}, {'id': 'PP3P28_AN10_ASM6', 'label': 'P: 3.28 kWhp | I: 10º | A:  -6º'}, {'id': 'PP2P46_AN39_AS0', 'label': 'P: 2.46 kWhp | I: 39º | A:   0º'}, {'id': 'PP2P46_AN39_ASM6', 'label': 'P: 2.46 kWhp | I: 39º | A:  -6º'}, {'id': 'PP2P46_AN36_AS0', 'label': 'P: 2.46 kWhp | I: 36º | A:   0º'}, {'id': 'PP2P46_AN36_ASM6', 'label': 'P: 2.46 kWhp | I: 36º | A:  -6º'}, {'id': 'PP3P28_AN0_AS0', 'label': 'P: 3.28 kWhp | I: 0º | A:   0º'}, {'id': 'PP3P28_AN0_ASM6', 'label': 'P: 3.28 kWhp | I: 0º | A:  -6º'}, {'id': 'PP2P46_AN20_AS0', 'label': 'P: 2.46 kWhp | I: 20º | A:   0º'}, {'id': 'PP2P46_AN20_ASM6', 'label': 'P: 2.46 kWhp | I: 20º | A:  -6º'}, {'id': 'PP2P46_AN10_ASM6', 'label': 'P: 2.46 kWhp | I: 10º | A:  -6º'}, {'id': 'PP2P46_AN10_AS0', 'label': 'P: 2.46 kWhp | I: 10º | A:   0º'}, {'id': 'PP2P46_AN0_AS0', 'label': 'P: 2.46 kWhp | I: 0º | A:   0º'}, {'id': 'PP2P46_AN0_ASM6', 'label': 'P: 2.46 kWhp | I: 0º | A:  -6º'}],
         configurationAdded: function(event, configuration, firstConfiguration) {
             productionEstimationMonthly.productionestimationmonthly('addConfiguration', configuration);
             productionEstimationYearly.productionestimationyearly('addConfiguration', configuration);

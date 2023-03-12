@@ -1,5 +1,6 @@
 import glob
 import io
+import os
 import os.path
 
 import pandas as pd
@@ -74,7 +75,7 @@ class BankDays:
 
             sdf = self.spark.createDataFrame(df)\
                 .withColumnRenamed('Tipo de Festivo', 'bank_day_type')\
-                .withColumnRenamed('Día', 'bank_day')\
+                .withColumnRenamed('Dia', 'bank_day')\
                 .withColumnRenamed('Festividad', 'bank_day_name')\
                 .filter(col('bank_day_type').isin(self.national_bank_day_types))\
                 .withColumn('bank_day', to_date(col('bank_day'), 'dd/MM/yyyy'))\
@@ -88,6 +89,9 @@ class BankDays:
 
             year_min = sdf.select(ps_min('year').alias('year_min')).first()['year_min']
             year_max = sdf.select(ps_max('year').alias('year_max')).first()['year_max']
+
+            for bank_days_file in glob.glob(self.bank_days_list_files_pattern):
+                os.remove(bank_days_file)
 
             self.file_name = f'docs/data/bank_days_{year_min}_{year_max}.json'
             utils.df_to_json_file(sdf, self.file_name)

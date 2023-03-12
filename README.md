@@ -448,6 +448,11 @@ En la segunda gráfica se ve el coste en energía sin la instación (línea disc
 
 - [x] Corregido error cuando no hay calibraciones previas porque no se han realizado nunca y la calibración está deshabilitada
 
+:checkered_flag: versión 1.0.2
+
+- [x] Corregido error al recuperar los dias festivos por cambio de formato en origen
+- [x] Se refactoriza el codigo para usar la nueva cabecera de autenticacion del API de PVGIS
+
 # Backlog
 
 Algunas ideas que se me van ocurriendo y que todavía no he planificado (ni sé si algún día se planificarán)
